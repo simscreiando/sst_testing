@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST1 - 03/0+6 - SimStoria - Companion Narrativo em Implementação - v47 (Sims Edition)</title>
+    <title>SimStoria - Companion Narrativo em Implementação - v48 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -183,6 +183,7 @@
         <button class="nav-btn" onclick="switchTab('tab-help')">📖 Ajuda</button>
         <button class="nav-btn" onclick="switchTab('tab-feedback')">💬 Enviar Feedback</button>
         <button class="nav-btn" onclick="switchTab('tab-apoio')" style="color: var(--ts4-green);">💖 Apoie o Projeto</button>
+	<button class="nav-btn" onclick="switchTab('tab-sobre')">ℹ️ Sobre / Atualizações</button>
 
         <div style="margin-top: 20px; border-top: 2px solid #eee; padding-top: 15px;">
             <h3 style="font-size: 12px; color: var(--ts4-blue); text-transform: uppercase; margin-bottom: 10px;">☁️ Conexão Nuvem</h3>
@@ -847,7 +848,51 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                 </p>
             </div>
         </div>
-        
+
+	 <div id="tab-sobre" class="tab-pane">
+            <div class="panel" style="max-width: 800px; margin: auto;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/67fd436abea8a2622d7333f25780b164c3510ade/SimStoria.png" alt="SimStoria Logo" style="width: 80px; margin-bottom: 10px;">
+                    <h2 style="color: var(--ts4-blue); margin: 0;">SimStoria - Legacy Companion</h2>
+                    <p style="color: #666; font-size: 14px;">Versão Atual: v48 (Sims Edition)</p>
+                </div>
+
+                <div style="background: #f0f7ff; padding: 20px; border-radius: 15px; border-left: 4px solid var(--ts4-blue); margin-bottom: 30px;">
+                    <h3 style="margin-top: 0; color: var(--ts4-blue);">Sobre o Projeto</h3>
+                    <p style="font-size: 14px; line-height: 1.6; color: #444;">
+                        O SimStoria nasceu por querer organizar um save de legaado que eu tinha, mas que acabou quebrando algumas vezes por conta de mods ou bugs do jogo; Como foi ficando bem legal, quis abrir a ferramenta para outros simmers utilizarem, em razão da necessidade de organizar o caos e a beleza das histórias que criamos no The Sims 4.  
+                        Este projeto é construído com muito carinho por uma simmer, para a comunidade simmer.
+			Vai Brasil!
+                    </p>
+                </div>
+
+                <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">🚀 Histórico de Atualizações</h3>
+                
+                <div style="position: relative; padding-left: 20px; border-left: 2px solid var(--ts4-green); margin-bottom: 20px;">
+                    <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--ts4-green);"></div>
+                    <strong style="font-size: 14px; color: #333;">v48 - Novas Conexões e Interface</strong>
+                    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 03 de Junho de 2026 às 14:00</span>
+                    <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
+                        <li><strong>Árvore Genealógica:</strong> Adicionada a opção de vincular Irmãos Fundadores (Sims sem pais na árvore).</li>
+                        <li><strong>Interface:</strong> Nova aba "Sobre e Atualizações" implementada.</li>
+                        <li><strong>Correções:</strong> Ajustes de estabilidade na linha do tempo visual.</li>
+                    </ul>
+                </div>
+
+                <div style="position: relative; padding-left: 20px; border-left: 2px solid #ccc; margin-bottom: 20px;">
+                    <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #ccc;"></div>
+                    <strong style="font-size: 14px; color: #333;">v47 - Galeria e Nuvem</strong>
+                    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 Maio de 2026</span>
+                    <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
+                        <li>Integração da Galeria de Recordações com o Google Drive para fotos pesadas.</li>
+                        <li>Sistema de compressão de imagens via Canvas (evita travamento do navegador).</li>
+                        <li>Nova roleta de Histórias de Vizinhança integrada com a I.A.</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+       
         <div id="tab-feedback" class="tab-pane">
             <div class="panel" style="max-width: 600px; margin: 40px auto;">
                 <h2 style="text-align: center;">💬 Fale com a Criadora</h2>
@@ -980,9 +1025,16 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                     </div>
                 </div>
                 
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
+		<div style="display: flex; gap: 10px; margin-top: 10px;">
                     <div style="flex:1;"><label>Progenitor(a) 1:</label><select id="e-p1"></select></div>
                     <div style="flex:1;"><label>Progenitor(a) 2:</label><select id="e-p2"></select></div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <div style="flex:1; background: #fffdf2; padding: 10px; border-radius: 8px; border-left: 3px solid #FF8C00;">
+                        <label style="color:#FF8C00; font-weight:bold;">Irmão(ã) Fundador(a) (Sem pais):</label>
+                        <select id="e-irmao"></select>
+                        <p style="font-size:9px; color:#888; margin:2px 0 0 0;">Use apenas se eles não tiverem os mesmos pais cadastrados acima.</p>
+                    </div>
                 </div>
                 
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
@@ -2026,8 +2078,8 @@ async function excluirAlbumAtual() {
             carregarImagemNoInputDaFase();
             renderRelPassadasEdit();
             
-            const opt = '<option value="">Nenhum</option>' + db.sims.filter(x => String(x.id) !== String(currentSimId)).map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-            ['e-p1','e-p2','e-spouse'].forEach(id => { 
+	    const opt = '<option value="">Nenhum</option>' + db.sims.filter(x => String(x.id) !== String(currentSimId)).map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
+            ['e-p1','e-p2','e-spouse','e-irmao'].forEach(id => {
                 const el = document.getElementById(id); 
                 if(el) { el.innerHTML = opt; el.value = s[id.replace('e-','')] || ""; }
             });
@@ -2104,7 +2156,7 @@ async function excluirAlbumAtual() {
             showToast("📸 Imagem ajustada com sucesso!");
         }
 
-        function salvarSim() {
+function salvarSim() {
             salvarImagemNaMemoriaDaFase(); 
             let faseNova = document.getElementById('e-fase').value;
             let nomeSim = document.getElementById('e-nome').value;
@@ -2127,6 +2179,7 @@ async function excluirAlbumAtual() {
                 p1: document.getElementById('e-p1').value, 
                 p2: document.getElementById('e-p2').value, 
                 spouse: document.getElementById('e-spouse').value, 
+                irmao: document.getElementById('e-irmao').value, // Carrega o irmão selecionado
                 relStatus: relStatusNovo, 
                 traicao: document.getElementById('e-traicao').checked, 
                 crush: document.getElementById('e-crush').value, 
@@ -2138,6 +2191,8 @@ async function excluirAlbumAtual() {
 
             if(currentSimId) {
                 let oldSim = db.sims.find(x => String(x.id) === String(currentSimId));
+                
+                // --- TRATAMENTO DO CÔNJUGE ANTERIOR ---
                 if(oldSim.spouse && String(oldSim.spouse) !== String(s.spouse)) {
                     let ex = db.sims.find(x => String(x.id) === String(oldSim.spouse));
                     let nomeEx = ex ? ex.nome : 'Sim removido';
@@ -2160,6 +2215,15 @@ async function excluirAlbumAtual() {
                         ex.spouse = "";
                     }
                 }
+
+                // --- NOVO: TRATAMENTO DO IRMÃO ANTERIOR (Limpa o vínculo antigo ao editar) ---
+                if(oldSim.irmao && String(oldSim.irmao) !== String(s.irmao)) {
+                    let exIrmao = db.sims.find(x => String(x.id) === String(oldSim.irmao));
+                    if(exIrmao && String(exIrmao.irmao) === String(oldSim.id)) {
+                        exIrmao.irmao = ""; // Limpa a referência no irmão antigo
+                    }
+                }
+
                 if(s.spouse) { 
                     let novoConj = db.sims.find(x => String(x.id) === String(s.spouse)); 
                     if(novoConj) { 
@@ -2167,17 +2231,33 @@ async function excluirAlbumAtual() {
                         novoConj.relStatus = s.relStatus; 
                     } 
                 }
-                const idx = db.sims.findIndex(x => String(x.id) === String(currentSimId)); db.sims[idx] = s;
+
+                // --- NOVO: VINCULAÇÃO DUPLA DE IRMÃOS NA EDIÇÃO ---
+                if(s.irmao) { 
+                    let novoIrmao = db.sims.find(x => String(x.id) === String(s.irmao)); 
+                    if(novoIrmao) { novoIrmao.irmao = s.id; } 
+                }
+
+                const idx = db.sims.findIndex(x => String(x.id) === String(currentSimId)); 
+                db.sims[idx] = s;
+
             } else {
+                // --- CASO SEJA UM SIM NOVO ---
                 if(s.spouse) { 
                     let novoConj = db.sims.find(x => String(x.id) === String(s.spouse)); 
                     if(novoConj) { 
                         novoConj.spouse = s.id; 
                         novoConj.relStatus = s.relStatus; 
                     } 
+                }
+              
+                if(s.irmao) { 
+                    let novoIrmao = db.sims.find(x => String(x.id) === String(s.irmao)); 
+                    if(novoIrmao) { novoIrmao.irmao = s.id; } 
                 }
                 db.sims.push(s);
             }
+
             salvarTudo(); fecharModal(); renderTree(); renderGenList(); renderIaSimList(); showToast("Perfil salvo!");
         }
 
@@ -2682,12 +2762,33 @@ async function excluirAlbumAtual() {
                 };
             });
 
-            let edgesArray = [];
+let edgesArray = [];
             let addedSpouses = new Set();
+
+            // MUDAMOS O NOME AQUI PARA EVITAR CONFLITO:
+            const addedFundadoresEdges = new Set();
             
             baseSims.forEach(s => {
                 if (s.p1 && baseSims.some(b => String(b.id) === String(s.p1))) edgesArray.push({ from: String(s.p1), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });
-                if (s.p2 && baseSims.some(b => String(b.id) === String(s.p2))) edgesArray.push({ from: String(s.p2), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });
+                if (s.p2 && baseSims.some(b => String(b.id) === String(s.p2))) edgesArray.push({ from: String(s.p2), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });                
+                
+                // NOVO: Linha para Irmãos Fundadores (com o novo nome de controle)
+                if (s.irmao && baseSims.some(b => String(b.id) === String(s.irmao))) {
+                    let irmaoKey1 = `${s.id}-${s.irmao}-sibling`;
+                    let irmaoKey2 = `${s.irmao}-${s.id}-sibling`;
+                    
+                    if (!addedFundadoresEdges.has(irmaoKey1) && !addedFundadoresEdges.has(irmaoKey2)) {
+                        edgesArray.push({
+                            from: String(s.id),       
+                            to: String(s.irmao),     
+                            color: { color: '#FF8C00' },
+                            dashes: false, // Linha sólida para irmãos
+                            width: 2,
+                            smooth: { type: 'curvedCW', roundness: 0.2 }  
+                        });
+                        addedFundadoresEdges.add(irmaoKey1);
+                    }
+                }
                 
                 if (s.spouse && baseSims.some(b => String(b.id) === String(s.spouse))) {
                     let spKey1 = `${s.id}-${s.spouse}`;
