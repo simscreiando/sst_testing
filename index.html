@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimStoria - Companion Narrativo em Implementação - v47 (Sims Edition)</title>
+    <title>SimStoria - Companion Narrativo em Implementação - v48 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -15,6 +15,8 @@
     <script type="text/javascript">
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({pageLanguage: 'pt', autoDisplay: false}, 'google_translate_element');
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         }
     </script>
     <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -996,6 +998,9 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                 </div>
                 <div style="display:flex; gap:10px; margin-top:10px;">
                     <button class="btn-main" style="background:#9B59B6; margin:0; flex:1;" onclick="exportarPerfilSim(currentSimId)">📤 Exportar Card Resumido do Sim</button>
+		    <button onclick="exportarPrintPerfilCompleto()" style="background: #4a5568; color: white; padding: 10px 18px; border-radius: 8px; font-family: 'Nunito', sans-serif; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+    📸 Exportar Perfil Completo (Print)
+</button>
                     <button class="btn-main btn-sec" style="margin:0; flex:1;" onclick="fecharModal()">FECHAR</button>
                 </div>
             </div>
@@ -3867,13 +3872,19 @@ function exportarPerfilSim(simId) {
         currentY = wrapTextAndGetY(ctx, `"${narrativaText}"`, startX, currentY, maxTextWidth, 22);
         currentY += 20;
 
-        // --- SEÇÃO 2: IDENTIDADE E TRAÇOS ---
+// --- SEÇÃO 2: IDENTIDADE E TRAÇOS ---
         currentY = aplicarDivisorSecao('Traços de Personalidade', currentY);
         let chipX = startX;
         let chipY = currentY;
         if(tracosArr.length === 0) tracosArr = ['Sem traços definidos'];
         
-        tracosArr.forEach(t => { 
+        // --- LOGÍSTICA DO LIMITE INTELIGENTE ---
+        const limiteMaximo = 12; // Número seguro para não estourar o tamanho fixo do card (740px)
+        const tracosVisiveis = tracosArr.slice(0, limiteMaximo);
+        const tracosRestantes = tracosArr.length - limiteMaximo;
+        
+        // 1. Desenha apenas os traços permitidos dentro do limite
+        tracosVisiveis.forEach(t => { 
             ctx.font = 'bold 12px Nunito, sans-serif';
             let textWidth = ctx.measureText(t).width;
             let chipWidth = textWidth + 24;
@@ -3889,6 +3900,34 @@ function exportarPerfilSim(simId) {
             ctx.fillText(t, chipX + 12, chipY + 17);
             chipX += chipWidth + 8;
         });
+        
+        // 2. Se houverem traços ocultados, desenha o "Chip de Prestígio" Dourado
+        if (tracosRestantes > 0) {
+            let labelRestantes = `+ ${tracosRestantes} traços`;
+            ctx.font = 'bold 12px Nunito, sans-serif';
+            let textWidth = ctx.measureText(labelRestantes).width;
+            let chipWidth = textWidth + 24;
+            
+            // Garante que o chip extra também respeite a quebra de linha se faltar espaço
+            if(chipX + chipWidth > maxX) { 
+                chipX = startX; 
+                chipY += 32; 
+            } 
+            
+            // Fundo do Chip Extra (Tom Amarelo/Ouro suave)
+            ctx.fillStyle = '#fff3bf'; 
+            ctx.beginPath(); ctx.roundRect(chipX, chipY, chipWidth, 26, 13); ctx.fill();
+            
+            // Borda do Chip Extra (Tom Ouro mais vivo para acabamento)
+            ctx.strokeStyle = '#fab005';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            
+            // Texto do Contador (Tom Escuro/Bronze para leitura perfeita)
+            ctx.fillStyle = '#d97706';
+            ctx.fillText(labelRestantes, chipX + 12, chipY + 17);
+        }
+        
         currentY = chipY + 45;
 
         // --- SEÇÃO 3: DINÂMICA E LINHAGEM ---
@@ -3912,6 +3951,7 @@ function exportarPerfilSim(simId) {
         currentY = wrapTextAndGetY(ctx, filTxt, startX + 120, currentY, maxX - (startX + 120), 20);
 
         // --- RODAPÉ BRANDING DO COMPANION ---
+
         ctx.fillStyle = bgGrad.tagBg;
         ctx.fillRect(18, H-45, W-36, 27);
         ctx.fillStyle = bgGrad.text;
@@ -3939,19 +3979,39 @@ function exportarPerfilSim(simId) {
 }
 
 
-        function abrirCardPreview(canvas, nomesSim) {
-            let previewCanvas = document.getElementById('canvas-card-preview');
-            previewCanvas.width = canvas.width;
-            previewCanvas.height = canvas.height;
-            let pCtx = previewCanvas.getContext('2d');
-            pCtx.drawImage(canvas, 0, 0);
+function exportarPrintPerfilCompleto() {
+    // 1. Procuramos o elemento do perfil na tela (Ajuste o ID abaixo para o ID real do seu container de perfil)
+    const elementoPerfil = document.getElementById('modal-sim'); 
+    
+    if (!elementoPerfil) {
+        return alert("Não foi possível localizar a janela do perfil para tirar o print.");
+    }
+    
+    // Mostra um aviso visual sutil para o usuário saber que o processo começou
+    if (typeof showToast === "function") {
+        showToast("📸 Tirando print do perfil completo...");
+    }
 
-            document.getElementById('btn-baixar-card').onclick = () => {
-                const link = document.createElement('a');
-                link.download = `Card_${(nomesSim || 'Sim').replace(/\s+/g, '_')}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                showToast("✅ Card exportado com sucesso!");
+    // 2. A biblioteca tira a foto do elemento exatamente como ele está na tela
+    html2canvas(elementoPerfil, {
+        useCORS: true,       // Permite tirar print mesmo se houver imagens de links externos (como fotos de avatares)
+        scale: 2,            // Dobra a resolução do print para que os textos fiquem super nítidos ao dar zoom
+        backgroundColor: null // Mantém o fundo transparente ou respeita o fundo original do seu design
+    }).then(canvas => {
+        // 3. Cria o link de download da imagem gerada
+        const link = document.createElement('a');
+        link.download = `Perfil_Completo_SimStoria.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        if (typeof showToast === "function") {
+            showToast("✅ Imagem salva com sucesso!");
+        }
+    }).catch(err => {
+        console.error("Erro ao gerar o print:", err);
+        alert("Ocorreu um erro ao tentar gerar a imagem completa.");
+    });
+}
             };
 
             document.getElementById('modal-card-preview').style.display = 'flex';
