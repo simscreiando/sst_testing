@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> tEST - SimStoria - Companion Narrativo em Implementação - v48 (Sims Edition)</title>
+    <title> tEST - SimStoria - Companion Narrativo em Implementação - v49 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -12,11 +12,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script type="text/javascript">
         function googleTranslateElementInit() {
             new google.translate.TranslateElement({pageLanguage: 'pt', autoDisplay: false}, 'google_translate_element');
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
         }
     </script>
     <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
@@ -996,12 +995,15 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                     <button class="btn-main" style="background:var(--ts4-green); margin:0;" onclick="adicionarFilhoPerfil()">+ ADICIONAR FILHO(A)</button>
                     <button class="btn-main" style="background:#17a2b8; margin:0;" onclick="adotarFilhoPerfil()">+ ADOTAR FILHO(A)</button>
                 </div>
-                <div style="display:flex; gap:10px; margin-top:10px;">
+		<div style="display:flex; gap:10px; margin-top:10px;">
                     <button class="btn-main" style="background:#9B59B6; margin:0; flex:1;" onclick="exportarPerfilSim(currentSimId)">📤 Exportar Card Resumido do Sim</button>
-		    <button onclick="exportarPrintPerfilCompleto()" style="background: #4a5568; color: white; padding: 10px 18px; border-radius: 8px; font-family: 'Nunito', sans-serif; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-    📸 Exportar Perfil Completo (Print)
-</button>
-                    <button class="btn-main btn-sec" style="margin:0; flex:1;" onclick="fecharModal()">FECHAR</button>
+                    <button onclick="exportarPrintPerfilCompleto()" style="background: #4a5568; color: white; padding: 10px 18px; border-radius: 8px; font-family: 'Nunito', sans-serif; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; flex:1; justify-content: center;">
+                        📸 Exportar Perfil Completo (Print)
+                    </button>
+                </div>
+
+                <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px; display: flex; justify-content: flex-end;">
+                    <button class="btn-main btn-sec" style="margin:0; min-width: 120px;" onclick="fecharModal()">FECHAR</button>
                 </div>
             </div>
 
@@ -3980,43 +3982,76 @@ function exportarPerfilSim(simId) {
 
 
 function exportarPrintPerfilCompleto() {
-    // 1. Procuramos o elemento do perfil na tela (Ajuste o ID abaixo para o ID real do seu container de perfil)
+    // 1. Localizamos o modal do perfil
     const elementoPerfil = document.getElementById('modal-sim'); 
     
-    if (!elementoPerfil) {
-        return alert("Não foi possível localizar a janela do perfil para tirar o print.");
+    if (!elementoPerfil || elementoPerfil.style.display === 'none') {
+        return alert("Por favor, abra o perfil de um Sim na tela antes de tirar o print.");
     }
     
-    // Mostra um aviso visual sutil para o usuário saber que o processo começou
+    // Tentamos localizar a "caixa interna" branca do perfil que segura os textos (o primeiro filho do modal)
+    // Isso garante que vamos desenrolar o lugar certo, não importa a estrutura
+    const cardInterno = elementoPerfil.querySelector('div') || elementoPerfil;
+
     if (typeof showToast === "function") {
-        showToast("📸 Tirando print do perfil completo...");
+        showToast("📸 Capturando o perfil completo (aguarde um instante)...");
     }
 
-    // 2. A biblioteca tira a foto do elemento exatamente como ele está na tela
-    html2canvas(elementoPerfil, {
-        useCORS: true,       // Permite tirar print mesmo se houver imagens de links externos (como fotos de avatares)
-        scale: 2,            // Dobra a resolução do print para que os textos fiquem super nítidos ao dar zoom
-        backgroundColor: null // Mantém o fundo transparente ou respeita o fundo original do seu design
-    }).then(canvas => {
-        // 3. Cria o link de download da imagem gerada
-        const link = document.createElement('a');
-        link.download = `Perfil_Completo_SimStoria.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        
-        if (typeof showToast === "function") {
-            showToast("✅ Imagem salva com sucesso!");
-        }
-    }).catch(err => {
-        console.error("Erro ao gerar o print:", err);
-        alert("Ocorreu um erro ao tentar gerar a imagem completa.");
-    });
-            document.getElementById('modal-card-preview').style.display = 'flex';
-        }
+    // 2. SALVAR O ESTADO ORIGINAL: Guardamos como o visual está agora para restaurar depois
+    const originalModalOverflow = elementoPerfil.style.overflow;
+    const originalModalHeight = elementoPerfil.style.height;
+    
+    const originalCardOverflow = cardInterno.style.overflow;
+    const originalCardMaxHeight = cardInterno.style.maxHeight;
+    const originalCardHeight = cardInterno.style.height;
 
-        function fecharCardPreview() {
-            document.getElementById('modal-card-preview').style.display = 'none';
-        }
+    // 3. DESENROLAR O PERGAMINHO: Removemos todas as travas de altura temporariamente
+    elementoPerfil.style.overflow = 'visible';
+    elementoPerfil.style.height = 'auto';
+    
+    cardInterno.style.overflow = 'visible';
+    cardInterno.style.maxHeight = 'none';
+    cardInterno.style.height = 'auto';
+
+    // Aguarda um milissegundo para o navegador entender o novo tamanho expandido antes da foto
+    setTimeout(() => {
+        html2canvas(cardInterno, {
+            useCORS: true,       // Permite carregar imagens externas (avatares)
+            scale: 2,            // Alta resolução para textos ficarem nítidos
+            backgroundColor: "#ffffff", // Garante um fundo branco sólido e lindo para o card
+            logging: false
+        }).then(canvas => {
+            // 4. ENROLAR DE VOLTA: Restaura o layout com scroll imediatamente após a foto
+            elementoPerfil.style.overflow = originalModalOverflow;
+            elementoPerfil.style.height = originalModalHeight;
+            
+            cardInterno.style.overflow = originalCardOverflow;
+            cardInterno.style.maxHeight = originalCardMaxHeight;
+            cardInterno.style.height = originalCardHeight;
+
+            // 5. BAIXAR A IMAGEM: Descobre o nome do Sim e faz o download
+            const nomeSim = document.getElementById('v-nome')?.innerText || "Sim";
+            const link = document.createElement('a');
+            link.download = `Perfil_Completo_${nomeSim.replace(/\s+/g, '_')}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            
+            if (typeof showToast === "function") {
+                showToast("✅ Perfil completo salvo com sucesso!");
+            }
+        }).catch(err => {
+            // Caso dê erro, também garante que o layout volta ao normal
+            elementoPerfil.style.overflow = originalModalOverflow;
+            elementoPerfil.style.height = originalModalHeight;
+            cardInterno.style.overflow = originalCardOverflow;
+            cardInterno.style.maxHeight = originalCardMaxHeight;
+            cardInterno.style.height = originalCardHeight;
+            
+            console.error("Erro ao gerar o print:", err);
+            alert("Ocorreu um erro ao tentar gerar a imagem completa.");
+        });
+    }, 50); // Pausa imperceptível de 50 milissegundos para estabilizar o tamanho
+}
 
 	window.onload = function() {
             iniciarDB();
