@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> tEST - SimStoria - Companion Narrativo em Implementação - v49 (Sims Edition)</title>
+    <title>SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -670,7 +670,7 @@
                 <h3 style="margin-top: 0; color: var(--ts4-blue);">🏠 1. Dashboard (Sorteios do Destino)</h3>
                 <p>A sua central de reviravoltas diárias. Aqui o destino toma as rédeas do seu jogo.</p>
                 <ul>
-                    <li><strong>As Roletas Base:</strong> O sistema já vem equipado com roletas de Eventos Diários, Metas de Geração e Relações Românticas.</li>
+                    <li><strong>As Roletas Base:</strong> O sistema já vem equipado com roletas de Eventos Diários, Metas de Geração, Relações Românticas, Carreiras e Cursos Universitários.</li>
                     <li><strong>Modo de Uso:</strong> Clique para girar. Se o resultado não se encaixar de forma alguma no seu momento atual da história, use o botão de <em>Sortear Novamente</em>.</li>
                     <li><strong>Registro Automático:</strong> Ao aceitar o desafio, clique em <em>Registrar no Livro da Família</em>. <small style="color: #666; display: block; margin-top: 4px;">(Nota de Atualização: Estamos refinando a sincronização imediata desse botão; caso o registro demore alguns minutos para aparecer na aba de livros, não se preocupe, o sistema está processando o histórico).</small></li>
                     <li><strong>Customização:</strong> Quer mais caos? Você pode criar e adicionar suas próprias roletas personalizadas na aba de Configurações.</li>
@@ -714,6 +714,16 @@
                     <li><strong>Exportar Card Resumido:</strong> Ideal para compartilhar rapidamente nas redes sociais ou em fóruns, gerando um resumo elegante dos dados principais do seu Sim.</li>
                     <li><strong>Exportar Perfil Completo (Print):</strong> Esta é a ferramenta de "Arquivo Histórico". Ao clicar, o sistema captura a ficha completa do Sim, percorrendo todo o conteúdo (inclusive históricos longos e árvores genealógicas). É a solução definitiva para guardar a "biografia oficial" de cada geração em alta definição.</li>
                     <li><strong>Exportar Árvore Genealógica Completa:</strong> Exporte a imagem total do seu mapa familiar para postar nas redes sociais ou imprimir e montar o álbum do seu legado.</li>
+		    <li><strong>Auxílio de Preenchimento (❓):</strong> Em campos como <em>Progenitor</em>, <em>Status Civil</em> e <em>Vínculos</em>, você verá ícones de interrogação. Clique neles para entender exatamente o que aquele dado impacta na sua árvore (ex: "Deixe em branco se for o fundador").</li>
+       		    <li><strong>Inteligência de Vínculos:</strong> Ao clicar em <em>Adicionar Filho</em> ou <em>Adotar</em>, o sistema detecta se o Sim possui um cônjuge e já preenche automaticamente o segundo progenitor para você.</li>
+	            <li><strong>Botões de Ação Rápida:</strong>
+            <ul>
+                <li>💍 <strong>Adicionar Cônjuge:</strong> Cria o vínculo de casamento instantaneamente.</li>
+                <li>👶 <strong>Adicionar Irmão(ã):</strong> Segue a lógica dos pais (se os pais já existirem no sistema, o vínculo é criado automaticamente).</li>
+            </ul>
+        </li>
+	            <li><strong>Seletor de Irmãos:</strong> Agora, ao adicionar irmãos, você pode selecioná-los via checkbox em uma lista, permitindo criar grupos de irmãos fundadores de uma só vez com precisão.</li>
+	            <li><strong>Separadores Visuais:</strong> O perfil agora é dividido entre <em>Dados Básicos</em> e <em>Relacionamentos</em>, facilitando a navegação.</li>
                 </ul>
             </div>
 
@@ -777,6 +787,27 @@
         
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
             
+
+	    <details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s;">
+    <summary style="font-weight: 700; color: var(--ts4-blue); font-size: 14px; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Por que os nomes dos pais aparecem preenchidos sozinhos?</span>
+        <span style="font-size: 12px; color: #aaa;">▼</span>
+    </summary>
+    <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
+        Isso é o nosso sistema de "Inteligência de Vínculos". Se o Sim que você está editando é casado, o SimStoria entende que é muito provável que o cônjuge também seja pai/mãe do filho que você está adicionando. Isso poupa cliques! Se não for o caso, você pode apagar ou alterar o nome manualmente.
+    </p>
+</details>
+
+<details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s;">
+    <summary style="font-weight: 700; color: var(--ts4-blue); font-size: 14px; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>A adoção de um Sim é salva automaticamente no livro?</span>
+        <span style="font-size: 12px; color: #aaa;">▼</span>
+    </summary>
+    <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
+        Não exatamente. O sistema prepara o registro da adoção, mas ele só é efetivado e gravado permanentemente no seu Livro de Histórias após você confirmar e salvar a operação. Assim, você tem controle total sobre o que entra ou não no seu diário de legado.
+    </p>
+</details>
+
             <details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s;">
                 <summary style="font-weight: 700; color: var(--ts4-blue); font-size: 14px; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
                     <span>O SimStoria altera ou corrompe os arquivos salvos do meu The Sims 4?</span>
@@ -870,7 +901,7 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                 <div style="text-align: center; margin-bottom: 30px;">
                     <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/67fd436abea8a2622d7333f25780b164c3510ade/SimStoria.png" alt="SimStoria Logo" style="width: 80px; margin-bottom: 10px;">
                     <h2 style="color: var(--ts4-blue); margin: 0;">SimStoria - Legacy Companion</h2>
-                    <p style="color: #666; font-size: 14px;">Versão Atual: v49 (Sims Edition)</p>
+                    <p style="color: #666; font-size: 14px;">Versão Atual: v50 (Sims Edition)</p>
                 </div>
 
                 <div style="background: #f0f7ff; padding: 20px; border-radius: 15px; border-left: 4px solid var(--ts4-blue); margin-bottom: 30px;">
@@ -884,10 +915,24 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
 
                 <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">🚀 Histórico de Atualizações</h3>
 
-                <div style="position: relative; padding-left: 20px; border-left: 2px solid var(--ts4-purple); margin-bottom: 20px;">
+	       <div style="position: relative; padding-left: 20px; border-left: 2px solid var(--ts4-blue); margin-bottom: 20px;">
+    <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--ts4-blue);"></div>
+    <strong style="font-size: 14px; color: #333;">v50 - Inteligência de Vínculos e UX</strong>
+    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 07 de Junho de 2026</span>
+    <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
+        <li><strong>UX - Inteligência de Vínculos:</strong> Adição automática de pais ao cadastrar filhos ou irmãos (se o Sim tiver cônjuge).</li>
+        <li><strong>UX - Botões de Ação:</strong> Novos botões rápidos para "Adicionar Cônjuge" e "Adicionar Irmão" diretamente no perfil.</li>
+        <li><strong>Interface:</strong> Divisão visual clara entre "Dados Básicos" e "Relacionamentos" para reduzir carga mental.</li>
+        <li><strong>UX - Ajuda:</strong> Implementação de tooltips (❓) em campos críticos para guiar jogadores iniciantes na criação de novos sims.</li>
+        <li><strong>Recurso - Irmãos:</strong> Seleção múltipla de inmãos fundadores por checkboxes.</li>
+        <li><strong>Dashboard:</strong> Novas roletas de "Carreira" e "Curso Universitário".</li>
+    </ul>
+</div> 
+
+               <div style="position: relative; padding-left: 20px; border-left: 2px solid var(--ts4-purple); margin-bottom: 20px;">
                     <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--ts4-purple);"></div>
                     <strong style="font-size: 14px; color: #333;">v49 - Captura</strong>
-                    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 05 de Junho de 2026 às 14:00</span>
+                    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 05 de Junho de 2026</span>
                     <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
                         <li><strong>Árvore Genealógica:</strong> Nova Funcionalidade: Botão "Exportar Perfil Completo (Print)". Agora você pode capturar a ficha inteira do Sim, incluindo todo o histórico, árvore e traços, mesmo que o perfil seja longo.</li>
                         <li><strong>Interface:</strong> Melhoria na organização da interface de ações do perfil. Botões de exportação agora possuem hierarquia visual clara e o botão "Fechar" foi reposicionado para garantir mais espaço e conforto na navegação.</li>
@@ -959,74 +1004,98 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
     </div>
     
     <div class="modal-overlay" id="modal-sim" onclick="fecharModalSeFundo(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div id="mode-view">
-                <button class="btn-main" style="width:100px; float:left; font-size:10px; margin:0; background:#555;" onclick="marcarFalecidoRapido()">✝️ FALECEU</button>
-                <button class="btn-main" style="width:80px; float:right; font-size:10px; margin:0;" onclick="toggleEditMode(true)">EDITAR</button>
-                <div style="clear:both;"></div>
-                <div style="text-align:center">
-                    <div class="sim-img-circle" id="v-img" style="margin-top:10px;">👤</div>
-                    <h2 id="v-nome" style="margin:10px 0">Nome</h2>
-                    <select id="v-seletor-foto-fase" onchange="atualizarFotoExibicaoPerfil()" style="width:auto; font-size:11px; padding:3px; margin:0 auto 10px; display:block; border:none; background:#f0f4f8;">
-                        <option value="bebe-colo">Bebê de Colo</option>
-                        <option value="bebe">Bebê</option>
-                        <option value="crianca">Criança</option>
-                        <option value="adolescente">Adolescente</option>
-                        <option value="jovem-adulto" selected>Jovem Adulto</option>
-                        <option value="adulto">Adulto</option>
-                        <option value="idoso">Idoso</option>
-                    </select>
-                </div>
+    <div class="modal-content" onclick="event.stopPropagation()">
+        
+        <div id="mode-view">
+            <button class="btn-main" style="width:100px; float:left; font-size:10px; margin:0; background:#555;" onclick="marcarFalecidoRapido()">✝️ FALECEU</button>
+            <button class="btn-main" style="width:80px; float:right; font-size:10px; margin:0;" onclick="toggleEditMode(true)">EDITAR</button>
+            <div style="clear:both;"></div>
+            
+            <div style="text-align:center">
+                <div class="sim-img-circle" id="v-img" style="margin-top:10px;">👤</div>
+                <h2 id="v-nome" style="margin:10px 0">Nome</h2>
+                <select id="v-seletor-foto-fase" onchange="atualizarFotoExibicaoPerfil()" style="width:auto; font-size:11px; padding:3px; margin:0 auto 10px; display:block; border:none; background:#f0f4f8;">
+                    <option value="bebe-colo">Bebê de Colo</option>
+                    <option value="bebe">Bebê</option>
+                    <option value="crianca">Criança</option>
+                    <option value="adolescente">Adolescente</option>
+                    <option value="jovem-adulto" selected>Jovem Adulto</option>
+                    <option value="adulto">Adulto</option>
+                    <option value="idoso">Idoso</option>
+                </select>
+            </div>
 
-<div id="sim-album-section" style="display:none; margin-top:15px; padding:12px 14px; background:#f4f8fd; border-radius:14px; border:1px solid #d6e8f7;">
-    <strong style="font-size:11px; color:var(--ts4-blue); text-transform:uppercase; font-weight:800; display:block; margin-bottom:9px; letter-spacing:0.5px;">📸 Álbum de Fotos por Fase de Vida</strong>
-    <div id="sim-album-gallery" class="sim-album-gallery" style="display:flex; gap:12px; overflow-x:auto; padding:4px 2px 8px 2px; scroll-snap-type:x mandatory;"></div>
-</div>
+            <div id="sim-album-section" style="display:none; margin-top:15px; padding:12px 14px; background:#f4f8fd; border-radius:14px; border:1px solid #d6e8f7;">
+                <strong style="font-size:11px; color:var(--ts4-blue); text-transform:uppercase; font-weight:800; display:block; margin-bottom:9px; letter-spacing:0.5px;">📸 Álbum de Fotos por Fase de Vida</strong>
+                <div id="sim-album-gallery" class="sim-album-gallery" style="display:flex; gap:12px; overflow-x:auto; padding:4px 2px 8px 2px; scroll-snap-type:x mandatory;"></div>
+            </div>
 
-<div style="margin-top: 15px; padding: 10px; background: #fafafa; border-radius: 10px; border: 1px solid #eee;">
-    <strong style="font-size: 11px; color: var(--ts4-blue); text-transform: uppercase; font-weight:800;">Linha do Tempo Visual</strong>
-    <div id="v-timeline" class="timeline-visual"></div>
-</div>
+            <div style="margin-top: 15px; padding: 10px; background: #fafafa; border-radius: 10px; border: 1px solid #eee;">
+                <strong style="font-size: 11px; color: var(--ts4-blue); text-transform: uppercase; font-weight:800;">Linha do Tempo Visual</strong>
+                <div id="v-timeline" class="timeline-visual"></div>
+            </div>
 
-<div class="profile-view-grid" id="profile-details-view">
-                    <div class="profile-field"><strong>Status de Vida</strong><span id="v-status">Vivo</span></div>
-                    <div class="profile-field"><strong>Fase de Vida Atual</strong><span id="v-fase">—</span></div>
-                    <div class="profile-field"><strong>Progenitor(a) 1</strong><span id="v-p1">Nenhum</span></div>
-                    <div class="profile-field"><strong>Progenitor(a) 2</strong><span id="v-p2">Nenhum</span></div>
-                    <div class="profile-field"><strong>Relacionamento</strong><span id="v-spouse">Nenhum</span></div>
-                    <div class="profile-field" id="campo-historico-rel" style="display:none; grid-column: span 2; border-left-color: #9B59B6;"><strong style="color:#9B59B6;">💌 Relacionamentos Anteriores</strong><div id="v-historico-rel" style="margin-top: 5px; font-size: 13px;"></div></div>
-                    <div class="profile-field" style="grid-column: span 2;"><strong>Filhos(as)</strong><span id="v-filhos">Nenhum</span></div>
-                    <div class="profile-field" style="grid-column: span 2;"><strong>Dinâmicas Especiais (Crush, Inimigo, Amante)</strong><span id="v-crush">Nenhum</span></div>
-                    <div class="profile-field" style="grid-column: span 2;"><strong>Traços e Aspirações</strong><span id="v-tracos">...</span></div>
-                    <div class="profile-field" style="grid-column: span 2;"><strong>Anotações / História do Sim</strong><span id="v-extra">...</span></div>
-                    <div class="profile-field" style="grid-column: span 2;">
-                        <strong style="color:var(--ts4-green)">Árvore de Parentesco</strong>
-                        <div id="v-parentesco" style="font-size: 13px; line-height: 1.5; margin-top: 5px;">Calculando...</div>
-                    </div>
-                </div>
-                <div style="display:flex; gap:10px; margin-top:20px;">
-                    <button class="btn-main" style="background:var(--ts4-green); margin:0;" onclick="adicionarFilhoPerfil()">+ ADICIONAR FILHO(A)</button>
-                    <button class="btn-main" style="background:#17a2b8; margin:0;" onclick="adotarFilhoPerfil()">+ ADOTAR FILHO(A)</button>
-                </div>
-		<div style="display:flex; gap:10px; margin-top:10px;">
-                    <button class="btn-main" style="background:#9B59B6; margin:0; flex:1;" onclick="exportarPerfilSim(currentSimId)">📤 Exportar Card Resumido do Sim</button>
-                    <button onclick="exportarPrintPerfilCompleto()" style="background: #4a5568; color: white; padding: 10px 18px; border-radius: 8px; font-family: 'Nunito', sans-serif; font-weight: bold; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; flex:1; justify-content: center;">
-                        📸 Exportar Perfil Completo (Print)
-                    </button>
-                </div>
-
-                <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px; display: flex; justify-content: flex-end;">
-                    <button class="btn-main btn-sec" style="margin:0; min-width: 120px;" onclick="fecharModal()">FECHAR</button>
+            <div class="profile-view-grid" id="profile-details-view">
+                <div class="profile-field"><strong>Status de Vida</strong><span id="v-status">Vivo</span></div>
+                <div class="profile-field"><strong>Fase de Vida Atual</strong><span id="v-fase">—</span></div>
+                <div class="profile-field"><strong>Progenitor(a) 1</strong><span id="v-p1">Nenhum</span></div>
+                <div class="profile-field"><strong>Progenitor(a) 2</strong><span id="v-p2">Nenhum</span></div>
+                <div class="profile-field"><strong>Relacionamento</strong><span id="v-spouse">Nenhum</span></div>
+                <div class="profile-field" id="campo-historico-rel" style="display:none; grid-column: span 2; border-left-color: #9B59B6;"><strong style="color:#9B59B6;">💌 Relacionamentos Anteriores</strong><div id="v-historico-rel" style="margin-top: 5px; font-size: 13px;"></div></div>
+                <div class="profile-field" style="grid-column: span 2;"><strong>Filhos(as)</strong><span id="v-filhos">Nenhum</span></div>
+                <div class="profile-field" style="grid-column: span 2;"><strong>Dinâmicas Especiais (Crush, Inimigo, Amante)</strong><span id="v-crush">Nenhum</span></div>
+                <div class="profile-field" style="grid-column: span 2;"><strong>Traços e Aspirações</strong><span id="v-tracos">...</span></div>
+                <div class="profile-field" style="grid-column: span 2;"><strong>Anotações / História do Sim</strong><span id="v-extra">...</span></div>
+                <div class="profile-field" style="grid-column: span 2;">
+                    <strong style="color:var(--ts4-green)">Árvore de Parentesco</strong>
+                    <div id="v-parentesco" style="font-size: 13px; line-height: 1.5; margin-top: 5px;">Calculando...</div>
                 </div>
             </div>
 
-            <div id="mode-edit" style="display:none;">
-                <h3>Perfil do Sim</h3>
-                <label>Nome Completo:</label><input type="text" id="e-nome">
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <div style="flex:1; background: #f8f9fa; padding: 10px; border-radius: 8px; border-left: 3px solid var(--ts4-blue);">
-                        <label>📸 Foto por Fase de Vida:</label>
-                        <select id="e-foto-fase-select" style="margin-bottom: 5px;" onchange="carregarImagemNoInputDaFase()">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
+                <button class="btn-main" style="background:var(--ts4-green); margin:0; display:flex; align-items:center; justify-content:center; gap:5px;" onclick="adicionarFilhoPerfil()" title="Cria um filho biológico na árvore. Se este Sim for casado, o cônjuge será o segundo pai/mãe automaticamente!">
+                    👶 Adicionar Filho(a) <span style="background:rgba(0,0,0,0.1); border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;">❓</span>
+                </button>
+                <button class="btn-main" style="background:#17a2b8; margin:0; display:flex; align-items:center; justify-content:center; gap:5px;" onclick="adotarFilhoPerfil()" title="Cria um filho adotivo. Ficará registrado na árvore e no livro da família como adoção.">
+                    🧸 Adotar Filho(a) <span style="background:rgba(0,0,0,0.1); border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;">❓</span>
+                </button>
+                <button class="btn-main" style="background:#e83e8c; margin:0; display:flex; align-items:center; justify-content:center; gap:5px;" onclick="adicionarConjugePerfil()" title="Atalho rápido: Cria um Sim novo e já o vincula como esposo(a) deste perfil na árvore.">
+                    💍 Adicionar Cônjuge <span style="background:rgba(0,0,0,0.1); border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;">❓</span>
+                </button>
+                <button class="btn-main" style="background:#FF8C00; margin:0; display:flex; align-items:center; justify-content:center; gap:5px;" onclick="adicionarIrmaoPerfil()" title="Atalho rápido: Cria um irmão ou irmã herdando automaticamente os mesmos pais deste perfil.">
+                    ➕ Adicionar Irmão(ã) <span style="background:rgba(0,0,0,0.1); border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;">❓</span>
+                </button>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-main" style="background:#9B59B6; margin:0; flex:1; display:flex; align-items:center; justify-content:center; gap:5px;" onclick="exportarPerfilSim(currentSimId)" title="Gera um lindo card visual estilizado (estilo carta de RPG) com o resumo da vida e traços deste Sim.">
+                    📤 Card Resumido <span style="background:rgba(0,0,0,0.1); border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;">❓</span>
+                </button>
+                <button class="btn-main" style="background: #4a5568; margin:0; flex:1; display:flex; align-items:center; justify-content:center; gap:5px;" onclick="exportarPrintPerfilCompleto()" title="Tira uma 'foto' inteira desta ficha de informações que você está vendo agora para guardar de recordação.">
+                    📸 Print do Perfil <span style="background:rgba(0,0,0,0.1); border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;">❓</span>
+                </button>
+            </div>
+
+            <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px; display: flex; justify-content: flex-end;">
+                <button class="btn-main btn-sec" style="margin:0; min-width: 120px;" onclick="fecharModal()">FECHAR</button>
+            </div>
+        </div>
+
+        <div id="mode-edit" style="display:none;">
+            
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; border-left: 4px solid var(--ts4-blue); margin-bottom: 15px;">
+                <h3 style="margin-top: 0; font-size: 14px; color: var(--ts4-blue);">👤 Identidade do Sim</h3>
+                
+                <label style="font-weight:bold; font-size:13px;">Nome Completo:</label>
+                <input type="text" id="e-nome" placeholder="Nome do personagem...">
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
+                    <div>
+                        <label style="font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                            Foto por Fase de Vida:
+                            <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="A imagem do perfil mudará automaticamente na árvore conforme a fase de vida atual escolhida abaixo.">❓</span>
+                        </label>
+                        <select id="e-foto-fase-select" style="margin-bottom: 5px; font-size:12px; padding:6px;" onchange="carregarImagemNoInputDaFase()">
                             <option value="bebe-colo">Bebê de Colo</option>
                             <option value="bebe">Bebê</option>
                             <option value="crianca">Criança</option>
@@ -1036,17 +1105,20 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                             <option value="idoso">Idoso</option>
                         </select>
                         <div style="display:flex; gap:5px;">
-                            <input type="text" id="e-img" placeholder="Link da foto..." onchange="salvarImagemNaMemoriaDaFase()" readonly style="background:#eee; font-size:10px;">
-                            <input type="file" id="e-img-file" accept="image/*" style="width:110px; font-size:10px; padding: 5px;" onchange="carregarImagemComputador(event)">
+                            <input type="hidden" id="e-img" onchange="salvarImagemNaMemoriaDaFase()">
+                            <input type="file" id="e-img-file" accept="image/*" style="font-size:10px; padding: 5px;" onchange="carregarImagemComputador(event)">
                             <button class="btn-main btn-sec" style="width:auto; margin:0; padding:5px; font-size:12px;" onclick="removerImagemDaFase()" title="Excluir foto desta fase">🗑️</button>
                         </div>
-                        <p style="font-size:9px; color:#888; margin:2px 0 0 0;">(A foto principal muda conforme a Fase de Vida Atual do Sim)</p>
                     </div>
-                    <div style="flex:1;">
-                        <label>Status Vital:</label>
-                        <select id="e-status"><option value="Vivo">Vivo</option><option value="Ancestral (Morto)">Ancestral (Morto)</option></select>
-                        <label style="margin-top: 10px; display:block;">Fase de Vida Atual:</label>
-                        <select id="e-fase">
+                    <div>
+                        <label style="font-weight:bold; font-size:13px;">Status Vital:</label>
+                        <select id="e-status" style="font-size:12px; padding:6px;">
+                            <option value="Vivo">🟢 Vivo</option>
+                            <option value="Ancestral (Morto)">💀 Ancestral (Morto)</option>
+                        </select>
+                        
+                        <label style="margin-top: 10px; display:block; font-weight:bold; font-size:13px;">Fase de Vida Atual:</label>
+                        <select id="e-fase" style="font-size:12px; padding:6px;">
                             <option value="bebe-colo">👶 Bebê de Colo</option>
                             <option value="bebe">🍼 Bebê</option>
                             <option value="crianca">🧒 Criança</option>
@@ -1057,78 +1129,128 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
                         </select>
                     </div>
                 </div>
+            </div>
+
+            <div style="background: rgba(124, 215, 0, 0.1); padding: 15px; border-radius: 12px; border-left: 4px solid var(--ts4-green); margin-bottom: 15px;">
+                <h3 style="margin-top: 0; font-size: 14px; color: #5ba300;">🌳 Família (Ascendência)</h3>
                 
-		<div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <div style="flex:1;"><label>Progenitor(a) 1:</label><select id="e-p1"></select></div>
-                    <div style="flex:1;"><label>Progenitor(a) 2:</label><select id="e-p2"></select></div>
-                </div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <div style="flex:1; background: #fffdf2; padding: 10px; border-radius: 8px; border-left: 3px solid #FF8C00;">
-                        <label style="color:#FF8C00; font-weight:bold;">Irmão(ã) Fundador(a) (Sem pais):</label>
-                        <select id="e-irmao"></select>
-                        <p style="font-size:9px; color:#888; margin:2px 0 0 0;">Use apenas se eles não tiverem os mesmos pais cadastrados acima.</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                    <div>
+                        <label style="font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                            Progenitor(a) 1:
+                            <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Deixe em branco se este Sim for o fundador inicial do seu legado (Geração 1).">❓</span>
+                        </label>
+                        <select id="e-p1" style="font-size:12px; padding:6px;"></select>
+                    </div>
+                    <div>
+                        <label style="font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                            Progenitor(a) 2:
+                            <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Deixe em branco se este Sim for o fundador inicial do seu legado (Geração 1).">❓</span>
+                        </label>
+                        <select id="e-p2" style="font-size:12px; padding:6px;"></select>
                     </div>
                 </div>
+
+                <div style="margin-top: 10px;">
+                    <label style="font-weight:bold; font-size:13px; color:#FF8C00; display:flex; align-items:center; gap:5px;">
+                        Irmão(s)/Irmã(s) Fundador(a) (Sem pais):
+                        <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Use para conectar irmãos fundadores (Geração 1) sem pais na árvore. Selecione múltiplos Sims se quiser um grupo de irmãos fundadores.">❓</span>
+                    </label>
+                    <div id="lista-sims-irmaos" style="max-height: 130px; overflow-y: auto; border: 1px solid #FF8C00; padding: 8px 10px; border-radius: 12px; margin-top:5px; background: #fffdf5;">
+                        <em style="font-size:11px; color:#aaa;">Nenhum outro Sim criado ainda.</em>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: rgba(255, 77, 77, 0.05); padding: 15px; border-radius: 12px; border-left: 4px solid #FF4D4D; margin-bottom: 15px;">
+                <h3 style="margin-top: 0; font-size: 14px; color: #CC0000;">❤️ Relacionamentos Amorosos</h3>
                 
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <div style="flex:1;"><label>Cônjuge / Ex-Parceiro(a):</label><select id="e-spouse"></select></div>
-                    <div style="flex:1;">
-                        <label>Status Civil:</label>
-                        <select id="e-rel">
-                            <option value="solteiro">Solteiro(a)</option>
-                            <option value="casado">Casado(a) 💍</option>
-                            <option value="separado">Separado(a) (Ex-Parceiro) 💔</option>
-                            <option value="viuvo">Viúvo(a) (Ex-Parceiro) 🥀</option>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                    <div>
+                        <label style="font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                            Cônjuge / Ex-Parceiro(a):
+                            <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Selecione o parceiro para ligá-los na árvore. Lembre-se de primeiro criar a ficha do parceiro clicando em + Novo Sim!">❓</span>
+                        </label>
+                        <select id="e-spouse" style="font-size:12px; padding:6px;"></select>
+                    </div>
+                    <div>
+                        <label style="font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                            Status Civil:
+                            <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Define a linha visual na árvore: Casados = Linha verde; Separados = Linha vermelha tracejada.">❓</span>
+                        </label>
+                        <select id="e-rel" style="font-size:12px; padding:6px;">
+                            <option value="solteiro">💍 Solteiro(a)</option>
+                            <option value="casado">❤️ Casado(a) / União Estável</option>
+                            <option value="separado">💔 Separado(a) / Divorciado(a)</option>
+                            <option value="viuvo">🥀 Viúvo(a)</option>
                         </select>
                     </div>
                 </div>
 
-                <div style="margin-top: 15px; background: #fff5f5; padding: 10px; border-radius: 8px; border-left: 3px solid #ff4d4d;">
-                    <label style="color: #cc0000; font-weight: bold; cursor: pointer; display: flex; align-items: center;">
-                        <input type="checkbox" id="e-traicao">
-                        🔥 Marcar envolvimento em Traição / Escândalo (Aparecerá na árvore)
+                <div style="margin-top: 12px; background: #fffdfd; padding: 8px; border-radius: 8px; border: 1px dashed #ffb3b3;">
+                    <label style="color: #cc0000; font-weight: bold; font-size:12px; cursor: pointer; display: flex; align-items: center; gap:5px;">
+                        <input type="checkbox" id="e-traicao" style="margin:0;">
+                        🔥 Marcar Traição / Escândalo na árvore
+                        <span style="cursor:help; background:#ffb3b3; color:#cc0000; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Ao marcar isso, um ícone de fogo/alerta aparecerá na linhagem deste Sim.">❓</span>
                     </label>
                 </div>
 
-                <div style="margin-top:15px; background:#f8f0ff; border-radius:10px; border-left:3px solid #9B59B6; padding:12px;">
+                <div style="margin-top:12px; background:white; border-radius:8px; padding:10px; border: 1px solid #eee;">
                     <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleRelPassadasEdit()">
-                        <strong style="color:#9B59B6; font-size:13px;">💌 Relações Passadas (Histórico de Cônjuges)</strong>
-                        <span id="icon-rel-passadas" style="color:#9B59B6; font-size:16px;">▼</span>
+                        <strong style="color:#9B59B6; font-size:13px; display:flex; align-items:center; gap:5px;">
+                            💌 Histórico de Relacionamentos
+                            <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Adicione aqui os nomes de ex-namorados ou cônjuges falecidos para não perder a memória deles no perfil.">❓</span>
+                        </strong>
+                        <span id="icon-rel-passadas" style="color:#9B59B6; font-size:14px;">▼</span>
                     </div>
-                    <div id="painel-rel-passadas" style="margin-top:10px;">
-                        <p style="font-size:11px; color:#777; margin:0 0 8px 0;">Lista cronológica de ex-casamentos, separações e viuvez. Preenchido automaticamente ou adicione manualmente.</p>
-                        <div id="lista-rel-passadas-edit" style="margin-bottom:10px; max-height:160px; overflow-y:auto;"></div>
-                        <div style="background:white; padding:10px; border-radius:8px; border:1px solid #ddd;">
-                            <p style="font-size:11px; font-weight:bold; color:#9B59B6; margin:0 0 6px 0;">+ Adicionar manualmente:</p>
-                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                <input type="text" id="e-rel-passada-nome" placeholder="Nome do(a) ex-cônjuge..." style="flex:2; min-width:130px;">
-                                <select id="e-rel-passada-status" style="flex:1; min-width:120px;">
+                    <div id="painel-rel-passadas" style="margin-top:10px; display:none;">
+                        <div id="lista-rel-passadas-edit" style="margin-bottom:10px; max-height:100px; overflow-y:auto;"></div>
+                        <div style="background:#f9f9f9; padding:8px; border-radius:6px; border:1px solid #ddd;">
+                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                <input type="text" id="e-rel-passada-nome" placeholder="Nome do ex..." style="flex:2; min-width:110px; font-size:11px; padding:6px;">
+                                <select id="e-rel-passada-status" style="flex:1; min-width:100px; font-size:11px; padding:6px;">
                                     <option value="casado">💍 Casado(a)</option>
-                                    <option value="separado">💔 Separação</option>
+                                    <option value="separado">💔 Separado</option>
                                     <option value="viuvo">🥀 Viúvo(a)</option>
                                 </select>
-                                <input type="date" id="e-rel-passada-data" style="flex:1; min-width:120px;">
-                                <button class="btn-main" style="width:auto; margin:0; padding:6px 14px; background:#9B59B6; font-size:12px;" onclick="addRelPassadaEdit()">+ Adicionar</button>
+                                <input type="date" id="e-rel-passada-data" style="flex:1; min-width:110px; font-size:11px; padding:6px;">
+                                <button class="btn-main" style="width:auto; margin:0; padding:6px 10px; background:#9B59B6; font-size:11px;" onclick="addRelPassadaEdit()">+ Add</button>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <label style="margin-top:10px; display:block;">Relações Especiais (Inimigo, Melhor Amigo, Amante...):</label>
-                <input type="text" id="e-crush" placeholder="Ex: Inimigo de fulano, Apaixonado por vizinho...">
-                <label style="margin-top:10px; display:block;">Traços de Personalidade:</label>
-                <textarea id="e-tracos" style="height:50px" placeholder="Ex: Maligno, Ambicioso, Devorador de Livros..."></textarea>
-                <label>Notas Extras (História, Ocultismo, etc):</label>
-                <textarea id="e-extra" style="height:50px"></textarea>
-                
-                <div style="display:flex; gap:10px; margin-top:15px;">
-                    <button class="btn-main" onclick="salvarSim()">SALVAR PERFIL</button>
-                    <button class="btn-main" style="background:#ff4d4d" onclick="deletarSim()">EXCLUIR</button>
-                </div>
-                <button class="btn-main btn-sec" onclick="toggleEditMode(false)">CANCELAR</button>
             </div>
+
+            <div style="background: #fdfdfd; padding: 15px; border-radius: 12px; border-left: 4px solid #555;">
+                <h3 style="margin-top: 0; font-size: 14px; color: #333;">✨ Dinâmicas, Traços e História</h3>
+                
+                <label style="font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                    Relações Especiais (Inimigo, Amante...):
+                    <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Anotação de vínculos afetivos ou de ódio que não se encaixam na árvore genealógica tradicional.">❓</span>
+                </label>
+                <input type="text" id="e-crush" placeholder="Ex: Inimigo de fulano, Apaixonado por vizinho..." style="font-size:12px; padding:8px;">
+                
+                <label style="margin-top:10px; font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                    Traços de Personalidade:
+                    <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Anote aqui os traços e aspirações. Eles serão exibidos com destaque no Card Exportável do Sim.">❓</span>
+                </label>
+                <textarea id="e-tracos" style="height:50px; font-size:12px; padding:8px;" placeholder="Ex: Maligno, Ambicioso, Devorador de Livros..."></textarea>
+                
+                <label style="margin-top:10px; font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                    Notas Extras (História, Ocultismo, etc):
+                    <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Espaço livre para contar um resumo da lore, lendas e o objetivo de vida desse Sim.">❓</span>
+                </label>
+                <textarea id="e-extra" style="height:60px; font-size:12px; padding:8px;" placeholder="Escreva os segredos ou biografia..."></textarea>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn-main" onclick="salvarSim()" style="background:var(--ts4-green);">💾 SALVAR PERFIL</button>
+                <button class="btn-main" style="background:#ff4d4d; width:120px;" onclick="deletarSim()">🗑️ EXCLUIR</button>
+            </div>
+            <button class="btn-main btn-sec" onclick="toggleEditMode(false)">CANCELAR</button>
         </div>
     </div>
+</div>
 
     <div id="lightbox-overlay" onclick="fecharLightbox()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.93); z-index:500; justify-content:center; align-items:center; flex-direction:column; cursor:zoom-out;">
         <button onclick="fecharLightbox()" title="Fechar (Esc)" style="position:absolute; top:18px; right:22px; background:rgba(255,255,255,0.12); border:none; color:white; font-size:26px; cursor:pointer; line-height:1; font-family:'Nunito',sans-serif; font-weight:700; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">✕</button>
@@ -1205,7 +1327,7 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
         };
 
         const LAB_KEYS = ["gênero", "idade", "sexualidade", "sim oculto", "mundos a morar", "simoleons a começar", "estações"];
-        const DEFAULT_ROULETTES = ["eventos diários", "metas", "relações românticas", "gênero", "idade", "sexualidade", "sim oculto", "modo de morte", "mundos a morar", "simoleons a começar", "estações"];
+        const DEFAULT_ROULETTES = ["eventos diários", "metas", "relações românticas", "carreira", "curso universitário", "gênero", "idade", "sexualidade", "sim oculto", "modo de morte", "mundos a morar", "simoleons a começar", "estações"];
         const DEFAULT_CONFIG_WHEELS = {
             "eventos diários": ["Incêndio", "Promoção", "Gravidez Inesperada", "Gêmeos", "Traição", "Visita Inesperada", "Dilema Ético", "Inimigo Declarado", "Crise de Identidade", "Dia de Folga Forçado", "Investimento de Risco", "Multa Ambiental", "Bônus por Mérito", "Promoção", "Gravidez Inesperada", "Gêmeos", "Traição", "Visita Inesperada", "Dilema Ético", "Inimigo Declarado", "Crise de Identidade", "Dia de Folga Forçado", "Investimento de Risco", "Multa Ambiental", "Bônus por Mérito", "O Objeto Amaldiçoado", "Segredo de Família", "Tradição Esquecida", "Desejo Repentino", "Lei Seca de Eletrônicos", "Incêndio Culinário", "Fuga Espiritual", "Confissão Inesperada", "Pedido de Casamento Recusado", "Inveja do Vizinho", "Amizade com Alienígena", "Paparazzi no Quintal", "Fofoca na Vizinhança", "Reencontro com Ex", "Descoberta de Parentesco Distante", "Adoção de Pet Errante", "Convite para Festa Exclusiva", "Encontro às Cegas", "Briga por Ciúmes", "Presente de um Admirador Secreto", "Disputa por Herança", "Amor à Primeira Vista", "Demissão Injusta", "Acidente de Trabalho", "Oferta de Emprego Irrecusável", "Ganhou na Loteria (Cheat)", "Falha no Investimento", "Projeto de Carreira Concluído", "Dívida de Jogo", "Promoção do Rival", "Salário Atrasado", "Compra por impulso", "Obsessão por Pintura", "Vício em Jogos de Vídeo Game", "Mudança Radical de Visual", "Fase de Vegetarianismo", "Descoberta de Talento Oculto", "Limpeza Geral (Obsessão)", "Banho de Banheira Relaxante", "Dieta de Sucos Especiais", "Meditação Profunda", "Mudança de Aspiração", "Aula de Culinária Experimental", "Desejo de se Mudar", "Dia de Colecionador", "Encontro com um Fantasma", "Pânico de Aniversário", "Perdeu o Ônibus para o Trabalho", "Discussão Familiar no Café da Manhã", "Vizinho Fazendo Barulho", "Recebeu uma Carta Misteriosa", "Pane Elétrica em Casa", "Encontrou Dinheiro no Sofá", "Roupa Rasgou em Público", "Quebrou o Celular", "Dia de Má Sorte", "Dia de Sorte Extrema", "Teve um Sonho Estranho", "Mensagem Enviada para a Pessoa Errada", "Cozinha Invadida por Insetos", "Objeto Favorito Quebrou", "Mudança Repentina de Humor", "Recebeu Flores Anônimas", "Ficou Preso no Elevador", "Perdeu um Objeto Importante", "Recebeu um Convite Suspeito", "Encontrou um Diário Antigo", "Discussão com Melhor Amigo", "Convidado Não Vai Embora", "Festa Saiu do Controle", "Vazamento de Água", "Conta Bancária Zerada", "Compra Online Arrependimento", "Mentira Descoberta", "Crush Aparece Inesperadamente", "Mensagem do Além", "Recebeu um Presente Estranho", "Encontrou um Animal Ferido", "Adotou um Hábito Estranho", "Decidiu Virar Influencer", "Desafio Fitness Repentino", "Passou Vergonha em Público", "Acusado de Algo que Não Fez", "Reputação Arruinada Temporariamente", "Virou Meme na Cidade", "Recebeu um Boato Sobre Si", "Teve uma Crise Existencial", "Descobriu um Hobby Obsessivo", "Começou uma Reforma Impulsiva", "Ficou Sem Internet", "Teve um Ataque de Criatividade", "Mudança Súbita de Personalidade", "Vontade Repentina de Viajar", "Comprou Algo Caríssimo Sem Querer", "Perdeu o Controle na Festa", "Ficou Famoso da Noite para o Dia", "Recebeu uma Visita Paranormal", "Discussão no Grupo da Família", "Encontrou uma Caixa Misteriosa", "Entrou em Pânico Social", "Recebeu um Desafio Viral", "Tentativa de Reconciliação", "Descobriu um Segredo do Parceiro", "Recebeu uma Herança Pequena", "Seu Pet Fugiu", "Seu Pet Trouxe Algo Estranho para Casa", "Apareceu um Parente Desconhecido", "Mudança de Estilo Radical", "Quebrou um Objeto Caríssimo", "Dormiu Demais e Perdeu Compromisso", "Acidentalmente Flertou com Alguém", "Encontrou um Colecionável Raro", "Dia de Limpeza Extrema", "Recebeu uma Ligação Assustadora", "Decidiu Aprender Algo Novo", "Começou uma Rivalidade", "Vontade Súbita de Ter um Filho", "Passou Mal Depois de Comer Algo", "Participou de um Escândalo Local", "Recebeu um Favor Impossível", "Precisou Mentir para se Safar", "Foi Confundido com Outra Pessoa", "Mudou de Ideia Sobre a Vida", "Recebeu Críticas Cruéis", "Teve um Surto de Compras", "Ficou Obcecado por Organização", "Teve um Dia Extremamente Produtivo", "Teve um Dia Totalmente Improdutivo", "Recebeu uma Proposta Suspeita", "Começou uma Paixão Proibida", "Ficou Sem Energia em Casa", "Descobriu um Lugar Secreto", "Recebeu Notícias Chocantes", "Entrou em Discussão Online", "Passou Vergonha em Evento Social", "Decidiu Recomeçar do Zero", "Foi Desafiado por um Rival", "Recebeu uma Oportunidade de Mudança", "Encontro Desastroso", "Desastre na Cozinha", "Acidente Doméstico Bobo", "Mudança de Humor Extrema", "Tentou Impressionar Alguém e Falhou", "Virou Assunto da Vizinhança", "Recebeu um Pedido Inusitado", "Descobriu um Talento Vergonhoso", "Foi Ignorado por Todo Mundo", "Um Sim sonha em se tornar o centro das fofocas da cidade e quer conhecer literalmente todos os moradores.", "Uma aspirante a influencer cria um clube apenas para gravar desafios absurdos pela cidade.", "Um grupo de amigos transforma a própria casa em ponto oficial de festas clandestinas.", "Uma Sim decide organizar eventos comunitários em todos os bairros para unir os moradores.", "Um político ambicioso tenta conquistar popularidade enquanto esconde vários segredos.", "Uma família inteira vive apenas de networking, festas e contatos influentes.", "Um Sim extremamente carismático cria um culto estranho baseado em positivismo exagerado.", "Uma adolescente quer se tornar a pessoa mais popular da escola usando apenas manipulação social e fofocas.", "Acordou Inspirado para Mudar de Vida", "Recebeu uma Intimação Misteriosa", "Discussão com Vizinho por Barulho", "Quebrou o Chuveiro", "Esqueceu um Compromisso Importante", "Recebeu um Pacote Sem Remetente", "Encontrou Fotos Antigas Embaraçosas", "Descobriu um Rumor Sobre a Família", "Ficou Preso Fora de Casa", "Seu Sim Virou Assunto em Fórum Online", "Recebeu um Convite para Reality Show", "Acidentalmente Ofendeu Alguém Importante", "Começou um Diário Secreto", "Vizinho Pediu Dinheiro Emprestado", "Teve uma Crise de Vaidade", "Recebeu uma Proposta de Trabalho Estranha", "Passou a Noite em Claro", "Perdeu Dinheiro na Rua", "Encontrou um Bilhete Ameaçador", "Discussão Durante o Jantar", "Recebeu uma Visita do Proprietário", "Seu Sim Desenvolveu uma Obsessão Aleatória", "Foi Flagrado Espionando", "Recebeu um Convite para Culto Misterioso", "Esqueceu o Aniversário de Alguém", "Teve um Dia de Azar Amoroso", "A Geladeira Quebrou", "Recebeu uma Crítica Humilhante", "Entrou em Dívida Sem Perceber", "Descobriu um Esconderijo Secreto", "Ficou Obcecado por Teorias da Conspiração", "Perdeu a Chave de Casa", "Teve uma Discussão no Trabalho", "Recebeu um Álbum de Fotos Antigo", "Seu Sim Foi Bloqueado nas Redes Sociais", "Acidentalmente Iniciou um Boato", "Recebeu uma Proposta Romântica Estranha", "Começou uma Reforma Sem Dinheiro", "Seu Sim Desenvolveu Medo de Algo Aleatório", "Recebeu um Desafio Ridículo", "Encontrou uma Carteira Perdida", "Foi Acusado de Roubo", "Seu Sim Virou Fofoqueiro Oficial do Bairro", "Teve uma Crise de Ciúmes", "Recebeu uma Carta de Amor Antiga", "Dormiu no Trabalho", "Ficou Viciado em Café", "Seu Sim Resolveu Virar Minimalista", "Recebeu um Convite para Casamento", "Encontrou um Objeto Enterrado no Quintal", "Seu Sim Virou Obcecado por Jardinagem", "Teve uma Discussão em Público", "Recebeu uma Reclamação dos Vizinhos", "Seu Sim Decidiu Fazer Detox Digital", "Encontrou um Animal Exótico Perdido", "Passou Vergonha em Rede Social", "Seu Sim Começou a Falar Sozinho", "Recebeu uma Multa Injusta", "Foi Expulso de um Evento", "Seu Sim Resolveu Mudar de Estilo de Vida", "Entrou em Crise Financeira Repentina", "Recebeu uma Herança Inútil", "Seu Sim Virou Paranóico", "Teve uma Discussão com o Parceiro por Dinheiro", "Recebeu uma Proposta Tentadora", "Seu Sim Decidiu Virar Vegetariano Radical", "Descobriu um Quarto Trancado", "Ficou Sem Água em Casa", "Seu Sim Resolveu Sumir por um Dia", "Recebeu Notícias do Ex", "Entrou em Guerra com os Vizinhos", "Seu Sim Desenvolveu Obsessão por Limpeza", "Recebeu um Convite para Festa Suspeita", "Seu Sim Foi Esquecido em Evento Importante", "Passou Mal Durante um Evento Social", "Seu Sim Resolveu Mudar de Nome", "Recebeu Flores da Pessoa Errada", "Foi Vítima de Fake News Local", "Seu Sim Resolveu Cortar Relações com Todos", "Recebeu uma Oferta de Moradia Estranha", "Seu Sim Encontrou um Cofre Antigo", "Perdeu um Save Importante do Computador", "Seu Sim Resolveu Fazer Justiça com as Próprias Mãos", "Foi Desafiado para uma Competição", "Recebeu uma Proposta de Casamento Aleatória", "Seu Sim Descobriu um Seguidor Obsessivo", "Teve um Colapso Durante Festa", "Recebeu uma Mensagem Criptografada", "Seu Sim Virou Obcecado por Fama", "Encontrou uma Lista de Segredos da Cidade", "Seu Sim Resolveu Espionar os Vizinhos", "Foi Humilhado em Público", "Recebeu uma Visita da Polícia", "Seu Sim Resolveu Adotar um Estilo Gótico", "Entrou em Conflito com um Familiar", "Recebeu um Convite para Viagem Misteriosa", "Seu Sim Desenvolveu Obsessão por Astrologia", "Perdeu o Controle em Discussão Familiar", "Recebeu um Pedido de Ajuda Suspeito", "Seu Sim Resolveu Fugir da Cidade por Uns Dias", "Foi Flagrado Mentindo", "Recebeu um Objeto Estranho pelo Correio", "Seu Sim Virou Competitivo Demais", "Teve uma Crise de Nostalgia", "Recebeu um Convite para Morar com Alguém", "Seu Sim Resolveu Apagar as Redes Sociais", "Encontrou um Mapa Misterioso", "Seu Sim Foi Ignorado em Evento Importante", "Recebeu uma Ligação no Meio da Madrugada", "Seu Sim Desenvolveu Obsessão por Luxo", "Entrou em Discussão com Melhor Amigo por Besteira", "Recebeu um Convite para Negócio Arriscado", "Seu Sim Resolveu Fazer uma Grande Mudança na Casa"],
             "metas": ["Juntar 10k", "Topo da carreira", "Ter um herdeiro", "Comprar mansão", "Alcançar o topo da carreira atual", "Completar uma Aspiração de vida", "Ter um herdeiro com três traços positivos", "Juntar 20k", "Topo da carreira", "Ter um herdeiro", "Comprar mansão", "Alcançar o topo da carreira atual", "Completar uma Aspiração de vida", "Ter um herdeiro com três traços positivos", "Economizar 50.000 simoleons sem cheats", "Construir um porão ou sótão memorial", "Ter um retrato pintado de cada herdeiro", "Dominar completamente uma habilidade", "Fazer amizade com a Dona Morte", "Ter três filhos com o traço de recompensa de notas altas", "Viajar para todos os mundos disponíveis", "Possuir uma coleção completa de itens colecionáveis", "Organizar cinco festas padrão ouro", "Manter um jardim com plantas de qualidade perfeita", "Adotar e treinar um animal de estimação até o nível máximo", "Escrever uma biografia sobre o patriarca ou matriarca", "Realizar um casamento em um lote comunitário luxuoso", "Descobrir todos os segredos de um bairro específico", "Ter um Sim fantasma vivendo na casa da família", "Ganhar uma briga com um inimigo declarado", "Doar 1.000 simoleons para caridade via computador", "Ter uma família com 4 gerações vivas simultaneamente", "Alcançar a árvore genealógica com 10 membros vivos", "Casar um herdeiro com um Sim de outra espécie (Alien/Vampiro/etc)", "Ter um herdeiro que nunca saiu de casa", "Ter um filho que seguiu a mesma carreira dos pais", "Garantir que todos os membros da família saibam cozinhar", "Ter um herdeiro que viveu 100 dias sim sem nunca trabalhar", "Fazer uma festa de aniversário para cada fase da vida do herdeiro", "Ter um Sim da família que se tornou uma celebridade 5 estrelas", "Publicar 5 livros de sucesso sobre a história da família", "Dominar 3 habilidades diferentes com um único Sim", "Alcançar o nível 10 de uma habilidade secreta (ex: Fotografia)", "Ter um Sim que nunca teve uma emoção negativa por uma semana", "Construir um cômodo dedicado a cada habilidade do jogo", "Criar uma refeição de qualidade perfeita com ingredientes do próprio jardim", "Dominar a habilidade de arqueologia ou cultura de selva", "Fazer um Sim completar a aspiração 'Sim do Mundo'", "Ter um Sim com 5 traços de recompensa diferentes", "Transformar a casa em um lote de 'Ponto de Encontro' badalado", "Manter a casa sem nenhum incêndio por 3 gerações", "Ter um Sim que foi abduzido por alienígenas", "Viver com um Sim que possui o traço 'Insano'", "Alcançar o nível máximo de todas as carreiras de meio período", "Ter 3 Sims fantasmas de tipos diferentes na casa", "Construir um cemitério privativo no lote da família", "Ter um Sim que se aposentou com nível 10 de carreira", "Adotar 3 animais de estimação diferentes", "Tornar-se o inimigo número 1 de um Sim famoso", "Ter um Sim que passou um dia inteiro na prisão (se tiver Aos Trabalhos)", "Ganhar 10.000 simoleons apenas vendendo quadros ou livros", "Comprar um lote de férias e ir lá uma vez por geração", "Ter um Sim que conhece todos os Sims de um bairro", "Fazer um Sim atingir o peso máximo e depois o mínimo (ou vice-versa)", "Doar todos os bens da família e começar do zero na 3ª geração", "Construir uma casa do zero sem usar galeria", "Casar com um Sim extremamente rico", "Criar uma linhagem de artistas famosos", "Completar todas as coleções de jardinagem", "Ter uma família com apenas filhos únicos por 3 gerações", "Manter uma rivalidade familiar por gerações", "Criar um restaurante cinco estrelas", "Transformar um herdeiro em vilão da vizinhança", "Ter um Sim que dominou todas as emoções", "Completar todas as aspirações infantis", "Criar um legado de criminosos", "Ter um herdeiro milionário antes de virar adulto", "Sobreviver apenas vendendo itens coletados", "Viver fora da rede elétrica por uma geração inteira", "Ter uma família inteira vegetariana", "Completar a coleção de fósseis", "Ter um Sim que escreveu um best-seller mundial", "Criar um herdeiro com todos os traços negativos possíveis", "Fazer um Sim se divorciar e reconstruir a vida", "Manter um casamento feliz até a velhice", "Criar uma dinastia política ou influente", "Ter um Sim que nunca entrou em um emprego tradicional", "Construir uma mansão de 500k simoleons", "Dominar todas as receitas culinárias", "Ter um herdeiro que nunca mentiu para ninguém", "Fazer um Sim conquistar 20 almas gêmeas", "Completar todos os festivais de San Myshuno", "Ter uma família dona de vários negócios", "Transformar um Sim pobre em celebridade mundial", "Criar um legado de cientistas", "Construir uma casa temática para cada geração", "Ter um Sim que morreu e voltou à vida", "Criar um herdeiro obcecado por riqueza", "Ter uma geração inteira sem romances", "Fazer um Sim conhecer todos os mundos ocultos", "Completar a coleção de cristais e metais", "Ter um Sim mestre em travessuras", "Criar um orfanato improvisado com adoções", "Ter um Sim que nunca cozinhou uma refeição", "Construir uma fazenda totalmente funcional", "Ter um Sim que adotou todos os estilos de vida possíveis", "Fazer um herdeiro abandonar completamente a tradição familiar", "Criar uma família famosa por escândalos", "Ter uma casa sustentável e ecológica", "Dominar todas as habilidades criativas", "Ter um Sim que nunca brigou com ninguém", "Construir um império de pinturas e esculturas", "Criar um Sim arqueólogo renomado", "Ter uma família com apenas um filho por geração", "Transformar um bairro inteiro em amigos da família", "Ter um Sim que foi inimigo de todos os colegas de trabalho", "Completar a coleção de peixes raros", "Criar um legado baseado em culinária", "Ter um Sim que morou sozinho até a velhice", "Fazer um Sim completar todas as aspirações românticas", "Criar uma família de ocultistas", "Ter um herdeiro expulso de casa", "Construir uma biblioteca gigante na casa da família", "Ter um Sim que dominou todas as habilidades sociais", "Criar uma tradição familiar obrigatória", "Ter um Sim que nunca usou celular", "Construir uma casa em cada mundo", "Fazer um Sim sobreviver apenas de freelas", "Criar um legado de músicos famosos", "Ter um Sim que teve um filho com cada ocultista", "Dominar completamente a habilidade de atuação", "Ter uma família que odeia tecnologia", "Construir um bunker subterrâneo", "Ter um Sim que viveu apenas de agricultura", "Criar um herdeiro perfeccionista obcecado por sucesso", "Completar todos os objetivos de férias", "Ter um Sim que fugiu de casa na adolescência", "Transformar um Sim tímido em celebridade", "Criar uma geração inteira focada em fitness", "Ter um Sim dono de uma loja lendária", "Construir uma cobertura luxuosa em San Myshuno", "Fazer um Sim conquistar todos os vizinhos", "Ter uma família marcada por tragédias", "Completar todas as receitas experimentais", "Ter um Sim que nunca ficou sem dinheiro", "Criar um legado de escritores", "Ter um herdeiro rebelde que destruiu a reputação da família", "Construir uma casa assombrada lendária", "Ter um Sim que dominou todas as habilidades mentais", "Completar a coleção de cartões postais", "Criar uma família completamente caótica", "Ter um Sim que nunca trabalhou mas ficou rico", "Fazer um Sim atingir o máximo de fama e infâmia", "Criar uma geração focada apenas em romances", "Ter uma família dona do maior jardim da cidade", "Construir um museu familiar com memórias de gerações", "Ter um Sim que nunca perdeu uma amizade", "Criar um legado baseado em viagens", "Fazer um Sim abandonar tudo para viver no mato", "Ter um herdeiro que reconstruiu a reputação da família", "Criar uma linhagem de Sims gênios", "Ter um Sim que completou todas as habilidades infantis e adultas", "Construir uma casa minimalista perfeita", "Ter um Sim que passou por todos os tipos de morte possíveis", "Criar um legado focado em ocultismo e mistérios", "Ter uma família que nunca saiu do mesmo lote por gerações", "Fazer um Sim acumular inimigos em todos os mundos", "Criar uma família extremamente unida por 5 gerações", "Ter um Sim que largou tudo para seguir arte", "Construir um palácio familiar histórico", "Ter um herdeiro que foi rejeitado pela família e venceu na vida"],
@@ -1217,7 +1339,9 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
             "modo de morte": ["Velhice", "Fogo", "Afogamento", "Riso", "Fome", "Choque", "Planta Vaca"],
             "mundos a morar": ["Willow Creek", "Oasis Springs", "Newcrest", "Magnolia Promenade", "Windenburg", "San Myshuno", "Forgotten Hollow", "Brindleton Bay", "Del Sol Valley", "StrangerVille", "Sulani", "Glimmerbrook", "Britechester", "Evergreen Harbor", "Mt. Komorebi", "Henford-on-Bagley", "Tartosa", "Moonwood Mill", "Copperdale", "San Sequoia", "Chestnut Ridge", "Tomarang", "Ciudad Enamorada", "Ravenwood", "Nordhaven", "Innisgreen", "Gibbi Point", "Ondarion"],
             "simoleons a começar": ["0 (Desafio)", "1.000", "5.000", "10.000", "20.000 (Padrão)", "50.000", "100.000", "Infinito (Motherlode)"],
-            "estações": ["Primavera", "Verão", "Outono", "Inverno"]
+            "estações": ["Primavera", "Verão", "Outono", "Inverno"],
+	    "carreiras": ["Nenhum", "Agente Secreto", "Artista ou Animador", "Astronauta", "Atleta", "Culinária", "Escritor", "Estilista ou Influenciador de Estilo", "Freelancer", "Guru da Tecnologia", "Negócios", "Pintor", "Conservacionista", "Crítico", "Designer Civil", "Direito ou Carreira Jurídica", "Educação", "Engenharia", "Jardineiro", "Militar", "Político", "Redes Sociais", "Ator ou Atriz", "Cientista", "Detetive", "Médico", "Empregos de Meio Período", "Escoteiro"],
+	    "curso universitário": [ "Nenhum", "Britechester - Biologia", "Britechester - Ciência da Computação", "Britechester - Economia", "Britechester - Física", "Britechester - Psicologia", "Britechester - Vilania", "Britechester - Com Distinção - História da Arte", "Britechester - Com Distinção - Artes Culinárias", "Britechester - Com Distinção - Teatro", "Britechester - Com Distinção - Belas-Artes", "Britechester - Com Distinção - História", "Britechester - Com Distinção - Letras e Literatura", "Britechester - Com Distinção - Comunicação", "Foxbury - História da Arte", "Foxbury - Artes Culinárias", "Foxbury - Teatro", "Foxbury - Belas-Artes", "Foxbury - História", "Foxbury - Letras e Literatura", "Foxbury - Comunicação", "Foxbury - Com Distinção - Biologia", "Foxbury - Com Distinção - Ciência da Computação", "Foxbury - Com Distinção - Economia", "Foxbury - Com Distinção - Física", "Foxbury - Com Distinção - Psicologia", "Foxbury - Com Distinção - Vilania"],
         };
 
 
@@ -1257,6 +1381,10 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
 
             db.sims.forEach(s => {
                 if (!s.historico_relacionamentos) s.historico_relacionamentos = [];
+                // Migração: converte campo legado s.irmao (string) para s.irmaos (array)
+                if (!s.irmaos) {
+                    s.irmaos = s.irmao ? [String(s.irmao)] : [];
+                }
             });
         }
 
@@ -2112,16 +2240,37 @@ async function excluirAlbumAtual() {
             renderRelPassadasEdit();
             
 	    const opt = '<option value="">Nenhum</option>' + db.sims.filter(x => String(x.id) !== String(currentSimId)).map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
-            ['e-p1','e-p2','e-spouse','e-irmao'].forEach(id => {
+            ['e-p1','e-p2','e-spouse'].forEach(id => {
                 const el = document.getElementById(id); 
                 if(el) { el.innerHTML = opt; el.value = s[id.replace('e-','')] || ""; }
             });
+            // Popula lista de checkboxes de irmãos fundadores
+            popularListaIrmaos(s.irmaos || []);
             document.getElementById('e-rel').value = s.relStatus || "solteiro";
             document.getElementById('e-traicao').checked = s.traicao || false;
             if(document.getElementById('e-fase')) document.getElementById('e-fase').value = s.fase || "jovem-adulto";
         }
 
         function carregarImagemNoInputDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; document.getElementById('e-img').value = tempFotosFases[faseSel] || ""; }
+
+        function popularListaIrmaos(irmaosIds) {
+            const container = document.getElementById('lista-sims-irmaos');
+            if (!container) return;
+            const selecionados = (irmaosIds || []).map(String);
+            const outrosSims = db.sims.filter(x => String(x.id) !== String(currentSimId));
+            if (outrosSims.length === 0) {
+                container.innerHTML = '<em style="font-size:11px; color:#aaa;">Nenhum outro Sim criado ainda.</em>';
+                return;
+            }
+            container.innerHTML = outrosSims.map(sim => {
+                const checked = selecionados.includes(String(sim.id)) ? 'checked' : '';
+                return `<label style="display:flex; align-items:center; gap:8px; padding:4px 5px; border-radius:7px; cursor:pointer; transition:background 0.15s;" onmouseover="this.style.background='#fff0d6'" onmouseout="this.style.background='transparent'">
+                    <input type="checkbox" class="chk-irmao" value="${sim.id}" ${checked}
+                        style="width:15px; height:15px; cursor:pointer; accent-color:#FF8C00; flex-shrink:0;">
+                    <span style="font-size:12px; font-weight:700; color:#444;">${sim.nome}</span>
+                </label>`;
+            }).join('');
+        }
         function salvarImagemNaMemoriaDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; tempFotosFases[faseSel] = document.getElementById('e-img').value; }
         
         function removerImagemDaFase() {
@@ -2212,7 +2361,7 @@ function salvarSim() {
                 p1: document.getElementById('e-p1').value, 
                 p2: document.getElementById('e-p2').value, 
                 spouse: document.getElementById('e-spouse').value, 
-                irmao: document.getElementById('e-irmao').value, // Carrega o irmão selecionado
+                irmaos: Array.from(document.querySelectorAll('.chk-irmao:checked')).map(cb => cb.value),
                 relStatus: relStatusNovo, 
                 traicao: document.getElementById('e-traicao').checked, 
                 crush: document.getElementById('e-crush').value, 
@@ -2249,13 +2398,30 @@ function salvarSim() {
                     }
                 }
 
-                // --- NOVO: TRATAMENTO DO IRMÃO ANTERIOR (Limpa o vínculo antigo ao editar) ---
-                if(oldSim.irmao && String(oldSim.irmao) !== String(s.irmao)) {
-                    let exIrmao = db.sims.find(x => String(x.id) === String(oldSim.irmao));
-                    if(exIrmao && String(exIrmao.irmao) === String(oldSim.id)) {
-                        exIrmao.irmao = ""; // Limpa a referência no irmão antigo
+                // --- TRATAMENTO DOS IRMÃOS FUNDADORES (Nova lógica de array) ---
+                let oldIrmaos = (oldSim.irmaos || []).map(String);
+                let newIrmaos = (s.irmaos || []).map(String);
+
+                // Remove a referência nos Sims que foram desvinculados
+                oldIrmaos.forEach(irmaId => {
+                    if (!newIrmaos.includes(irmaId)) {
+                        let exIrmao = db.sims.find(x => String(x.id) === irmaId);
+                        if (exIrmao) {
+                            exIrmao.irmaos = (exIrmao.irmaos || []).filter(id => String(id) !== String(s.id));
+                        }
                     }
-                }
+                });
+
+                // Adiciona a referência nos Sims recém-vinculados
+                newIrmaos.forEach(irmaId => {
+                    let novoIrmao = db.sims.find(x => String(x.id) === irmaId);
+                    if (novoIrmao) {
+                        if (!novoIrmao.irmaos) novoIrmao.irmaos = [];
+                        if (!novoIrmao.irmaos.some(id => String(id) === String(s.id))) {
+                            novoIrmao.irmaos.push(String(s.id));
+                        }
+                    }
+                });
 
                 if(s.spouse) { 
                     let novoConj = db.sims.find(x => String(x.id) === String(s.spouse)); 
@@ -2265,11 +2431,7 @@ function salvarSim() {
                     } 
                 }
 
-                // --- NOVO: VINCULAÇÃO DUPLA DE IRMÃOS NA EDIÇÃO ---
-                if(s.irmao) { 
-                    let novoIrmao = db.sims.find(x => String(x.id) === String(s.irmao)); 
-                    if(novoIrmao) { novoIrmao.irmao = s.id; } 
-                }
+                // (vinculação de irmandade já realizada pelo bloco acima)
 
                 const idx = db.sims.findIndex(x => String(x.id) === String(currentSimId)); 
                 db.sims[idx] = s;
@@ -2284,11 +2446,26 @@ function salvarSim() {
                     } 
                 }
               
-                if(s.irmao) { 
-                    let novoIrmao = db.sims.find(x => String(x.id) === String(s.irmao)); 
-                    if(novoIrmao) { novoIrmao.irmao = s.id; } 
-                }
+                // Vincula irmandade em todos os Sims marcados
+                (s.irmaos || []).forEach(irmaId => {
+                    let novoIrmao = db.sims.find(x => String(x.id) === irmaId);
+                    if (novoIrmao) {
+                        if (!novoIrmao.irmaos) novoIrmao.irmaos = [];
+                        if (!novoIrmao.irmaos.some(id => String(id) === String(s.id))) {
+                            novoIrmao.irmaos.push(String(s.id));
+                        }
+                    }
+                });
                 db.sims.push(s);
+
+                // Registra adoção no Livro somente agora que o Sim foi salvo de verdade
+                if (window._pendingAdocao) {
+                    let msgAdocao = `\n[${new Date().toLocaleDateString('pt-BR')}] [NASCIMENTO] Adoção! ${window._pendingAdocao.nomeAdotante} adotou ${s.nome} para a família.`;
+                    db.historia += msgAdocao;
+                    window._pendingAdocao = null;
+                    renderLivroComFiltro();
+                    showToast("Adoção registrada no Livro da Família!");
+                }
             }
 
             salvarTudo(); fecharModal(); renderTree(); renderGenList(); renderIaSimList(); showToast("Perfil salvo!");
@@ -2299,7 +2476,14 @@ function salvarSim() {
             let s = db.sims.find(x => String(x.id) === String(currentSimId));
             if(s && s.spouse) { let conj = db.sims.find(x => String(x.id) === String(s.spouse)); if(conj) conj.spouse = ""; }
             db.sims = db.sims.filter(x => String(x.id) !== String(currentSimId));
-            db.sims.forEach(filho => { if (String(filho.p1) === String(currentSimId)) filho.p1 = ""; if (String(filho.p2) === String(currentSimId)) filho.p2 = ""; });
+            db.sims.forEach(filho => { 
+                if (String(filho.p1) === String(currentSimId)) filho.p1 = ""; 
+                if (String(filho.p2) === String(currentSimId)) filho.p2 = "";
+                // Remove da lista de irmãos de qualquer outro Sim
+                if (filho.irmaos) {
+                    filho.irmaos = filho.irmaos.filter(id => String(id) !== String(currentSimId));
+                }
+            });
             salvarTudo(); fecharModal(); renderTree(); renderGenList(); renderIaSimList();
         }
 
@@ -2386,19 +2570,53 @@ function salvarSim() {
                 salvarTudo(); abrirPerfil(currentSimId); renderTree(); renderLivroComFiltro(); showToast("Marcado como falecido!"); 
             }
         }
+// Substitua a função antiga adicionarFilhoPerfil() por esta:
+function adicionarFilhoPerfil() {
+    let simAtual = db.sims.find(s => s.id === currentSimId); // Trocado de sims para db.sims
+    if (!simAtual) return;
+    
+    // Abre o formulário
+    abrirNovoSim(currentSimId); 
+    
+    // Inteligência: Preenche cônjuge como segundo progenitor se estiver casado
+    if (simAtual.spouse && simAtual.relStatus === 'casado') {
+        // Aguarda um milissegundo para garantir que o modal abriu
+        setTimeout(() => {
+            let p2 = document.getElementById('e-p2');
+            if(p2) p2.value = simAtual.spouse;
+        }, 100);
+    }
+    
+    document.getElementById('e-foto-fase-select').value = 'bebe-colo';
+    document.getElementById('e-fase').value = 'bebe-colo';
+}
 
-        function adicionarFilhoPerfil() { abrirNovoSim(currentSimId); }
+// Substitua a função antiga adotarFilhoPerfil() por esta:
+function adotarFilhoPerfil() {
+    let adotante = db.sims.find(s => String(s.id) === String(currentSimId));
+    if (!adotante) return;
 
-        function adotarFilhoPerfil() {
-            let adotante = db.sims.find(x => String(x.id) === String(currentSimId));
-            let msgHistoria = `\n[${new Date().toLocaleDateString('pt-BR')}] [NASCIMENTO] Adoção! ${adotante.nome} adotou uma criança para a família.`;
-            db.historia += msgHistoria;
-            salvarTudo();
-            renderLivroComFiltro();
-            fecharModal();
-            abrirNovoSim(currentSimId);
-            showToast("Adoção iniciada no Livro!");
-        }
+    let idOrigem = currentSimId; // Salva ANTES de abrirNovoSim() resetar currentSimId
+
+    // Guarda a info para registrar no Livro somente se o usuário salvar o novo Sim
+    window._pendingAdocao = { nomeAdotante: adotante.nome };
+
+    // Abre o formulário de cadastro do filho adotivo
+    abrirNovoSim(idOrigem);
+
+    // Preenche o cônjuge como segundo progenitor se estiver casado
+    if (adotante.spouse && adotante.relStatus === 'casado') {
+        setTimeout(() => {
+            let p2 = document.getElementById('e-p2');
+            if(p2) p2.value = adotante.spouse;
+        }, 100);
+    }
+
+    document.getElementById('e-foto-fase-select').value = 'bebe-colo';
+    document.getElementById('e-fase').value = 'bebe-colo';
+    document.getElementById('e-extra').value = "👶 Adotado(a) com muito amor pela família.";
+    // fecharModal() REMOVIDO — estava fechando o formulário recém-aberto!
+}
 
         function calcularParentesco(targetId) {
             const getSim = id => db.sims.find(s => String(s.id) === String(id));
@@ -2406,6 +2624,8 @@ function salvarSim() {
             let pais = [target.p1, target.p2].filter(Boolean);
             let filhos = db.sims.filter(s => s.p1 == targetId || s.p2 == targetId).map(s => s.id);
             let irmaos = db.sims.filter(s => String(s.id) !== String(targetId) && ( (s.p1 && pais.includes(String(s.p1))) || (s.p2 && pais.includes(String(s.p2))) )).map(s => s.id);
+            // Inclui irmãos fundadores vinculados manualmente (sem pais em comum)
+            (target.irmaos || []).forEach(id => { if (!irmaos.includes(String(id))) irmaos.push(String(id)); });
             let avos = []; pais.forEach(pId => { let p = getSim(pId); if(p) { if(p.p1) avos.push(p.p1); if(p.p2) avos.push(p.p2); } });
             let netos = []; filhos.forEach(fId => { let f = db.sims.filter(s => s.p1 == fId || s.p2 == fId).map(s => s.id); netos.push(...f); });
             let tios = []; pais.forEach(pId => { let p = getSim(pId); if(p) { let irmaosPai = db.sims.filter(s => String(s.id) !== String(pId) && ( (s.p1 && [p.p1, p.p2].filter(Boolean).includes(String(s.p1))) || (s.p2 && [p.p1, p.p2].filter(Boolean).includes(String(s.p2))) )).map(s => s.id); tios.push(...irmaosPai); } });
@@ -2805,23 +3025,25 @@ let edgesArray = [];
                 if (s.p1 && baseSims.some(b => String(b.id) === String(s.p1))) edgesArray.push({ from: String(s.p1), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });
                 if (s.p2 && baseSims.some(b => String(b.id) === String(s.p2))) edgesArray.push({ from: String(s.p2), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });                
                 
-                // NOVO: Linha para Irmãos Fundadores (com o novo nome de controle)
-                if (s.irmao && baseSims.some(b => String(b.id) === String(s.irmao))) {
-                    let irmaoKey1 = `${s.id}-${s.irmao}-sibling`;
-                    let irmaoKey2 = `${s.irmao}-${s.id}-sibling`;
-                    
-                    if (!addedFundadoresEdges.has(irmaoKey1) && !addedFundadoresEdges.has(irmaoKey2)) {
-                        edgesArray.push({
-                            from: String(s.id),       
-                            to: String(s.irmao),     
-                            color: { color: '#FF8C00' },
-                            dashes: false, // Linha sólida para irmãos
-                            width: 2,
-                            smooth: { type: 'curvedCW', roundness: 0.2 }  
-                        });
-                        addedFundadoresEdges.add(irmaoKey1);
+                // Linhas para Irmãos Fundadores (array irmaos)
+                let irmaosIds = s.irmaos || [];
+                irmaosIds.forEach(irmaId => {
+                    if (baseSims.some(b => String(b.id) === String(irmaId))) {
+                        let irmaoKey1 = `${s.id}-${irmaId}-sibling`;
+                        let irmaoKey2 = `${irmaId}-${s.id}-sibling`;
+                        if (!addedFundadoresEdges.has(irmaoKey1) && !addedFundadoresEdges.has(irmaoKey2)) {
+                            edgesArray.push({
+                                from: String(s.id),
+                                to: String(irmaId),
+                                color: { color: '#FF8C00' },
+                                dashes: false,
+                                width: 2,
+                                smooth: { type: 'curvedCW', roundness: 0.2 }
+                            });
+                            addedFundadoresEdges.add(irmaoKey1);
+                        }
                     }
-                }
+                });
                 
                 if (s.spouse && baseSims.some(b => String(b.id) === String(s.spouse))) {
                     let spKey1 = `${s.id}-${s.spouse}`;
@@ -3160,7 +3382,10 @@ function excluirFotoDiretoAlbum(simId, fase) {
             document.getElementById('lightbox-img').src = '';
         }
 
-        function fecharModal() { document.getElementById('modal-sim').style.display = 'none'; }
+        function fecharModal() {
+            document.getElementById('modal-sim').style.display = 'none';
+            window._pendingAdocao = null; // Limpa adoção pendente se o modal for fechado sem salvar
+        }
         function fecharModalSeFundo(event) { if (event.target.id === 'modal-sim') fecharModal(); }
 
 // ==========================================================================
@@ -4064,6 +4289,66 @@ function exportarPrintPerfilCompleto() {
             alert("Ocorreu um erro ao tentar gerar a imagem completa.");
         });
     }, 50); // Pausa imperceptível de 50 milissegundos para estabilizar o tamanho
+}
+
+// =========================================================================
+//  NOVAS FUNÇÕES INTELIGENTES DE UX PARA CRIAÇÃO DE PARENTESCOS (PASSO 2)
+// =========================================================================
+
+// Item 4: Botão "Adicionar Cônjuge" direto do Perfil
+function adicionarConjugePerfil() {
+    let simAtual = db.sims.find(s => s.id === currentSimId);
+    if (!simAtual) return;
+
+    let idOrigem = currentSimId; // Salva ANTES de abrirNovoSim() resetar currentSimId
+
+    // 1. Abre o formulário de um Sim completamente novo (sem pais pré-definidos)
+    abrirNovoSim();
+
+    // 2. Vincula o Sim de origem como o Cônjuge deste novo Sim
+    document.getElementById('e-spouse').value = String(idOrigem);
+
+    // 3. Define o Status Civil automaticamente como "Casado"
+    document.getElementById('e-rel').value = 'casado';
+
+    // 4. Cônjuges geralmente entram na árvore como Jovem Adulto
+    document.getElementById('e-foto-fase-select').value = 'jovem-adulto';
+    document.getElementById('e-fase').value = 'jovem-adulto';
+
+    if (typeof carregarImagemNoInputDaFase === "function") carregarImagemNoInputDaFase();
+}
+
+// Item 5: Botão "Adicionar Irmão(ã)" herdando os mesmos pais
+function adicionarIrmaoPerfil() {
+    let simAtual = db.sims.find(s => s.id === currentSimId);
+    if (!simAtual) return;
+    
+    let idOrigem = currentSimId; // Salva ANTES de abrirNovoSim() resetar currentSimId
+
+    // 1. Abre o formulário de um Sim novo
+    abrirNovoSim();
+    
+    // 2. Herda exatamente os mesmos pais (Progenitor 1 e 2) do Sim original
+    document.getElementById('e-p1').value = simAtual.p1 || "";
+    document.getElementById('e-p2').value = simAtual.p2 || "";
+    
+    // 3. Se o Sim original NÃO tiver pais (Geração 1/Fundador), pré-marca os checkboxes de irmandade
+    if (!simAtual.p1 && !simAtual.p2) {
+        // Pré-marca o Sim de origem e todos os seus irmãos existentes
+        let idsParaMarcar = [idOrigem, ...(simAtual.irmaos || [])];
+        setTimeout(() => {
+            idsParaMarcar.forEach(id => {
+                let chk = document.querySelector(`.chk-irmao[value="${id}"]`);
+                if (chk) chk.checked = true;
+            });
+        }, 50);
+    }
+    
+    // 4. Coloca na mesma fase de vida do irmão para facilitar o preenchimento
+    document.getElementById('e-foto-fase-select').value = simAtual.fase || 'jovem-adulto';
+    document.getElementById('e-fase').value = simAtual.fase || 'jovem-adulto';
+    
+    if (typeof carregarImagemNoInputDaFase === "function") carregarImagemNoInputDaFase();
 }
 
 	window.onload = function() {
