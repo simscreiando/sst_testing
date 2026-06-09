@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
+    <title>TEST3 - SimStoria - Companion Narrativo em Implementação - v51 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -4402,6 +4402,7 @@ window.onload = function() {
         if (e.key === 'Escape') fecharLightbox();
     });
 
+    // Verifica expiração da sessão do Drive a cada 2 minutos (só quando na galeria)
     setInterval(() => {
         if (document.getElementById('tab-galeria').classList.contains('active')) {
             verificarSessaoDrive();
@@ -4409,6 +4410,7 @@ window.onload = function() {
     }, 120000);
 };
 
+// Função auxiliar para download físico
 function executarDownloadFisico(dataUrl, nomeArquivo) {
     const link = document.createElement('a');
     link.download = nomeArquivo;
@@ -4416,6 +4418,7 @@ function executarDownloadFisico(dataUrl, nomeArquivo) {
     link.click();
 }
 
+// Insere a captura na base de dados unificada da família (Google Drive / LocalStorage)
 function guardarImagemNaGaleriaDoSistema(base64Data, titulo, comentario) {
     if (!db) return;
     
@@ -4431,7 +4434,8 @@ function guardarImagemNaGaleriaDoSistema(base64Data, titulo, comentario) {
         titulo: titulo,
         data: "Fase do Legado",
         comentario: comentario || "Captura de tela realizada pelo sistema.",
-        url: base64Data, 
+        src: base64Data,  // 🌟 CORREÇÃO: Define o 'src' necessário para renderizar no grid
+        url: base64Data,  // Mantém o 'url' para segurança de exportações antigas
         simsIDs: currentSimId ? [String(currentSimId)] : [] 
     };
 
@@ -4447,6 +4451,69 @@ function guardarImagemNaGaleriaDoSistema(base64Data, titulo, comentario) {
     }
     
     showToast("📸 Recordação guardada na sua Galeria!");
+}
+
+// 🌟 REESCRITA DE SEGURANÇA: Atualiza o renderizador para ler tanto 'src' quanto 'url'
+// Isso recupera instantaneamente qualquer print antigo que parecia sumido!
+function renderizarFotosDoAlbum(albumId) {
+    const album = db.galeria.albuns.find(a => a.id === albumId);
+    if (!album) return;
+
+    document.getElementById('galeria-lista-albuns').style.display = 'none';
+    document.getElementById('galeria-area-album').style.display = 'block';
+    document.getElementById('album-titulo-atual').innerText = album.nome;
+    document.getElementById('album-desc-atual').innerText = album.desc;
+
+    const grid = document.getElementById('grid-fotos-album');
+    grid.innerHTML = "";
+
+    const fotos = db.galeria.fotos.filter(f => f.albumId === albumId);
+    if (fotos.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: rgba(255,255,255,0.4); padding: 40px; font-family: 'Nunito', sans-serif;">Nenhuma foto neste álbum ainda.</div>`;
+        return;
+    }
+
+    fotos.forEach(foto => {
+        const card = document.createElement('div');
+        card.style.cssText = "background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; position: relative; display: flex; flex-direction: column;";
+        
+        // Pega qualquer uma das duas propriedades que estiver preenchida para evitar telas pretas
+        const imagemFinal = foto.src || foto.url || '';
+
+        card.innerHTML = `
+            <div style="position: relative; padding-top: 65%; background: #141419; overflow: hidden;">
+                <img src="${imagemFinal}" style="position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; cursor: pointer;" onclick="abrirLightboxFoto('${foto.id}')">
+            </div>
+            <div style="padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 4px;">
+                <h4 style="margin: 0; font-size: 14px; color: #fff; font-family: 'Nunito', sans-serif;">${foto.titulo || 'Sem título'}</h4>
+                <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.5); font-family: 'Nunito', sans-serif; flex: 1;">${foto.comentario || ''}</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <span style="font-size: 11px; color: rgba(255,255,255,0.3); font-family: 'Nunito', sans-serif;">${foto.data || ''}</span>
+                    <button onclick="excluirFotoGaleria('${foto.id}', '${albumId}')" style="background: none; border: none; color: #ff4d4d; cursor: pointer; font-size: 12px; padding: 4px; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,77,77,0.1)'" onmouseout="this.style.background='none'">Excluir</button>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+// 🌟 LIGHTBOX DE SEGURANÇA: Garante que a foto abra expandida corretamente ao clicar
+function abrirLightboxFoto(fotoId) {
+    if (!db || !db.galeria || !db.galeria.fotos) return;
+    const foto = db.galeria.fotos.find(f => f.id === fotoId);
+    if (!foto) return;
+
+    const imgEl = document.getElementById('lightbox-foto-img');
+    if (imgEl) imgEl.src = foto.src || foto.url || '';
+    
+    const tituloEl = document.getElementById('lightbox-foto-titulo');
+    if (tituloEl) tituloEl.innerText = foto.titulo || 'Sem título';
+    
+    const descEl = document.getElementById('lightbox-foto-desc');
+    if (descEl) descEl.innerText = foto.comentario || '';
+    
+    const lightbox = document.getElementById('lightbox-foto');
+    if (lightbox) lightbox.style.display = 'flex';
 }
     </script>
 
