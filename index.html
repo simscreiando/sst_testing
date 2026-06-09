@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST - SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
+    <title>SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -29,7 +29,7 @@
             --ts4-bg: #E4EBF5;
             --ts4-panel: #FFFFFF;
             --ts4-text: #2B2B2B;
-			--ts4-purple: #800080;
+	    --ts4-purple: #800080;
         }
 
         body { font-family: 'Nunito', sans-serif; background: var(--ts4-bg); color: var(--ts4-text); margin: 0; display: flex; min-height: 100vh; overflow: hidden; position: relative; top: 0 !important;}
@@ -602,6 +602,15 @@
                 <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid #eee; padding-bottom: 5px;">🔊 ÁUDIOS DE REAÇÃO (MODIFICADORES)</div>
                 <p style="font-size: 12px; color: #666;">O sistema possui sons nativos. Substitua enviando seus próprios áudios curtos abaixo.</p>
                 <div class="audio-config-grid" id="reaction-audio-area"></div>
+
+		<div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid #eee; padding-bottom: 5px;">📸 CONFIGURAÇÕES DO ÁLBUM E GALERIA</div>
+<p style="font-size: 12px; color: #666;">Escolha o comportamento padrão ao exportar imagens dos seus Sims.</p>
+<div style="margin-top:10px; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;">
+    <label style="display:flex; align-items:center; gap:10px; font-weight:bold; cursor:pointer;">
+        <input type="checkbox" id="chk-salvar-auto-album" checked>
+        🚀 Sempre adicionar capturas e prints automaticamente à Galeria de Recordações
+    </label>
+</div>
 
                 <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid #eee; padding-bottom: 5px;">🔄 BACKUP MANUAL (OFFLINE)</div>
                 <p style="font-size: 12px; color: #666;">Para quem não deseja conectar no Google ou salvar no navegador.</p>
@@ -1367,6 +1376,45 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
 
         let db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS };
 
+        /**
+         * migrarConfigWheels — Mescla o config salvo com os defaults atuais.
+         *
+         * Garante que:
+         * 1. Roletas novas adicionadas na versão atual apareçam mesmo em saves antigos.
+         * 2. Itens novos de roletas existentes sejam incorporados.
+         * 3. Itens customizados pelo usuário (não presentes nos defaults) sejam preservados.
+         * 4. Roletas inteiramente criadas pelo usuário sejam preservadas.
+         * 5. Campos de string especiais (treeBgMode, treeBgCustom) sejam preservados.
+         */
+        function migrarConfigWheels(savedConfig) {
+            // Base: cópia fresca dos defaults desta versão
+            const novoConfig = JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS));
+
+            if (!savedConfig || typeof savedConfig !== 'object') return novoConfig;
+
+            // 1. Para cada roleta dos defaults, adiciona itens que o usuário criou
+            //    (itens que estão no save mas não nos defaults desta versão)
+            Object.keys(DEFAULT_CONFIG_WHEELS).forEach(key => {
+                if (Array.isArray(savedConfig[key])) {
+                    savedConfig[key].forEach(item => {
+                        if (!novoConfig[key].includes(item)) {
+                            novoConfig[key].push(item);
+                        }
+                    });
+                }
+            });
+
+            // 2. Preserva roletas criadas pelo usuário (chaves que não existem nos defaults)
+            //    e campos especiais de string (treeBgMode, treeBgCustom, etc.)
+            Object.keys(savedConfig).forEach(key => {
+                if (!Object.prototype.hasOwnProperty.call(DEFAULT_CONFIG_WHEELS, key)) {
+                    novoConfig[key] = savedConfig[key];
+                }
+            });
+
+            return novoConfig;
+        }
+
         function sincronizarBanco() {
             if (!db.custom) db.custom = { tracos: [], carreiras: [], aspiracoes: [], tags: [] };
             if (!db.custom.tracos) db.custom.tracos = [];
@@ -1374,8 +1422,12 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
             if (!db.custom.aspiracoes) db.custom.aspiracoes = [];
             if (!db.custom.tags) db.custom.tags = [];
             if (!db.reactionAudio) db.reactionAudio = AUDIO_DEFAULTS;
-            
-            if (!db.config) db.config = {};
+
+            // Mescla config salvo com os defaults da versão atual
+            // (adiciona roletas/itens novos sem perder customizações do usuário)
+            db.config = migrarConfigWheels(db.config || {});
+
+            // Garante campos especiais de configuração da árvore
             if (!db.config.treeBgMode) db.config.treeBgMode = 'default';
             if (!db.config.treeBgCustom) db.config.treeBgCustom = '';
             if (!db.galeria) db.galeria = { albuns: [], fotos: [] };
@@ -1583,7 +1635,7 @@ A plataforma continuará gratuita e sem anúncios invasivos. Se ela deixa seu ga
 
         function criarNovaFamilia() {
             if(!confirm("Criar nova família substituirá o progresso não salvo na nuvem. Continuar?")) return;
-            db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS };
+            db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS, galeria: { albuns: [{ id: "album-geral", nome: "Álbum de Capturas", desc: "Cards e prints gerados automaticamente" }], fotos: [] } };
             currentCloudFileId = null; currentFamilyName = "Família Padrão";
             salvarTudo(); recarregarInterface(); showToast("✨ Novo tabuleiro criado!");
         }
@@ -4228,8 +4280,7 @@ function exportarPrintPerfilCompleto() {
         return alert("Por favor, abra o perfil de um Sim na tela antes de tirar o print.");
     }
     
-    // Tentamos localizar a "caixa interna" branca do perfil que segura os textos (o primeiro filho do modal)
-    // Isso garante que vamos desenrolar o lugar certo, não importa a estrutura
+    // Tentamos localizar a "caixa interna" branca do perfil que segura os textos
     const cardInterno = elementoPerfil.querySelector('div') || elementoPerfil;
 
     if (typeof showToast === "function") {
@@ -4252,15 +4303,15 @@ function exportarPrintPerfilCompleto() {
     cardInterno.style.maxHeight = 'none';
     cardInterno.style.height = 'auto';
 
-    // Aguarda um milissegundo para o navegador entender o novo tamanho expandido antes da foto
+    // Aguarda um milissegundo para o navegador entender o novo tamanho expandido
     setTimeout(() => {
         html2canvas(cardInterno, {
-            useCORS: true,       // Permite carregar imagens externas (avatares)
-            scale: 2,            // Alta resolução para textos ficarem nítidos
-            backgroundColor: "#ffffff", // Garante um fundo branco sólido e lindo para o card
+            useCORS: true,       
+            scale: 2,            
+            backgroundColor: "#ffffff", 
             logging: false
         }).then(canvas => {
-            // 4. ENROLAR DE VOLTA: Restaura o layout com scroll imediatamente após a foto
+            // 4. ENROLAR DE VOLTA: Restaura o layout com scroll imediatamente
             elementoPerfil.style.overflow = originalModalOverflow;
             elementoPerfil.style.height = originalModalHeight;
             
@@ -4268,16 +4319,24 @@ function exportarPrintPerfilCompleto() {
             cardInterno.style.maxHeight = originalCardMaxHeight;
             cardInterno.style.height = originalCardHeight;
 
-            // 5. BAIXAR A IMAGEM: Descobre o nome do Sim e faz o download
+            // 5. PROCESSAR IMAGEM E SALVAR NA GALERIA / PC
             const nomeSim = document.getElementById('v-nome')?.innerText || "Sim";
-            const link = document.createElement('a');
-            link.download = `Perfil_Completo_${nomeSim.replace(/\s+/g, '_')}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            const imagemOtimizada = canvas.toDataURL('image/webp', 0.75);
             
-            if (typeof showToast === "function") {
-                showToast("✅ Perfil completo salvo com sucesso!");
+            const salvarAuto = document.getElementById('chk-salvar-auto-album')?.checked;
+
+            if (salvarAuto) {
+                guardarImagemNaGaleriaDoSistema(imagemOtimizada, `Perfil de ${nomeSim}`, "Fase de Vida Atual");
+                executarDownloadFisico(imagemOtimizada, `Perfil_Completo_${nomeSim.replace(/\s+/g, '_')}.webp`);
+            } else {
+                let querSalvarNaGaleria = confirm("Deseja também anexar este print diretamente à sua Galeria de Recordações da família?");
+                if (querSalvarNaGaleria) {
+                    let legendaCustom = prompt("Digite um comentário rápido sobre este momento do legado:", `Registro de ${nomeSim}`);
+                    guardarImagemNaGaleriaDoSistema(imagemOtimizada, `Perfil de ${nomeSim}`, legendaCustom || "");
+                }
+                executarDownloadFisico(imagemOtimizada, `Perfil_Completo_${nomeSim.replace(/\s+/g, '_')}.webp`);
             }
+
         }).catch(err => {
             // Caso dê erro, também garante que o layout volta ao normal
             elementoPerfil.style.overflow = originalModalOverflow;
@@ -4289,53 +4348,39 @@ function exportarPrintPerfilCompleto() {
             console.error("Erro ao gerar o print:", err);
             alert("Ocorreu um erro ao tentar gerar a imagem completa.");
         });
-    }, 50); // Pausa imperceptível de 50 milissegundos para estabilizar o tamanho
+    }, 50); 
 }
 
 // =========================================================================
 //  NOVAS FUNÇÕES INTELIGENTES DE UX PARA CRIAÇÃO DE PARENTESCOS (PASSO 2)
 // =========================================================================
 
-// Item 4: Botão "Adicionar Cônjuge" direto do Perfil
 function adicionarConjugePerfil() {
     let simAtual = db.sims.find(s => s.id === currentSimId);
     if (!simAtual) return;
 
-    let idOrigem = currentSimId; // Salva ANTES de abrirNovoSim() resetar currentSimId
-
-    // 1. Abre o formulário de um Sim completamente novo (sem pais pré-definidos)
+    let idOrigem = currentSimId; 
     abrirNovoSim();
-
-    // 2. Vincula o Sim de origem como o Cônjuge deste novo Sim
+    
     document.getElementById('e-spouse').value = String(idOrigem);
-
-    // 3. Define o Status Civil automaticamente como "Casado"
     document.getElementById('e-rel').value = 'casado';
-
-    // 4. Cônjuges geralmente entram na árvore como Jovem Adulto
     document.getElementById('e-foto-fase-select').value = 'jovem-adulto';
     document.getElementById('e-fase').value = 'jovem-adulto';
 
     if (typeof carregarImagemNoInputDaFase === "function") carregarImagemNoInputDaFase();
 }
 
-// Item 5: Botão "Adicionar Irmão(ã)" herdando os mesmos pais
 function adicionarIrmaoPerfil() {
     let simAtual = db.sims.find(s => s.id === currentSimId);
     if (!simAtual) return;
     
-    let idOrigem = currentSimId; // Salva ANTES de abrirNovoSim() resetar currentSimId
-
-    // 1. Abre o formulário de um Sim novo
+    let idOrigem = currentSimId; 
     abrirNovoSim();
     
-    // 2. Herda exatamente os mesmos pais (Progenitor 1 e 2) do Sim original
     document.getElementById('e-p1').value = simAtual.p1 || "";
     document.getElementById('e-p2').value = simAtual.p2 || "";
     
-    // 3. Se o Sim original NÃO tiver pais (Geração 1/Fundador), pré-marca os checkboxes de irmandade
     if (!simAtual.p1 && !simAtual.p2) {
-        // Pré-marca o Sim de origem e todos os seus irmãos existentes
         let idsParaMarcar = [idOrigem, ...(simAtual.irmaos || [])];
         setTimeout(() => {
             idsParaMarcar.forEach(id => {
@@ -4345,28 +4390,66 @@ function adicionarIrmaoPerfil() {
         }, 50);
     }
     
-    // 4. Coloca na mesma fase de vida do irmão para facilitar o preenchimento
     document.getElementById('e-foto-fase-select').value = simAtual.fase || 'jovem-adulto';
     document.getElementById('e-fase').value = simAtual.fase || 'jovem-adulto';
     
     if (typeof carregarImagemNoInputDaFase === "function") carregarImagemNoInputDaFase();
 }
 
-	window.onload = function() {
-            iniciarDB();
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') fecharLightbox();
-           });
+window.onload = function() {
+    iniciarDB();
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') fecharLightbox();
+    });
 
-            // Verifica expiração da sessão do Drive a cada 2 minutos (só quando na galeria)
-            setInterval(() => {
-                if (document.getElementById('tab-galeria').classList.contains('active')) {
-                    verificarSessaoDrive();
-                }
-            }, 120000);
-	};
+    setInterval(() => {
+        if (document.getElementById('tab-galeria').classList.contains('active')) {
+            verificarSessaoDrive();
+        }
+    }, 120000);
+};
 
+function executarDownloadFisico(dataUrl, nomeArquivo) {
+    const link = document.createElement('a');
+    link.download = nomeArquivo;
+    link.href = dataUrl;
+    link.click();
+}
+
+function guardarImagemNaGaleriaDoSistema(base64Data, titulo, comentario) {
+    if (!db) return;
+    
+    if (!db.galeria) db.galeria = { albuns: [], fotos: [] };
+    if (!db.galeria.fotos) db.galeria.fotos = [];
+    if (!db.galeria.albuns || db.galeria.albuns.length === 0) {
+        db.galeria.albuns = [{ id: "album-geral", nome: "Álbum de Capturas", desc: "Cards e prints gerados automaticamente" }];
+    }
+
+    const novaFoto = {
+        id: "foto_" + Date.now(),
+        albumId: "album-geral", 
+        titulo: titulo,
+        data: "Fase do Legado",
+        comentario: comentario || "Captura de tela realizada pelo sistema.",
+        url: base64Data, 
+        simsIDs: currentSimId ? [String(currentSimId)] : [] 
+    };
+
+    db.galeria.fotos.push(novaFoto);
+    
+    salvarTudo();
+    if (typeof salvarNaNuvem === "function" && accessToken) {
+        salvarNaNuvem(true); 
+    }
+    
+    if (typeof renderizarFotosDoAlbum === "function" && document.getElementById('tab-galeria').style.display === 'block') {
+        renderizarFotosDoAlbum("album-geral");
+    }
+    
+    showToast("📸 Recordação guardada na sua Galeria!");
+}
     </script>
+
     <!-- ===== MODAL: MODO APRESENTAÇÃO / STORYTELLING ===== -->
     <div id="modal-apresentacao" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:9999; flex-direction:column; overflow:hidden;">
 
