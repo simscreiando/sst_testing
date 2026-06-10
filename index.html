@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST4 - SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
+    <title>TEST5 - SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2389,6 +2389,20 @@ async function excluirAlbumAtual() {
             salvarImagemNaMemoriaDaFase();
             fecharModalCrop();
             showToast("📸 Imagem ajustada com sucesso!");
+
+            // Enviar o retrato para a Galeria se desejado
+            const salvarAuto = document.getElementById('chk-salvar-auto-album')?.checked;
+            const nomeSim = document.getElementById('e-nome').value || "Sim";
+            const faseSelect = document.getElementById('e-foto-fase-select');
+            const faseNome = faseSelect.options[faseSelect.selectedIndex].text;
+
+            if (salvarAuto) {
+                guardarImagemNaGaleriaDoSistema(dataUrl, `Retrato: ${nomeSim}`, `Fase de Vida: ${faseNome}`);
+            } else {
+                if (confirm("Deseja enviar este novo retrato também para a Galeria de Recordações?")) {
+                    guardarImagemNaGaleriaDoSistema(dataUrl, `Retrato: ${nomeSim}`, `Fase de Vida: ${faseNome}`);
+                }
+            }
         }
 
 function salvarSim() {
@@ -3831,7 +3845,7 @@ async function renderizarFotosDoAlbum() {
         // Estilização estilo Polaroid charmosa
         div.style = "background: white; padding: 15px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-bottom: 20px solid white; text-align: center; display: flex; flex-direction: column; gap: 8px;";
         div.innerHTML = `
-            <img src="${imagemSrc}" style="width: 100%; height: 220px; object-fit: cover; border: 1px solid #eee;">
+            <img src="${imagemSrc}" onclick="abrirLightboxGaleria('${imagemSrc}', '${foto.titulo}')" style="width: 100%; height: 220px; object-fit: cover; border: 1px solid #eee; cursor: zoom-in;">
             <div style="text-align: left; margin-top: 5px;">
                 <strong style="color: var(--ts4-blue); font-size:14px; display:block;">${foto.titulo}</strong>
                 <span style="font-size: 11px; background: #e6f2ff; color: var(--ts4-blue); padding: 2px 6px; border-radius: 6px; font-weight: bold; display: inline-block; margin-top:4px;">📅 ${foto.data}</span>
@@ -4253,12 +4267,21 @@ function exportarPerfilSim(simId) {
         ctx.textAlign = 'right';
         ctx.fillText(new Date().toLocaleDateString('pt-BR'), W-35, H-28);
         
-        // Exportação Final da Imagem
-        const link = document.createElement('a');
-        link.download = `Perfil_${s.nome.replace(/\s+/g, '_')}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        showToast("✅ Card do Sim exportado!");
+// Exportação Final da Imagem
+        const dataUrl = canvas.toDataURL('image/png');
+        const nomeArquivo = `Card_Resumido_${s.nome.replace(/\s+/g, '_')}.png`;
+
+        const salvarAuto = document.getElementById('chk-salvar-auto-album')?.checked;
+        if (salvarAuto) {
+            guardarImagemNaGaleriaDoSistema(dataUrl, `Card de ${s.nome}`, "Card Resumido de Perfil");
+            executarDownloadFisico(dataUrl, nomeArquivo);
+        } else {
+            if (confirm("Deseja também anexar este Card Resumido à Galeria de Recordações da família?")) {
+                let legendaCustom = prompt("Digite um comentário para este card:", `Card de ${s.nome}`);
+                guardarImagemNaGaleriaDoSistema(dataUrl, `Card de ${s.nome}`, legendaCustom || "");
+            }
+            executarDownloadFisico(dataUrl, nomeArquivo);
+        }
     };
 
     if (imgSrc) {
@@ -4487,6 +4510,30 @@ async function guardarImagemNaGaleriaDoSistema(base64Data, titulo, comentario) {
     }
     
     showToast("✅ Recordação guardada na sua Galeria!");
+}
+
+// Esta função faz a mágica de abrir a foto maior
+function abrirLightboxGaleria(src, titulo) {
+    // 1. Cria o fundo escuro (overlay) se ele não existir
+    let overlay = document.getElementById('lightbox-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'lightbox-overlay';
+        overlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:none; justify-content:center; align-items:center; z-index:9999; cursor:pointer;";
+        overlay.innerHTML = `
+            <div style="position:relative; max-width:90%; max-height:90%;">
+                <img id="lightbox-img" style="max-width:100%; max-height:80vh; border: 4px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                <p id="lightbox-caption" style="color:white; text-align:center; margin-top:10px; font-family:sans-serif;"></p>
+            </div>
+        `;
+        overlay.onclick = function() { this.style.display = 'none'; }; // Fecha ao clicar no fundo
+        document.body.appendChild(overlay);
+    }
+    
+    // 2. Coloca a imagem no tamanho real e mostra na tela
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox-caption').textContent = titulo;
+    overlay.style.display = 'flex';
 }
     </script>
 
