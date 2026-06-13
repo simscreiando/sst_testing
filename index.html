@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> TEST 52 - SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
+    <title>SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -616,6 +616,18 @@
                         <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Abra o mapa de conexões ("The Chart") para gerenciar laços de sangue, cônjuges e linhagens completas.</span>
                     </div>
 
+                    <div class="welcome-card" onclick="document.getElementById('btn-nav-feedback').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid #ffcc00; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                        <div style="font-size: 36px; margin-bottom: 15px;">💬</div>
+                        <strong style="font-size: 18px; color: #c79a00; display: block; margin-bottom: 8px;">Enviar Feedback</strong>
+                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Conte ideias, reporte bugs ou sugira melhorias. Sua opinião ajuda a guiar o futuro do SimStoria.</span>
+                    </div>
+
+                    <div class="welcome-card" onclick="document.getElementById('btn-nav-apoio').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid var(--ts4-green); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                        <div style="font-size: 36px; margin-bottom: 15px;">💖</div>
+                        <strong style="font-size: 18px; color: var(--ts4-green); display: block; margin-bottom: 8px;">Apoie o Projeto</strong>
+                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Ajude a manter o SimStoria vivo e em evolução. Cada contribuição faz diferença no legado!</span>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -695,17 +707,17 @@
             </div>
 
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; align-items:center;">
+                <span style="font-size:12px; font-weight:bold; color:#555;">👨‍👩‍👧 Modos Family Echo (Cytoscape):</span>
+                <button id="btn-layout-6" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color:var(--ts4-blue); color:var(--ts4-blue); font-weight:bold;" onclick="setTreeLayout(6)">🏠 Família Organizada</button>
+                <button id="btn-layout-7" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(7)">📦 Núcleos Familiares</button>
+                <button id="btn-layout-8" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(8)">🌐 Legado Completo</button>
+                <span style="width:100%; height:1px; background:#eee; margin:4px 0;"></span>
                 <span style="font-size:12px; font-weight:bold; color:#555;">🌳 Formato da Árvore:</span>
                 <button id="btn-layout-1" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(1)">Tradicional (Topo→Base)</button>
                 <button id="btn-layout-2" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(2)">Horizontal (Esq→Dir)</button>
                 <button id="btn-layout-3" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(3)">Livre (Física)</button>
                 <button id="btn-layout-4" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(4)">Radial (Circular)</button>
                 <button id="btn-layout-5" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color: #9B59B6; color: #9B59B6;" onclick="setTreeLayout(5)">👁️ Linhagem Principal (Focado)</button>
-                <span style="width:100%; height:1px; background:#eee; margin:4px 0;"></span>
-                <span style="font-size:12px; font-weight:bold; color:#555;">👨‍👩‍👧 Modos Family Echo (Cytoscape):</span>
-                <button id="btn-layout-6" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color:var(--ts4-blue); color:var(--ts4-blue); font-weight:bold;" onclick="setTreeLayout(6)">🏠 Família Organizada</button>
-                <button id="btn-layout-7" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(7)">📦 Núcleos Familiares</button>
-                <button id="btn-layout-8" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(8)">🌐 Legado Completo</button>
             </div>
 
         </div><div id="tab-ia" class="tab-pane">
@@ -2253,8 +2265,20 @@ function salvarTudo() {
             document.getElementById(id).classList.add('active');
             event.currentTarget.classList.add('active');
             
-            if(id === 'tab-tree' && window.network) {
-                setTimeout(() => window.network.fit(), 100);
+            if(id === 'tab-tree') {
+                // Re-renderiza para garantir tamanho/centralização correta
+                // (cyTree em modos 6-8 precisa do container visível para medir)
+                setTimeout(() => {
+                    if (typeof renderTree === 'function') renderTree();
+                    if (window.network) { try { window.network.fit(); } catch(e){} }
+                    if (window.cyTree) {
+                        try {
+                            window.cyTree.resize();
+                            window.cyTree.fit(undefined, 60);
+                            window.cyTree.center();
+                        } catch(e){}
+                    }
+                }, 60);
             }
 
 	    if(id === 'tab-galeria') {
@@ -2582,19 +2606,22 @@ if (fase === 'recem_nascido') {
 
         function aplicarTreeBg() {
             let container = document.getElementById('tree-display');
-            if(!container) return;
+            let cyContainer = document.getElementById('tree-cy');
             let mode = db.config.treeBgMode || 'default';
+            let bg = '';
             if (mode === 'default') {
-                container.style.background = 'linear-gradient(135deg, #b8fff1 0%, #8be9fd 35%, #bdb2ff 100%)';
+                bg = 'linear-gradient(135deg, #b8fff1 0%, #8be9fd 35%, #bdb2ff 100%)';
             } else if (mode === 'goth') {
-                container.style.background = 'linear-gradient(135deg, #2b1029 0%, #4a0d24 100%)';
+                bg = 'linear-gradient(135deg, #2b1029 0%, #4a0d24 100%)';
             } else if (mode === 'cozy') {
-                container.style.background = 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)';
+                bg = 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)';
             } else if (mode === 'caotico') {
-                container.style.background = 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)';
+                bg = 'linear-gradient(135deg, #f12711 0%, #f5af19 100%)';
             } else if (mode === 'custom' && db.config.treeBgCustom) {
-                container.style.background = `url(${db.config.treeBgCustom}) center/cover no-repeat`;
+                bg = `url(${db.config.treeBgCustom}) center/cover no-repeat`;
             }
+            if (container) container.style.background = bg;
+            if (cyContainer) cyContainer.style.background = bg;
         }
 
         function renderConfig() {
@@ -3259,6 +3286,14 @@ function adotarFilhoPerfil() {
         }
 
         function centralizarArvore() {
+            if (window.cyTree) {
+                try {
+                    window.cyTree.resize();
+                    window.cyTree.fit(undefined, 60);
+                    window.cyTree.center();
+                } catch(e){}
+                return;
+            }
             if (window.network) {
                 window.network.fit({
                     animation: { duration: 500, easingFunction: 'easeInOutQuad' }
@@ -3837,13 +3872,19 @@ let edgesArray = [];
             const H_GAP = 36;
             const COUPLE_GAP = 28;
             const V_GAP = 110;
+            const HUB_GAP = 70;
+            const SIB_BAR_GAP = 28; // distância do union até a barra de irmandade
+            const PALETTE = ['#e3f2fd','#e8f5e9','#fff8e1','#fce4ec','#ede7f6','#fbe9e7','#e0f7fa','#f3e5f5'];
+            const BORDERS = ['#1976d2','#388e3c','#f57c00','#c2185b','#5e35b2','#d84315','#00838f','#7b1fa2'];
 
             const sims = db.sims;
             const byId = {};
             sims.forEach(s => byId[String(s.id)] = s);
             const coupleKey = (a, b) => [String(a), String(b)].sort().join('|');
 
-            // ---- 1. Construir FamilyUnits ----
+            // ============================================================
+            // 1. FamilyUnits — varre cônjuges E pais de filhos (inclui solo)
+            // ============================================================
             const units = {};
             const getCouple = (a, b) => {
                 const k = 'cp_' + coupleKey(a, b);
@@ -3855,41 +3896,36 @@ let edgesArray = [];
                 if (!units[k]) units[k] = { key: k, type: 'single', parents: [String(a)], children: [] };
                 return units[k];
             };
-
-            sims.forEach(s => {
-                if (s.spouse && byId[String(s.spouse)]) getCouple(s.id, s.spouse);
-            });
-
+            // cônjuges (mesmo sem filhos)
+            sims.forEach(s => { if (s.spouse && byId[String(s.spouse)]) getCouple(s.id, s.spouse); });
+            // filhos -> unidade adequada
             sims.forEach(child => {
                 const p1 = child.p1 ? String(child.p1) : null;
                 const p2 = child.p2 ? String(child.p2) : null;
                 if (!p1 && !p2) return;
                 if (p1 && p2 && byId[p1] && byId[p2]) {
-                    const k = 'cp_' + coupleKey(p1, p2);
-                    if (units[k]) { units[k].children.push(String(child.id)); return; }
+                    getCouple(p1, p2).children.push(String(child.id));
+                    return;
                 }
                 const pid = (p1 && byId[p1]) ? p1 : (p2 && byId[p2]) ? p2 : null;
                 if (pid) getSingle(pid).children.push(String(child.id));
             });
 
-            // Modo 3 (Legado): duplica criança nos OUTROS casamentos de cada pai
-            if (mode === 8) {
-                sims.forEach(child => {
-                    const p1 = child.p1 ? String(child.p1) : null;
-                    const p2 = child.p2 ? String(child.p2) : null;
-                    if (!p1 && !p2) return;
-                    [p1, p2].filter(Boolean).forEach(pid => {
-                        Object.values(units).forEach(u => {
-                            if (!u.parents.includes(pid)) return;
-                            if (u.children.includes(String(child.id))) return;
-                            const isPrimary = p1 && p2 && u.type === 'couple' && u.parents.includes(p1) && u.parents.includes(p2);
-                            if (!isPrimary) u.children.push(String(child.id));
-                        });
-                    });
-                });
+            // ============================================================
+            // 2. Hubs (Modo 6 apenas): Sim aparecendo como pai em ≥2 unidades
+            // ============================================================
+            const parentUnitsOf = {};
+            Object.values(units).forEach(u => {
+                u.parents.forEach(p => { (parentUnitsOf[p] = parentUnitsOf[p] || []).push(u.key); });
+            });
+            const hubSims = new Set();
+            if (mode === 6) {
+                Object.entries(parentUnitsOf).forEach(([sid, ks]) => { if (ks.length >= 2) hubSims.add(sid); });
             }
 
-            // ---- 2. Árvore de unidades ----
+            // ============================================================
+            // 3. Árvore de unidades (parent→child entre unidades)
+            // ============================================================
             const childUnitsOf = {};
             Object.values(units).forEach(u => {
                 const set = new Set();
@@ -3898,43 +3934,82 @@ let edgesArray = [];
                 });
                 childUnitsOf[u.key] = [...set];
             });
-
             const childUnitKeysAll = new Set();
             Object.values(childUnitsOf).forEach(arr => arr.forEach(k => childUnitKeysAll.add(k)));
-            let rootUnits = Object.values(units).filter(u => !childUnitKeysAll.has(u.key));
-            if (rootUnits.length === 0) rootUnits = Object.values(units).slice(0, 1);
+
+            // Agrupa uniões raiz por hub (modo 6)
+            const hubUnitKeys = new Set();
+            const hubGroups = [];
+            hubSims.forEach(sid => {
+                const ks = parentUnitsOf[sid].filter(k => !childUnitKeysAll.has(k));
+                if (ks.length >= 2) {
+                    hubGroups.push({ hubSim: sid, memberUnits: ks });
+                    ks.forEach(k => hubUnitKeys.add(k));
+                }
+            });
+
+            let rootUnits = Object.values(units).filter(u => !childUnitKeysAll.has(u.key) && !hubUnitKeys.has(u.key));
+            if (rootUnits.length === 0 && hubGroups.length === 0) rootUnits = Object.values(units).slice(0, 1);
 
             const insideUnit = new Set();
             Object.values(units).forEach(u => { u.parents.forEach(p => insideUnit.add(p)); u.children.forEach(c => insideUnit.add(c)); });
             const loners = sims.filter(s => !insideUnit.has(String(s.id)));
 
-            // ---- 3. Cálculo de largura (tidy tree) ----
+            // ============================================================
+            // 4. Helper: ID escopado por modo
+            // - Modo 6: simId global; se hub, primeira aparição = simId puro
+            // - Modo 7: simId@uk (escopado ao container, sem cruzamentos)
+            // - Modo 8: simId#uk (duplicação total, ghost para apariç. 2+)
+            // ============================================================
+            function nodeIdFor(simId, uk) {
+                if (mode === 7) return simId + '@' + uk;
+                if (mode === 8) return simId + '#' + uk;
+                if (hubSims.has(String(simId)) && uk) return String(simId); // hub global
+                return String(simId);
+            }
+
+            // ============================================================
+            // 5. Largura recursiva
+            // ============================================================
             const unitWidth = {};
-            const widthVisited = new Set();
-            function calcWidth(uk) {
-                if (widthVisited.has(uk)) return unitWidth[uk] || NODE_W;
-                widthVisited.add(uk);
+            function calcWidth(uk, seen) {
+                seen = seen || new Set();
+                if (seen.has(uk)) return unitWidth[uk] || NODE_W;
+                seen.add(uk);
                 const u = units[uk];
                 const own = (u.type === 'couple') ? (NODE_W * 2 + COUPLE_GAP) : NODE_W;
-                const childKs = childUnitsOf[uk] || [];
-                const looseChildren = u.children.filter(cid => !childKs.some(ck => units[ck].parents.includes(cid)));
+                // Em modo 7, child units não são posicionadas abaixo (cada container é independente).
+                // Em modo 8 idem (stacking vertical por unidade).
+                const childKs = (mode === 6) ? (childUnitsOf[uk] || []) : [];
+                const looseChildren = (mode === 6)
+                    ? u.children.filter(cid => !childKs.some(ck => units[ck].parents.includes(cid)))
+                    : u.children.slice();
                 let total = 0;
-                childKs.forEach(ck => { total += calcWidth(ck) + H_GAP; });
+                childKs.forEach(ck => { total += calcWidth(ck, seen) + H_GAP; });
                 looseChildren.forEach(() => { total += NODE_W + H_GAP; });
                 if (total > 0) total -= H_GAP;
                 unitWidth[uk] = Math.max(own, total);
                 return unitWidth[uk];
             }
-            rootUnits.forEach(u => calcWidth(u.key));
+            Object.keys(units).forEach(k => calcWidth(k));
+            const hubWidth = {};
+            hubGroups.forEach(h => {
+                let total = 0;
+                h.memberUnits.forEach(uk => { total += unitWidth[uk] + H_GAP; });
+                if (total > 0) total -= H_GAP;
+                hubWidth[h.hubSim] = Math.max(NODE_W, total);
+            });
 
-            // ---- 4. Posicionamento ----
-            const simPos = {};
-            const unionPos = {};
-            const containerOf = {};
+            // ============================================================
+            // 6. Posicionamento
+            // ============================================================
+            const simPos = {}, unionPos = {}, sibBarPos = {}, containerOf = {};
             const placeVisited = new Set();
-            function nodeIdFor(simId, uk) { return (mode === 8) ? (simId + '@' + uk) : String(simId); }
+            const unitColorIdx = {};
+            const simAppearances = {}; // simId -> count (para detectar ghost em modo 8)
+            let colorCounter = 0;
 
-            function place(uk, xCenter, yTop) {
+            function placeUnit(uk, xCenter, yTop) {
                 if (placeVisited.has(uk)) return;
                 placeVisited.add(uk);
                 const u = units[uk];
@@ -3944,20 +4019,24 @@ let edgesArray = [];
                     const leftCx = xCenter - (NODE_W + COUPLE_GAP) / 2;
                     const rightCx = xCenter + (NODE_W + COUPLE_GAP) / 2;
                     const aKey = nodeIdFor(aId, uk), bKey = nodeIdFor(bId, uk);
-                    if (!simPos[aKey]) simPos[aKey] = { x: leftCx, y: yRow + NODE_H / 2 };
-                    if (!simPos[bKey]) simPos[bKey] = { x: rightCx, y: yRow + NODE_H / 2 };
+                    if (!simPos[aKey]) { simPos[aKey] = { x: leftCx, y: yRow + NODE_H / 2, realId: String(aId) }; simAppearances[aId] = (simAppearances[aId]||0)+1; }
+                    if (!simPos[bKey]) { simPos[bKey] = { x: rightCx, y: yRow + NODE_H / 2, realId: String(bId) }; simAppearances[bId] = (simAppearances[bId]||0)+1; }
                     unionPos[uk] = { x: xCenter, y: yRow + NODE_H / 2 };
                     if (mode === 7) { containerOf[aKey] = uk; containerOf[bKey] = uk; }
                 } else {
                     const aId = u.parents[0];
                     const aKey = nodeIdFor(aId, uk);
-                    if (!simPos[aKey]) simPos[aKey] = { x: xCenter, y: yRow + NODE_H / 2 };
+                    if (!simPos[aKey]) { simPos[aKey] = { x: xCenter, y: yRow + NODE_H / 2, realId: String(aId) }; simAppearances[aId] = (simAppearances[aId]||0)+1; }
                     unionPos[uk] = { x: xCenter, y: yRow + NODE_H / 2 };
                     if (mode === 7) containerOf[aKey] = uk;
                 }
+                if (mode === 7 && unitColorIdx[uk] === undefined) unitColorIdx[uk] = (colorCounter++) % PALETTE.length;
 
-                const childKs = childUnitsOf[uk] || [];
-                const looseChildren = u.children.filter(cid => !childKs.some(ck => units[ck].parents.includes(cid)));
+                // Filhos
+                const childKs = (mode === 6) ? (childUnitsOf[uk] || []) : [];
+                const looseChildren = (mode === 6)
+                    ? u.children.filter(cid => !childKs.some(ck => units[ck].parents.includes(cid)))
+                    : u.children.slice();
                 const items = [];
                 childKs.forEach(ck => items.push({ type: 'unit', k: ck, w: unitWidth[ck] }));
                 looseChildren.forEach(cid => items.push({ type: 'sim', id: cid, w: NODE_W }));
@@ -3965,44 +4044,118 @@ let edgesArray = [];
                 const total = items.reduce((s, c) => s + c.w, 0) + (items.length - 1) * H_GAP;
                 let cursor = xCenter - total / 2;
                 const childY = yTop + NODE_H + V_GAP;
+                const childCenters = [];
                 items.forEach(c => {
                     const cx = cursor + c.w / 2;
-                    if (c.type === 'unit') place(c.k, cx, childY);
-                    else {
+                    if (c.type === 'unit') {
+                        placeUnit(c.k, cx, childY);
+                        // centro x do nó "topo" da sub-unidade (para barra de irmandade)
+                        childCenters.push(cx);
+                    } else {
                         const sKey = nodeIdFor(c.id, uk);
-                        if (!simPos[sKey]) simPos[sKey] = { x: cx, y: childY + NODE_H / 2 };
+                        if (!simPos[sKey]) { simPos[sKey] = { x: cx, y: childY + NODE_H / 2, realId: String(c.id) }; simAppearances[c.id] = (simAppearances[c.id]||0)+1; }
+                        if (mode === 7) containerOf[sKey] = uk;
+                        childCenters.push(cx);
                     }
                     cursor += c.w + H_GAP;
                 });
+                // Barra de irmandade (só com 2+ filhos)
+                if (childCenters.length >= 2) {
+                    const minX = Math.min(...childCenters);
+                    const maxX = Math.max(...childCenters);
+                    sibBarPos[uk] = {
+                        leftX: minX, rightX: maxX,
+                        y: yTop + NODE_H + SIB_BAR_GAP + (V_GAP - SIB_BAR_GAP) / 2
+                    };
+                }
             }
 
-            let xOffset = 0;
-            rootUnits.forEach(u => {
-                const w = unitWidth[u.key] || NODE_W;
-                place(u.key, xOffset + w / 2, 50);
-                xOffset += w + H_GAP * 2;
-            });
+            let xOffset = 50;
+            let yCursor = 50;
+
+            if (mode === 8) {
+                // Modo 3: cada unidade renderizada de forma autônoma, empilhada verticalmente
+                Object.values(units).forEach(u => {
+                    const w = unitWidth[u.key];
+                    placeUnit(u.key, xOffset + Math.max(w, NODE_W) / 2, yCursor);
+                    // calcula altura local (1 geração de filhos)
+                    const blockH = NODE_H + (u.children.length ? (V_GAP + NODE_H) : 0);
+                    yCursor += blockH + V_GAP;
+                });
+            } else {
+                // Modos 6 e 7
+                hubGroups.forEach(h => {
+                    const w = hubWidth[h.hubSim];
+                    const hubX = xOffset + w / 2;
+                    const hubY = 50;
+                    simPos[String(h.hubSim)] = { x: hubX, y: hubY + NODE_H / 2, realId: String(h.hubSim) };
+                    simAppearances[h.hubSim] = (simAppearances[h.hubSim]||0)+1;
+                    const memberY = hubY + NODE_H + HUB_GAP;
+                    let total = 0;
+                    h.memberUnits.forEach(uk => { total += unitWidth[uk] + H_GAP; });
+                    if (total > 0) total -= H_GAP;
+                    let cursor = hubX - total / 2;
+                    h.memberUnits.forEach(uk => {
+                        const uw = unitWidth[uk];
+                        placeUnit(uk, cursor + uw / 2, memberY);
+                        cursor += uw + H_GAP;
+                    });
+                    xOffset += w + H_GAP * 3;
+                });
+                rootUnits.forEach(u => {
+                    const w = unitWidth[u.key] || NODE_W;
+                    placeUnit(u.key, xOffset + w / 2, 50);
+                    xOffset += w + H_GAP * 2;
+                });
+                // Modos 6 e 7: posiciona QUALQUER unidade ainda não colocada
+                // (cobre single-parents soltos, cônjuges órfãos, etc.)
+                Object.values(units).forEach(u => {
+                    if (placeVisited.has(u.key)) return;
+                    const w = unitWidth[u.key] || NODE_W;
+                    placeUnit(u.key, xOffset + w / 2, 50);
+                    xOffset += w + H_GAP * 2;
+                });
+            }
+
             if (loners.length) {
                 const baseY = Object.values(simPos).reduce((m, p) => Math.max(m, p.y), 50) + NODE_H + V_GAP;
                 let cx = 50 + NODE_W / 2;
-                loners.forEach(s => { simPos[String(s.id)] = { x: cx, y: baseY }; cx += NODE_W + H_GAP; });
+                loners.forEach(s => { simPos[String(s.id)] = { x: cx, y: baseY, realId: String(s.id) }; cx += NODE_W + H_GAP; });
             }
 
-            // ---- 5. Elementos Cytoscape ----
+            // ============================================================
+            // 7. Elementos Cytoscape
+            // ============================================================
             const elements = [];
+
+            // Containers (modo 7) — um por unidade
             if (mode === 7) {
-                Object.values(units).forEach(u => { elements.push({ data: { id: 'c_' + u.key, kind: 'container' } }); });
+                Object.values(units).forEach(u => {
+                    const idx = unitColorIdx[u.key] !== undefined ? unitColorIdx[u.key] : 0;
+                    elements.push({ data: { id: 'c_' + u.key, kind: 'container', bg: PALETTE[idx], bd: BORDERS[idx] } });
+                });
             }
-            Object.entries(simPos).forEach(([nodeId, pos]) => {
-                const simId = nodeId.split('@')[0];
+
+            // Detecta ghosts no modo 8 (apariç. 2+ do mesmo sim real)
+            const seenReal = new Set();
+            // Sims (ordenados por y para garantir que a 1ª aparição é a mais alta)
+            const sortedSimEntries = Object.entries(simPos).sort((a,b) => a[1].y - b[1].y);
+            const _hideDead = (typeof hideDead !== 'undefined') ? hideDead : false;
+            sortedSimEntries.forEach(([nodeId, pos]) => {
+                const simId = pos.realId || nodeId.split(/[@#]/)[0];
                 const sim = byId[simId];
                 if (!sim) return;
                 const isDead = sim.status === 'Ancestral (Morto)';
-                const img = generateSimCardSVG(sim, isDead, typeof hideDead !== 'undefined' ? hideDead : false);
-                const data = { id: nodeId, simId, img, kind: 'sim' };
+                if (_hideDead && isDead) return; // oculta totalmente
+                const img = generateSimCardSVG(sim, isDead, _hideDead);
+                const isGhost = (mode === 8) && seenReal.has(simId);
+                seenReal.add(simId);
+                const data = { id: nodeId, simId, img, kind: 'sim', ghost: isGhost ? 1 : 0, dead: isDead ? 1 : 0 };
                 if (mode === 7 && containerOf[nodeId]) data.parent = 'c_' + containerOf[nodeId];
                 elements.push({ data, position: { x: pos.x, y: pos.y } });
             });
+
+            // Union nodes
             Object.entries(unionPos).forEach(([uk, pos]) => {
                 if (units[uk].type !== 'couple') return;
                 const data = { id: 'u_' + uk, kind: 'union' };
@@ -4010,47 +4163,85 @@ let edgesArray = [];
                 elements.push({ data, position: pos });
             });
 
+            // Sibling bar nodes
+            Object.entries(sibBarPos).forEach(([uk, pos]) => {
+                const cx = (pos.leftX + pos.rightX) / 2;
+                const data = { id: 'sb_' + uk, kind: 'sibBar' };
+                if (mode === 7) data.parent = 'c_' + uk;
+                elements.push({ data, position: { x: cx, y: pos.y } });
+                // âncoras esquerda/direita invisíveis para forçar largura da barra
+                if (pos.rightX - pos.leftX > 4) {
+                    const dL = { id: 'sbL_' + uk, kind: 'sibBar' };
+                    const dR = { id: 'sbR_' + uk, kind: 'sibBar' };
+                    if (mode === 7) { dL.parent = 'c_' + uk; dR.parent = 'c_' + uk; }
+                    elements.push({ data: dL, position: { x: pos.leftX, y: pos.y } });
+                    elements.push({ data: dR, position: { x: pos.rightX, y: pos.y } });
+                    elements.push({ data: { id: 'e_sbL_' + uk, source: 'sb_' + uk, target: 'sbL_' + uk, kind: 'sibtrunk' } });
+                    elements.push({ data: { id: 'e_sbR_' + uk, source: 'sb_' + uk, target: 'sbR_' + uk, kind: 'sibtrunk' } });
+                }
+            });
+
+            // Edges hub -> uniões (modo 6)
+            hubGroups.forEach(h => {
+                h.memberUnits.forEach(uk => {
+                    if (units[uk].type === 'couple' && unionPos[uk]) {
+                        elements.push({ data: { id: 'e_hub_' + h.hubSim + '_' + uk, source: String(h.hubSim), target: 'u_' + uk, kind: 'hub' } });
+                    }
+                });
+            });
+
+            // Edges spouse + parent + sibling
             Object.values(units).forEach(u => {
                 if (u.type === 'couple') {
                     const [aId, bId] = u.parents;
                     const aKey = nodeIdFor(aId, u.key), bKey = nodeIdFor(bId, u.key);
-                    let color = '#7CD700', dashed = false;
-                    const rel = (byId[aId] && byId[aId].spouse === bId) ? byId[aId].relStatus
-                              : (byId[bId] && byId[bId].spouse === aId) ? byId[bId].relStatus : null;
-                    if (rel === 'separado') { color = '#FF4D4D'; dashed = true; }
-                    else if (rel === 'viuvo') { color = '#34495E'; dashed = true; }
-                    elements.push({ data: { id: 'e_sp_' + u.key, source: aKey, target: bKey, kind: 'spouse', color, dashed: dashed ? 1 : 0 } });
+                    if (simPos[aKey] && simPos[bKey]) {
+                        let color = '#7CD700', dashed = false;
+                        const rel = (byId[aId] && byId[aId].spouse === bId) ? byId[aId].relStatus
+                                  : (byId[bId] && byId[bId].spouse === aId) ? byId[bId].relStatus : null;
+                        if (rel === 'separado') { color = '#FF4D4D'; dashed = true; }
+                        else if (rel === 'viuvo') { color = '#34495E'; dashed = true; }
+                        elements.push({ data: { id: 'e_sp_' + u.key, source: aKey, target: bKey, kind: 'spouse', color, dashed: dashed ? 1 : 0 } });
+                    }
                 }
-                u.children.forEach(cid => {
-                    const source = (u.type === 'couple') ? ('u_' + u.key) : nodeIdFor(u.parents[0], u.key);
-                    const target = nodeIdFor(cid, u.key);
-                    if (!simPos[target]) return;
-                    elements.push({ data: { id: 'e_pc_' + u.key + '_' + cid, source, target, kind: 'parent' } });
-                });
+                // Parent → filho (com ou sem barra de irmandade)
+                const hasSibBar = !!sibBarPos[u.key];
+                const sourceParent = (u.type === 'couple') ? ('u_' + u.key) : nodeIdFor(u.parents[0], u.key);
+                if (hasSibBar) {
+                    // union/parent -> sibBar (tronco vertical)
+                    if (simPos[sourceParent] || unionPos[u.key]) {
+                        elements.push({ data: { id: 'e_trunk_' + u.key, source: sourceParent, target: 'sb_' + u.key, kind: 'trunk' } });
+                    }
+                    // sibBar -> cada filho (linha vertical curta)
+                    u.children.forEach(cid => {
+                        const target = nodeIdFor(cid, u.key);
+                        if (!simPos[target]) return;
+                        elements.push({ data: { id: 'e_sib_' + u.key + '_' + cid, source: 'sb_' + u.key, target, kind: 'sibling' } });
+                    });
+                } else {
+                    // 1 filho: aresta direta
+                    u.children.forEach(cid => {
+                        const target = nodeIdFor(cid, u.key);
+                        if (!simPos[target]) return;
+                        elements.push({ data: { id: 'e_pc_' + u.key + '_' + cid, source: sourceParent, target, kind: 'parent' } });
+                    });
+                }
             });
 
-            if (mode === 8) {
-                const seen = new Set();
-                sims.forEach(a => sims.forEach(b => {
-                    if (String(a.id) >= String(b.id)) return;
-                    const pa = new Set([a.p1, a.p2].filter(Boolean).map(String));
-                    const pb = new Set([b.p1, b.p2].filter(Boolean).map(String));
-                    const common = [...pa].filter(p => pb.has(p)).length;
-                    if (common !== 1) return;
-                    const k = a.id + '|' + b.id;
-                    if (seen.has(k)) return;
-                    seen.add(k);
-                    const aNode = Object.keys(simPos).find(n => n === String(a.id) || n.startsWith(String(a.id) + '@'));
-                    const bNode = Object.keys(simPos).find(n => n === String(b.id) || n.startsWith(String(b.id) + '@'));
-                    if (aNode && bNode) elements.push({ data: { id: 'e_half_' + k, source: aNode, target: bNode, kind: 'half' } });
-                }));
-            }
+            // Filtra arestas órfãs (nodes podem ter sido removidos por hideDead)
+            const _nodeIds = new Set(elements.filter(e => !e.data.source).map(e => e.data.id));
+            const _cleanElements = elements.filter(e => {
+                if (!e.data.source) return true;
+                return _nodeIds.has(e.data.source) && _nodeIds.has(e.data.target);
+            });
 
-            // ---- 6. Render ----
+            // ============================================================
+            // 8. Render
+            // ============================================================
             if (window.cyTree) { try { window.cyTree.destroy(); } catch(e){} }
             window.cyTree = cytoscape({
                 container: cyContainer,
-                elements,
+                elements: _cleanElements,
                 userZoomingEnabled: true,
                 userPanningEnabled: true,
                 boxSelectionEnabled: false,
@@ -4062,14 +4253,20 @@ let edgesArray = [];
                         'background-image': 'data(img)', 'background-fit': 'cover', 'background-clip': 'node',
                         'width': NODE_W, 'height': NODE_H, 'border-width': 0, 'label': ''
                     }},
-                    { selector: 'node[kind = "sim"]:active', style: { 'overlay-opacity': 0.1 }},
+                    { selector: 'node[kind = "sim"][ghost = 1]', style: {
+                        'border-width': 3, 'border-color': '#FF8C00', 'border-style': 'dashed',
+                        'opacity': 0.85
+                    }},
                     { selector: 'node[kind = "union"]', style: {
                         'width': 8, 'height': 8, 'background-color': '#7CD700', 'border-width': 0, 'label': ''
                     }},
+                    { selector: 'node[kind = "sibBar"]', style: {
+                        'width': 1, 'height': 1, 'background-opacity': 0, 'border-width': 0, 'label': '', 'events': 'no'
+                    }},
                     { selector: 'node[kind = "container"]', style: {
-                        'background-color': '#f0f7ff', 'background-opacity': 0.6,
-                        'border-color': 'rgba(0,121,193,0.35)', 'border-width': 2, 'border-style': 'solid',
-                        'shape': 'round-rectangle', 'padding': '20px', 'label': '',
+                        'background-color': 'data(bg)', 'background-opacity': 0.9,
+                        'border-color': 'data(bd)', 'border-width': 3, 'border-style': 'solid',
+                        'shape': 'round-rectangle', 'padding': '24px', 'label': '',
                         'compound-sizing-wrt-labels': 'exclude'
                     }},
                     { selector: 'edge[kind = "spouse"]', style: {
@@ -4081,10 +4278,22 @@ let edgesArray = [];
                         'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 40,
                         'target-arrow-shape': 'none'
                     }},
-                    { selector: 'edge[kind = "half"]', style: {
-                        'width': 2, 'line-color': '#FF8C00', 'line-style': 'dashed',
-                        'curve-style': 'unbundled-bezier',
-                        'control-point-distances': [-25], 'control-point-weights': [0.5],
+                    { selector: 'edge[kind = "trunk"]', style: {
+                        'width': 2.5, 'line-color': '#0079C1',
+                        'curve-style': 'straight', 'target-arrow-shape': 'none'
+                    }},
+                    { selector: 'edge[kind = "sibling"]', style: {
+                        'width': 2.5, 'line-color': '#0079C1',
+                        'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 1,
+                        'target-arrow-shape': 'none'
+                    }},
+                    { selector: 'edge[kind = "sibtrunk"]', style: {
+                        'width': 2.5, 'line-color': '#0079C1',
+                        'curve-style': 'straight', 'target-arrow-shape': 'none'
+                    }},
+                    { selector: 'edge[kind = "hub"]', style: {
+                        'width': 2.5, 'line-color': '#0079C1',
+                        'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 30,
                         'target-arrow-shape': 'none'
                     }}
                 ],
@@ -4095,7 +4304,13 @@ let edgesArray = [];
                 const simId = evt.target.data('simId');
                 if (simId) abrirPerfil(simId);
             });
-            try { window.cyTree.fit(undefined, 60); } catch(e){}
+            setTimeout(() => {
+                try {
+                    window.cyTree.resize();
+                    window.cyTree.fit(undefined, 60);
+                    window.cyTree.center();
+                } catch(e){}
+            }, 80);
         }
 
 
