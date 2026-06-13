@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEDT51-SimStoria - Companion Narrativo em Implementação - v51 (Sims Edition)</title>
+    <title>SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -41,7 +41,7 @@
             --ts4-secondary-bg:         #f8f9fa;
             --ts4-input-bg:             #ffffff;
             --ts4-btn-sec-bg:           #f0f0f0;
-            --ts4-btn-sec-color:        #11f02f;
+            --ts4-btn-sec-color:        #333333;
             --ts4-filter-bg:            #eeeeee;
             --ts4-suggestion-bg:        #fffdf2;
             --ts4-suggestion-text:      #444444;
@@ -2395,7 +2395,7 @@ if (fase === 'recem_nascido') {
                                 <button class="del-historia-btn" onclick="deletarLinhaLivro(${item.idx})">🗑️</button>
                             </div>
                         </div>
-                        <div style="font-size:14px; color:#333; line-height:1.5;">${texto.replace(/\\n/g, '<br>')}</div>
+                        <div style="font-size:14px; color:#11f02f; line-height:1.5;">${texto.replace(/\\n/g, '<br>')}</div>
                     </div>`;
                 });
                 html += '</div>';
