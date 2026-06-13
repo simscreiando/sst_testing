@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
+    <title> TEST 52 - SimStoria - Companion Narrativo em Implementação - v50 (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
@@ -638,7 +639,6 @@
                 
                 <label style="margin-top:15px; display:block;">Fase da Vida:</label>
                 <select id="sel-fase">
-		    <option value="recem_nascido">Recém-nascido</option>
                     <option value="bebe-colo">Bebê de colo (1 traço)</option>
                     <option value="bebe">Bebê (1 traço)</option>
                     <option value="crianca">Criança (1 traço + Aspiração infantil)</option>
@@ -691,15 +691,21 @@
                 </div>
 
                 <div id="tree-display" class="tree-container"></div>
+                <div id="tree-cy" class="tree-container" style="display:none;"></div>
             </div>
 
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; align-items:center;">
                 <span style="font-size:12px; font-weight:bold; color:#555;">🌳 Formato da Árvore:</span>
-                <button id="btn-layout-1" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color:var(--ts4-blue); color:var(--ts4-blue); font-weight:bold;" onclick="setTreeLayout(1)">Tradicional (Topo→Base)</button>
+                <button id="btn-layout-1" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(1)">Tradicional (Topo→Base)</button>
                 <button id="btn-layout-2" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(2)">Horizontal (Esq→Dir)</button>
                 <button id="btn-layout-3" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(3)">Livre (Física)</button>
                 <button id="btn-layout-4" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(4)">Radial (Circular)</button>
                 <button id="btn-layout-5" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color: #9B59B6; color: #9B59B6;" onclick="setTreeLayout(5)">👁️ Linhagem Principal (Focado)</button>
+                <span style="width:100%; height:1px; background:#eee; margin:4px 0;"></span>
+                <span style="font-size:12px; font-weight:bold; color:#555;">👨‍👩‍👧 Modos Family Echo (Cytoscape):</span>
+                <button id="btn-layout-6" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color:var(--ts4-blue); color:var(--ts4-blue); font-weight:bold;" onclick="setTreeLayout(6)">🏠 Família Organizada</button>
+                <button id="btn-layout-7" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(7)">📦 Núcleos Familiares</button>
+                <button id="btn-layout-8" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(8)">🌐 Legado Completo</button>
             </div>
 
         </div><div id="tab-ia" class="tab-pane">
@@ -3354,15 +3360,21 @@ function adotarFilhoPerfil() {
             renderTree(); 
         }
 
-        let currentTreeLayout = 1;
+        let currentTreeLayout = 6;
         function setTreeLayout(n) {
             currentTreeLayout = n;
-            [1,2,3,4,5].forEach(i => {
+            [1,2,3,4,5,6,7,8].forEach(i => {
                 const b = document.getElementById('btn-layout-' + i);
                 if (!b) return;
-                b.style.fontWeight = (i === n) ? 'bold' : 'normal';
-                b.style.borderColor = (i === n) ? 'var(--ts4-blue)' : '';
-                b.style.color = (i === n) ? 'var(--ts4-blue)' : '';
+                const active = (i === n);
+                b.style.fontWeight = active ? 'bold' : 'normal';
+                if (i === 5) {
+                    b.style.borderColor = active ? '#9B59B6' : '';
+                    b.style.color = active ? '#9B59B6' : '';
+                } else {
+                    b.style.borderColor = active ? 'var(--ts4-blue)' : '';
+                    b.style.color = active ? 'var(--ts4-blue)' : '';
+                }
             });
             renderTree();
         }
@@ -3550,6 +3562,21 @@ function adotarFilhoPerfil() {
 
         function renderTree() {
             const container = document.getElementById('tree-display');
+            const cyContainer = document.getElementById('tree-cy');
+
+            // Dispatcher: modos 6/7/8 usam o novo renderer Family Echo (Cytoscape)
+            if (currentTreeLayout >= 6 && currentTreeLayout <= 8) {
+                if (container) container.style.display = 'none';
+                if (cyContainer) cyContainer.style.display = 'block';
+                if (window.network) { try { window.network.destroy(); } catch(e){} window.network = null; }
+                renderFamilyEchoTree(currentTreeLayout);
+                return;
+            }
+            // Modos 1-5 voltam ao vis-network original
+            if (cyContainer) cyContainer.style.display = 'none';
+            if (container) container.style.display = '';
+            if (window.cyTree) { try { window.cyTree.destroy(); } catch(e){} window.cyTree = null; }
+
             if (db.sims.length === 0) { 
                 container.innerHTML = '<p style="color:#888; text-align:center; padding-top:20px;">Nenhum Sim criado ainda. Adicione o seu primeiro Sim para começar o legado.</p>'; 
                 window.network = null;
@@ -3792,6 +3819,286 @@ let edgesArray = [];
                 }
             });
         }
+
+        // ============================================================
+        // RENDERER FAMILY ECHO — modos 6/7/8 baseados em FamilyUnits
+        // (Cytoscape.js, mantém zoom/pan e reutiliza generateSimCardSVG)
+        // ============================================================
+        function renderFamilyEchoTree(mode) {
+            const cyContainer = document.getElementById('tree-cy');
+            if (!cyContainer) return;
+            if (!db.sims || db.sims.length === 0) {
+                cyContainer.innerHTML = '<p style="color:#888; text-align:center; padding-top:20px;">Nenhum Sim criado ainda. Adicione o seu primeiro Sim para começar o legado.</p>';
+                return;
+            }
+            cyContainer.innerHTML = '';
+
+            const NODE_W = 150, NODE_H = 190;
+            const H_GAP = 36;
+            const COUPLE_GAP = 28;
+            const V_GAP = 110;
+
+            const sims = db.sims;
+            const byId = {};
+            sims.forEach(s => byId[String(s.id)] = s);
+            const coupleKey = (a, b) => [String(a), String(b)].sort().join('|');
+
+            // ---- 1. Construir FamilyUnits ----
+            const units = {};
+            const getCouple = (a, b) => {
+                const k = 'cp_' + coupleKey(a, b);
+                if (!units[k]) units[k] = { key: k, type: 'couple', parents: [String(a), String(b)].sort(), children: [] };
+                return units[k];
+            };
+            const getSingle = (a) => {
+                const k = 'sg_' + String(a);
+                if (!units[k]) units[k] = { key: k, type: 'single', parents: [String(a)], children: [] };
+                return units[k];
+            };
+
+            sims.forEach(s => {
+                if (s.spouse && byId[String(s.spouse)]) getCouple(s.id, s.spouse);
+            });
+
+            sims.forEach(child => {
+                const p1 = child.p1 ? String(child.p1) : null;
+                const p2 = child.p2 ? String(child.p2) : null;
+                if (!p1 && !p2) return;
+                if (p1 && p2 && byId[p1] && byId[p2]) {
+                    const k = 'cp_' + coupleKey(p1, p2);
+                    if (units[k]) { units[k].children.push(String(child.id)); return; }
+                }
+                const pid = (p1 && byId[p1]) ? p1 : (p2 && byId[p2]) ? p2 : null;
+                if (pid) getSingle(pid).children.push(String(child.id));
+            });
+
+            // Modo 3 (Legado): duplica criança nos OUTROS casamentos de cada pai
+            if (mode === 8) {
+                sims.forEach(child => {
+                    const p1 = child.p1 ? String(child.p1) : null;
+                    const p2 = child.p2 ? String(child.p2) : null;
+                    if (!p1 && !p2) return;
+                    [p1, p2].filter(Boolean).forEach(pid => {
+                        Object.values(units).forEach(u => {
+                            if (!u.parents.includes(pid)) return;
+                            if (u.children.includes(String(child.id))) return;
+                            const isPrimary = p1 && p2 && u.type === 'couple' && u.parents.includes(p1) && u.parents.includes(p2);
+                            if (!isPrimary) u.children.push(String(child.id));
+                        });
+                    });
+                });
+            }
+
+            // ---- 2. Árvore de unidades ----
+            const childUnitsOf = {};
+            Object.values(units).forEach(u => {
+                const set = new Set();
+                u.children.forEach(cid => {
+                    Object.values(units).forEach(u2 => { if (u2.parents.includes(cid)) set.add(u2.key); });
+                });
+                childUnitsOf[u.key] = [...set];
+            });
+
+            const childUnitKeysAll = new Set();
+            Object.values(childUnitsOf).forEach(arr => arr.forEach(k => childUnitKeysAll.add(k)));
+            let rootUnits = Object.values(units).filter(u => !childUnitKeysAll.has(u.key));
+            if (rootUnits.length === 0) rootUnits = Object.values(units).slice(0, 1);
+
+            const insideUnit = new Set();
+            Object.values(units).forEach(u => { u.parents.forEach(p => insideUnit.add(p)); u.children.forEach(c => insideUnit.add(c)); });
+            const loners = sims.filter(s => !insideUnit.has(String(s.id)));
+
+            // ---- 3. Cálculo de largura (tidy tree) ----
+            const unitWidth = {};
+            const widthVisited = new Set();
+            function calcWidth(uk) {
+                if (widthVisited.has(uk)) return unitWidth[uk] || NODE_W;
+                widthVisited.add(uk);
+                const u = units[uk];
+                const own = (u.type === 'couple') ? (NODE_W * 2 + COUPLE_GAP) : NODE_W;
+                const childKs = childUnitsOf[uk] || [];
+                const looseChildren = u.children.filter(cid => !childKs.some(ck => units[ck].parents.includes(cid)));
+                let total = 0;
+                childKs.forEach(ck => { total += calcWidth(ck) + H_GAP; });
+                looseChildren.forEach(() => { total += NODE_W + H_GAP; });
+                if (total > 0) total -= H_GAP;
+                unitWidth[uk] = Math.max(own, total);
+                return unitWidth[uk];
+            }
+            rootUnits.forEach(u => calcWidth(u.key));
+
+            // ---- 4. Posicionamento ----
+            const simPos = {};
+            const unionPos = {};
+            const containerOf = {};
+            const placeVisited = new Set();
+            function nodeIdFor(simId, uk) { return (mode === 8) ? (simId + '@' + uk) : String(simId); }
+
+            function place(uk, xCenter, yTop) {
+                if (placeVisited.has(uk)) return;
+                placeVisited.add(uk);
+                const u = units[uk];
+                const yRow = yTop;
+                if (u.type === 'couple') {
+                    const [aId, bId] = u.parents;
+                    const leftCx = xCenter - (NODE_W + COUPLE_GAP) / 2;
+                    const rightCx = xCenter + (NODE_W + COUPLE_GAP) / 2;
+                    const aKey = nodeIdFor(aId, uk), bKey = nodeIdFor(bId, uk);
+                    if (!simPos[aKey]) simPos[aKey] = { x: leftCx, y: yRow + NODE_H / 2 };
+                    if (!simPos[bKey]) simPos[bKey] = { x: rightCx, y: yRow + NODE_H / 2 };
+                    unionPos[uk] = { x: xCenter, y: yRow + NODE_H / 2 };
+                    if (mode === 7) { containerOf[aKey] = uk; containerOf[bKey] = uk; }
+                } else {
+                    const aId = u.parents[0];
+                    const aKey = nodeIdFor(aId, uk);
+                    if (!simPos[aKey]) simPos[aKey] = { x: xCenter, y: yRow + NODE_H / 2 };
+                    unionPos[uk] = { x: xCenter, y: yRow + NODE_H / 2 };
+                    if (mode === 7) containerOf[aKey] = uk;
+                }
+
+                const childKs = childUnitsOf[uk] || [];
+                const looseChildren = u.children.filter(cid => !childKs.some(ck => units[ck].parents.includes(cid)));
+                const items = [];
+                childKs.forEach(ck => items.push({ type: 'unit', k: ck, w: unitWidth[ck] }));
+                looseChildren.forEach(cid => items.push({ type: 'sim', id: cid, w: NODE_W }));
+                if (!items.length) return;
+                const total = items.reduce((s, c) => s + c.w, 0) + (items.length - 1) * H_GAP;
+                let cursor = xCenter - total / 2;
+                const childY = yTop + NODE_H + V_GAP;
+                items.forEach(c => {
+                    const cx = cursor + c.w / 2;
+                    if (c.type === 'unit') place(c.k, cx, childY);
+                    else {
+                        const sKey = nodeIdFor(c.id, uk);
+                        if (!simPos[sKey]) simPos[sKey] = { x: cx, y: childY + NODE_H / 2 };
+                    }
+                    cursor += c.w + H_GAP;
+                });
+            }
+
+            let xOffset = 0;
+            rootUnits.forEach(u => {
+                const w = unitWidth[u.key] || NODE_W;
+                place(u.key, xOffset + w / 2, 50);
+                xOffset += w + H_GAP * 2;
+            });
+            if (loners.length) {
+                const baseY = Object.values(simPos).reduce((m, p) => Math.max(m, p.y), 50) + NODE_H + V_GAP;
+                let cx = 50 + NODE_W / 2;
+                loners.forEach(s => { simPos[String(s.id)] = { x: cx, y: baseY }; cx += NODE_W + H_GAP; });
+            }
+
+            // ---- 5. Elementos Cytoscape ----
+            const elements = [];
+            if (mode === 7) {
+                Object.values(units).forEach(u => { elements.push({ data: { id: 'c_' + u.key, kind: 'container' } }); });
+            }
+            Object.entries(simPos).forEach(([nodeId, pos]) => {
+                const simId = nodeId.split('@')[0];
+                const sim = byId[simId];
+                if (!sim) return;
+                const isDead = sim.status === 'Ancestral (Morto)';
+                const img = generateSimCardSVG(sim, isDead, typeof hideDead !== 'undefined' ? hideDead : false);
+                const data = { id: nodeId, simId, img, kind: 'sim' };
+                if (mode === 7 && containerOf[nodeId]) data.parent = 'c_' + containerOf[nodeId];
+                elements.push({ data, position: { x: pos.x, y: pos.y } });
+            });
+            Object.entries(unionPos).forEach(([uk, pos]) => {
+                if (units[uk].type !== 'couple') return;
+                const data = { id: 'u_' + uk, kind: 'union' };
+                if (mode === 7) data.parent = 'c_' + uk;
+                elements.push({ data, position: pos });
+            });
+
+            Object.values(units).forEach(u => {
+                if (u.type === 'couple') {
+                    const [aId, bId] = u.parents;
+                    const aKey = nodeIdFor(aId, u.key), bKey = nodeIdFor(bId, u.key);
+                    let color = '#7CD700', dashed = false;
+                    const rel = (byId[aId] && byId[aId].spouse === bId) ? byId[aId].relStatus
+                              : (byId[bId] && byId[bId].spouse === aId) ? byId[bId].relStatus : null;
+                    if (rel === 'separado') { color = '#FF4D4D'; dashed = true; }
+                    else if (rel === 'viuvo') { color = '#34495E'; dashed = true; }
+                    elements.push({ data: { id: 'e_sp_' + u.key, source: aKey, target: bKey, kind: 'spouse', color, dashed: dashed ? 1 : 0 } });
+                }
+                u.children.forEach(cid => {
+                    const source = (u.type === 'couple') ? ('u_' + u.key) : nodeIdFor(u.parents[0], u.key);
+                    const target = nodeIdFor(cid, u.key);
+                    if (!simPos[target]) return;
+                    elements.push({ data: { id: 'e_pc_' + u.key + '_' + cid, source, target, kind: 'parent' } });
+                });
+            });
+
+            if (mode === 8) {
+                const seen = new Set();
+                sims.forEach(a => sims.forEach(b => {
+                    if (String(a.id) >= String(b.id)) return;
+                    const pa = new Set([a.p1, a.p2].filter(Boolean).map(String));
+                    const pb = new Set([b.p1, b.p2].filter(Boolean).map(String));
+                    const common = [...pa].filter(p => pb.has(p)).length;
+                    if (common !== 1) return;
+                    const k = a.id + '|' + b.id;
+                    if (seen.has(k)) return;
+                    seen.add(k);
+                    const aNode = Object.keys(simPos).find(n => n === String(a.id) || n.startsWith(String(a.id) + '@'));
+                    const bNode = Object.keys(simPos).find(n => n === String(b.id) || n.startsWith(String(b.id) + '@'));
+                    if (aNode && bNode) elements.push({ data: { id: 'e_half_' + k, source: aNode, target: bNode, kind: 'half' } });
+                }));
+            }
+
+            // ---- 6. Render ----
+            if (window.cyTree) { try { window.cyTree.destroy(); } catch(e){} }
+            window.cyTree = cytoscape({
+                container: cyContainer,
+                elements,
+                userZoomingEnabled: true,
+                userPanningEnabled: true,
+                boxSelectionEnabled: false,
+                wheelSensitivity: 0.2,
+                minZoom: 0.1, maxZoom: 2.5,
+                style: [
+                    { selector: 'node[kind = "sim"]', style: {
+                        'shape': 'round-rectangle', 'background-color': '#fff',
+                        'background-image': 'data(img)', 'background-fit': 'cover', 'background-clip': 'node',
+                        'width': NODE_W, 'height': NODE_H, 'border-width': 0, 'label': ''
+                    }},
+                    { selector: 'node[kind = "sim"]:active', style: { 'overlay-opacity': 0.1 }},
+                    { selector: 'node[kind = "union"]', style: {
+                        'width': 8, 'height': 8, 'background-color': '#7CD700', 'border-width': 0, 'label': ''
+                    }},
+                    { selector: 'node[kind = "container"]', style: {
+                        'background-color': '#f0f7ff', 'background-opacity': 0.6,
+                        'border-color': 'rgba(0,121,193,0.35)', 'border-width': 2, 'border-style': 'solid',
+                        'shape': 'round-rectangle', 'padding': '20px', 'label': '',
+                        'compound-sizing-wrt-labels': 'exclude'
+                    }},
+                    { selector: 'edge[kind = "spouse"]', style: {
+                        'width': 3, 'line-color': 'data(color)', 'curve-style': 'straight', 'target-arrow-shape': 'none'
+                    }},
+                    { selector: 'edge[kind = "spouse"][dashed = 1]', style: { 'line-style': 'dashed' }},
+                    { selector: 'edge[kind = "parent"]', style: {
+                        'width': 2.5, 'line-color': '#0079C1',
+                        'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 40,
+                        'target-arrow-shape': 'none'
+                    }},
+                    { selector: 'edge[kind = "half"]', style: {
+                        'width': 2, 'line-color': '#FF8C00', 'line-style': 'dashed',
+                        'curve-style': 'unbundled-bezier',
+                        'control-point-distances': [-25], 'control-point-weights': [0.5],
+                        'target-arrow-shape': 'none'
+                    }}
+                ],
+                layout: { name: 'preset', fit: true, padding: 60 }
+            });
+
+            window.cyTree.on('tap', 'node[kind = "sim"]', evt => {
+                const simId = evt.target.data('simId');
+                if (simId) abrirPerfil(simId);
+            });
+            try { window.cyTree.fit(undefined, 60); } catch(e){}
+        }
+
+
         
         function toggleRelPassadasEdit() {
             let painel = document.getElementById('painel-rel-passadas');
