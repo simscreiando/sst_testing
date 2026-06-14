@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title> TEST-52 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -527,183 +527,73 @@
     display: none; /* Aparece só quando estiver cheia */
 }
 
+@media (max-width: 768px) {
+    body { 
+        flex-direction: column; 
+        overflow: auto; 
+        /* Dá um espaço no fundo da tela para o conteúdo não sumir atrás do menu fixo */
+        padding-bottom: 70px !important; 
+    }
+    
+    .sidebar { 
+        width: 100%; 
+        height: auto; 
+        position: static; 
+        box-sizing: border-box; 
+        padding: 15px; 
+    }
+    
+    .main-content { 
+        height: auto; 
+        overflow: visible; 
+        padding: 10px; 
+    }
 
-        /* ====================================================
-           📱 MOBILE TOP-NAV PWA — SimStoria v52+
-        ==================================================== */
+    /* Transforma a caixinha em uma barra fixa no rodapé da tela */
+    .mobile-nav-menu {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 8px;
+        
+        /* Fixa no fundo com prioridade máxima */
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--ts4-panel); /* Pega a cor oficial dos seus painéis */
+        border-top: 2px solid var(--ts4-sidebar-border);
+        padding: 12px 10px;
+        box-sizing: border-box;
+        z-index: 99999; /* Fica por cima de tudo */
+        
+        /* Esconde a barra de rolagem horizontal feia */
+        scrollbar-width: none; 
+        -ms-overflow-style: none;
+    }
+    
+    .mobile-nav-menu::-webkit-scrollbar {
+        display: none; 
+    }
 
-        /* Barra de navegação superior (visível apenas em mobile) */
-        .mobile-top-nav {
-            display: none;
-        }
-
-        @media (max-width: 768px) {
-
-            /* ── Layout base ── */
-            body {
-                flex-direction: column;
-                overflow: hidden;
-                height: 100dvh;   /* dynamic viewport height para iOS Safari */
-            }
-
-            /* ── Esconde a sidebar desktop ── */
-            .sidebar {
-                display: none !important;
-            }
-
-            /* ── Barra de navegação superior ── */
-            .mobile-top-nav {
-                display: flex;
-                flex-direction: column;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 200;
-                background: var(--ts4-panel);
-                box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-            }
-
-            /* Cabeçalho com logo e título */
-            .mobile-top-nav-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 8px 12px 4px 12px;
-                gap: 8px;
-            }
-
-            .mobile-top-nav-logo {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                font-size: 13px;
-                font-weight: 800;
-                color: var(--ts4-blue);
-            }
-            .mobile-top-nav-logo img {
-                width: 28px;
-                height: 28px;
-                object-fit: contain;
-            }
-
-            /* Fila de botões de aba */
-            .mobile-top-nav-tabs {
-                display: flex;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
-                gap: 2px;
-                padding: 0 8px 6px 8px;
-            }
-            .mobile-top-nav-tabs::-webkit-scrollbar { display: none; }
-
-            .mob-nav-btn {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                min-width: 58px;
-                padding: 5px 4px;
-                border: none;
-                border-radius: 12px;
-                background: none;
-                cursor: pointer;
-                font-family: 'Nunito', sans-serif;
-                font-weight: 700;
-                font-size: 9.5px;
-                color: var(--ts4-subtle-text);
-                transition: background 0.18s, color 0.18s;
-                white-space: nowrap;
-                flex-shrink: 0;
-            }
-            .mob-nav-btn .mob-icon {
-                font-size: 18px;
-                line-height: 1;
-                margin-bottom: 2px;
-            }
-            .mob-nav-btn.active {
-                background: var(--ts4-blue);
-                color: white;
-            }
-            .mob-nav-btn:active {
-                opacity: 0.7;
-            }
-
-            /* ── Conteúdo principal ── */
-            .main-content {
-                flex: 1;
-                padding: 12px 10px 20px 10px;
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                height: auto;
-                /* Espaço para a top-nav (header ~42px + tabs ~52px) */
-                margin-top: 100px;
-                box-sizing: border-box;
-            }
-
-            /* Ajustes internos de conteúdo para telas pequenas */
-            .tab-pane {
-                padding-bottom: 30px;
-            }
-            .card-grid {
-                grid-template-columns: 1fr;
-            }
-            .panel {
-                padding: 14px;
-                border-radius: 14px;
-            }
-            .tree-container {
-                height: 420px;
-            }
-
-        }
-
+    /* Estiliza os botões para ficarem em linha única rolável */
+    .sidebar .nav-btn {
+        width: auto;
+        white-space: nowrap;
+        flex: 0 0 auto;
+        padding: 10px 18px;
+        margin-bottom: 0;
+        font-size: 14px;
+        border: 1px solid var(--ts4-border);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+}
     </style>
 </head>
 <body>
 
-    <!-- ====================================================
-         📱 BARRA DE NAVEGAÇÃO SUPERIOR — apenas mobile
-    ==================================================== -->
-    <div class="mobile-top-nav" id="mobile-top-nav">
-        <div class="mobile-top-nav-header">
-            <div class="mobile-top-nav-logo">
-                <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/67fd436abea8a2622d7333f25780b164c3510ade/SimStoria.png" alt="SimStoria">
-                SimStoria
-            </div>
-            <!-- Seletor de idioma compacto -->
-            <select class="lang-selector" onchange="alterarIdiomaVisual()" style="width:auto; font-size:10px; padding:3px 6px;">
-                <option value="pt">🇧🇷</option>
-                <option value="en">🇺🇸</option>
-                <option value="es">🇪🇸</option>
-                <option value="it">🇮🇹</option>
-                <option value="de">🇩🇪</option>
-                <option value="zh-CN">🇨🇳</option>
-                <option value="ja">🇯🇵</option>
-                <option value="ru">🇷🇺</option>
-                <option value="tr">🇹🇷</option>
-            </select>
-        </div>
-        <div class="mobile-top-nav-tabs" id="mob-tabs-row">
-            <button class="mob-nav-btn active" id="mob-btn-home"    onclick="switchTab('tab-home',    this)"><span class="mob-icon">🏠</span>Início</button>
-            <button class="mob-nav-btn"         id="mob-btn-dash"    onclick="switchTab('tab-dash',    this)"><span class="mob-icon">🎲</span>Dashboard</button>
-            <button class="mob-nav-btn"         id="mob-btn-lab"     onclick="switchTab('tab-lab',     this)"><span class="mob-icon">🧪</span>Lab</button>
-            <button class="mob-nav-btn"         id="mob-btn-gen"     onclick="switchTab('tab-gen',     this)"><span class="mob-icon">🔮</span>Personagem</button>
-            <button class="mob-nav-btn"         id="mob-btn-tree"    onclick="switchTab('tab-tree',    this)"><span class="mob-icon">🌳</span>Árvore</button>
-            <button class="mob-nav-btn"         id="mob-btn-ia"      onclick="switchTab('tab-ia',      this)"><span class="mob-icon">🤖</span>I.A.</button>
-            <button class="mob-nav-btn"         id="mob-btn-history" onclick="switchTab('tab-history', this)"><span class="mob-icon">📖</span>Livro</button>
-            <button class="mob-nav-btn"         id="mob-btn-galeria" onclick="switchTab('tab-galeria', this)"><span class="mob-icon">📸</span>Galeria</button>
-            <button class="mob-nav-btn"         id="mob-btn-laws"    onclick="switchTab('tab-laws',    this)"><span class="mob-icon">📜</span>Regras</button>
-            <button class="mob-nav-btn"         id="mob-btn-config"  onclick="switchTab('tab-config',  this)"><span class="mob-icon">⚙️</span>Config</button>
-            <button class="mob-nav-btn"         id="mob-btn-help"    onclick="switchTab('tab-help',    this)"><span class="mob-icon">❓</span>Ajuda</button>
-            <button class="mob-nav-btn"         id="mob-btn-feedback"onclick="switchTab('tab-feedback',this)"><span class="mob-icon">💬</span>Feedback</button>
-            <button class="mob-nav-btn"         id="mob-btn-apoio"   onclick="switchTab('tab-apoio',   this)" style="color:var(--ts4-green);"><span class="mob-icon">💖</span>Apoie</button>
-            <button class="mob-nav-btn"         id="mob-btn-sobre"   onclick="switchTab('tab-sobre',   this)"><span class="mob-icon">ℹ️</span>Sobre</button>
-        </div>
-    </div>
-
-
+<div class="sidebar">
         <div class="lang-selector-container">
             <select class="lang-selector" onchange="alterarIdiomaVisual()">
                 <option value="pt">🇧🇷 Português (Brasil)</option>
@@ -719,24 +609,27 @@
             <div id="google_translate_element" style="display:none;"></div>
         </div>
 
-<h1 style="display: flex; align-items: center; gap: 9px;">
+        <h1 style="display: flex; align-items: center; gap: 9px;">
             <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/67fd436abea8a2622d7333f25780b164c3510ade/SimStoria.png" alt="SimStoria" style="width: 50px; height: 50px; object-fit: contain; flex-shrink: 0;">
             SimStoria - Legacy Companion
         </h1>
-        <button class="nav-btn active" id="btn-nav-home" onclick="switchTab('tab-home')">🏠 Início</button>
-        <button class="nav-btn" id="btn-nav-dash" onclick="switchTab('tab-dash')">🎲 Dashboard</button>
-        <button class="nav-btn" id="btn-nav-lab" onclick="switchTab('tab-lab')">🧪 Laboratório</button>
-        <button class="nav-btn" id="btn-nav-gen" onclick="switchTab('tab-gen')">🔮 Personalidade</button>
-        <button class="nav-btn" id="btn-nav-tree" onclick="switchTab('tab-tree')">🌳 Árvore Genealógica</button>
-        <button class="nav-btn" id="btn-nav-ia" onclick="switchTab('tab-ia')">🤖 I.A. e Histórias</button>
-        <button class="nav-btn" id="btn-nav-history" onclick="switchTab('tab-history')">📖 Livro e Metas</button>
-	<button class="nav-btn" id="btn-nav-galeria" onclick="switchTab('tab-galeria')">📸 Galeria de Recordações 🔒</button>
-        <button class="nav-btn" id="btn-nav-laws" onclick="switchTab('tab-laws')">📜 Livro de Regras</button>
-        <button class="nav-btn" id="btn-nav-config" onclick="switchTab('tab-config')">⚙️ Configurações</button>
-        <button class="nav-btn" id="btn-nav-help" onclick="switchTab('tab-help')">📖 Ajuda</button>
-        <button class="nav-btn" id="btn-nav-feedback" onclick="switchTab('tab-feedback')">💬 Enviar Feedback</button>
-        <button class="nav-btn" id="btn-nav-apoio" onclick="switchTab('tab-apoio')" style="color: var(--ts4-green);">💖 Apoie o Projeto</button>
-	<button class="nav-btn" id="btn-nav-sobre" onclick="switchTab('tab-sobre')">ℹ️ Sobre / Atualizações</button>
+
+        <div class="mobile-nav-menu">
+            <button class="nav-btn active" id="btn-nav-home" onclick="switchTab('tab-home')">🏠 Início</button>
+            <button class="nav-btn" id="btn-nav-dash" onclick="switchTab('tab-dash')">🎲 Dashboard</button>
+            <button class="nav-btn" id="btn-nav-lab" onclick="switchTab('tab-lab')">🧪 Laboratório</button>
+            <button class="nav-btn" id="btn-nav-gen" onclick="switchTab('tab-gen')">🔮 Personalidade</button>
+            <button class="nav-btn" id="btn-nav-tree" onclick="switchTab('tab-tree')">🌳 Árvore Genealógica</button>
+            <button class="nav-btn" id="btn-nav-ia" onclick="switchTab('tab-ia')">🤖 I.A. e Histórias</button>
+            <button class="nav-btn" id="btn-nav-history" onclick="switchTab('tab-history')">📖 Livro e Metas</button>
+            <button class="nav-btn" id="btn-nav-galeria" onclick="switchTab('tab-galeria')">📸 Galeria de Recordações 🔒</button>
+            <button class="nav-btn" id="btn-nav-laws" onclick="switchTab('tab-laws')">📜 Livro de Regras</button>
+            <button class="nav-btn" id="btn-nav-config" onclick="switchTab('tab-config')">⚙️ Configurações</button>
+            <button class="nav-btn" id="btn-nav-help" onclick="switchTab('tab-help')">📖 Ajuda</button>
+            <button class="nav-btn" id="btn-nav-feedback" onclick="switchTab('tab-feedback')">💬 Enviar Feedback</button>
+            <button class="nav-btn" id="btn-nav-apoio" onclick="switchTab('tab-apoio')" style="color: var(--ts4-green);">💖 Apoie o Projeto</button>
+            <button class="nav-btn" id="btn-nav-sobre" onclick="switchTab('tab-sobre')">ℹ️ Sobre / Atualizações</button>
+        </div>
 
         <div style="margin-top: 20px; border-top: 2px solid var(--ts4-sidebar-border); padding-top: 15px;">
             <h3 style="font-size: 12px; color: var(--ts4-blue); text-transform: uppercase; margin-bottom: 10px;">☁️ Conexão Nuvem</h3>
@@ -2492,7 +2385,7 @@ function salvarTudo() {
             }
         }
 
-        function switchTab(id, mobBtnRef) {
+        function switchTab(id) {
             // GALERIA: Restrição — só acessível com Google Drive conectado
             if (id === 'tab-galeria' && !accessToken) {
                 document.getElementById('modal-drive-galeria').style.display = 'flex';
@@ -2501,28 +2394,8 @@ function salvarTudo() {
 
             document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.mob-nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-
-            // Ativa botão na sidebar desktop (evento nativo) ou referência direta
-            if (mobBtnRef) {
-                mobBtnRef.classList.add('active');
-            } else if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
-            }
-
-            // Também ativa o botão correspondente na top-nav mobile
-            const tabKey = id.replace('tab-', '');
-            const mobBtn = document.getElementById('mob-btn-' + tabKey);
-            if (mobBtn) {
-                mobBtn.classList.add('active');
-                // Rola a tab-row para que o botão ativo fique visível
-                mobBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-
-            // Sincroniza o botão sidebar com o estado ativo
-            const sideBtn = document.getElementById('btn-nav-' + tabKey);
-            if (sideBtn) sideBtn.classList.add('active');
+            event.currentTarget.classList.add('active');
             
             if(id === 'tab-tree') {
                 // Re-renderiza para garantir tamanho/centralização correta
@@ -6065,67 +5938,6 @@ function atualizarIndicadorMemoria() {
             alert("Chave PIX copiada!");
         });
     }
-
-    /* ====================================================
-       📱 PWA — Ajuste dinâmico da altura da top-nav
-    ==================================================== */
-    function ajustarAlturaTopNav() {
-        var nav = document.getElementById('mobile-top-nav');
-        var content = document.querySelector('.main-content');
-        if (!nav || !content) return;
-        if (window.innerWidth <= 768) {
-            var h = nav.offsetHeight;
-            content.style.marginTop = h + 'px';
-        } else {
-            content.style.marginTop = '';
-        }
-    }
-
-    // Roda ao carregar e em qualquer resize/orientação
-    window.addEventListener('load', ajustarAlturaTopNav);
-    window.addEventListener('resize', ajustarAlturaTopNav);
-    window.addEventListener('orientationchange', function() {
-        setTimeout(ajustarAlturaTopNav, 200);
-    });
-
-    /* ====================================================
-       🔧 Service Worker — Registro PWA offline-first
-       (Funciona apenas se o SimStoria for servido por HTTPS
-        ou localhost — não via file://)
-    ==================================================== */
-    (function() {
-        if (!('serviceWorker' in navigator)) return;
-        // Cria o SW inline via Blob para não precisar de arquivo externo
-        var swCode = `
-const CACHE = 'simstoria-v1';
-const ASSETS = ['./', './index.html'];
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
-  self.skipWaiting();
-});
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys =>
-    Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-  ));
-  self.clients.claim();
-});
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match('./')))
-  );
-});
-`;
-        try {
-            var blob = new Blob([swCode], { type: 'application/javascript' });
-            var url  = URL.createObjectURL(blob);
-            navigator.serviceWorker.register(url, { scope: './' })
-                .then(function(reg) { console.log('[SimStoria PWA] SW registrado:', reg.scope); })
-                .catch(function(e)  { console.warn('[SimStoria PWA] SW falhou (normal em file://):', e.message); });
-        } catch(e) {
-            console.warn('[SimStoria PWA] Blob SW não suportado:', e.message);
-        }
-    })();
 </script>
 
 </body>
