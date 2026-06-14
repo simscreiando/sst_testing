@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> TEST-52 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TEST 52 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -527,6 +527,11 @@
     display: none; /* Aparece só quando estiver cheia */
 }
 
+/* Esconde o botão de expansão no computador */
+.mobile-toggle-widgets-btn {
+    display: none;
+}
+
 @media (max-width: 768px) {
     body { 
         flex-direction: column; 
@@ -588,6 +593,37 @@
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.05);
     }
+/* Estiliza o botão retrátil no celular */
+    .mobile-toggle-widgets-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        background: var(--ts4-panel);
+        border: 1px solid var(--ts4-border);
+        color: white;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        cursor: pointer;
+        font-family: 'Nunito', sans-serif;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    /* Esconde o painel por padrão apenas no celular */
+    .sidebar-extra-widgets {
+        display: none;
+        background: rgba(0, 0, 0, 0.15);
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 5px;
+    }
+
+    /* Classe mágica: quando o botão for clicado, ela ativa e mostra o painel */
+    .sidebar-extra-widgets.active {
+        display: block !important;
+    }
 }
     </style>
 </head>
@@ -631,7 +667,12 @@
             <button class="nav-btn" id="btn-nav-sobre" onclick="switchTab('tab-sobre')">ℹ️ Sobre / Atualizações</button>
         </div>
 
-        <div style="margin-top: 20px; border-top: 2px solid var(--ts4-sidebar-border); padding-top: 15px;">
+	<button class="mobile-toggle-widgets-btn" onclick="document.getElementById('sidebar-extra-widgets').classList.toggle('active')">
+            ☁️ Conexão & Famílias <span class="arrow">🔽</span>
+        </button>
+
+        <div id="sidebar-extra-widgets" class="sidebar-extra-widgets" style="margin-top: 20px; border-top: 2px solid var(--ts4-sidebar-border); padding-top: 15px;">
+
             <h3 style="font-size: 12px; color: var(--ts4-blue); text-transform: uppercase; margin-bottom: 10px;">☁️ Conexão Nuvem</h3>
             <button class="btn-main" style="background:#4285F4; margin:0; padding: 10px; font-size: 11px;" onclick="autenticarGoogle()" id="btn-login-google">G Conectar Google Drive</button>
             <div id="google-status" style="font-size: 10px; font-weight: bold; color: #4285F4; margin-top: 5px;">Status: Desconectado</div>
