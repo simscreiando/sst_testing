@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE 52 - 20 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE 52 - 22 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -12,6 +12,84 @@
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style id="cozy-sims-theme">
+        :root {
+            --cozy-bg: #f6ecd6;
+            --cozy-bg-2: #fbe4ec;
+            --cozy-accent: #7fb069;
+            --cozy-accent-2: #9bc7e4;
+            --cozy-gold: #d4af37;
+            --cozy-gold-soft: #f0d97a;
+            --cozy-pink: #f4b8c7;
+            --cozy-ink: #4a3b2a;
+        }
+        body:not(.dark-mode) {
+            background:
+                radial-gradient(circle at 12% 18%, rgba(244,184,199,0.35) 0, transparent 42%),
+                radial-gradient(circle at 88% 12%, rgba(155,199,228,0.40) 0, transparent 45%),
+                radial-gradient(circle at 50% 95%, rgba(127,176,105,0.25) 0, transparent 50%),
+                linear-gradient(180deg, #fbf3df 0%, #f6ecd6 60%, #f1e3c5 100%) !important;
+            font-family: 'Nunito', 'Quicksand', sans-serif !important;
+            color: var(--cozy-ink) !important;
+        }
+        body:not(.dark-mode) h1, body:not(.dark-mode) h2, body:not(.dark-mode) h3,
+        body:not(.dark-mode) .sidebar h1 {
+            font-family: 'Fredoka', 'Quicksand', sans-serif !important;
+            letter-spacing: 0.3px;
+        }
+        body:not(.dark-mode) .btn-main,
+        body:not(.dark-mode) button.btn-main {
+            border-radius: 14px !important;
+            box-shadow: 0 3px 0 rgba(120,90,40,0.18), 0 6px 14px rgba(212,175,55,0.18) !important;
+            transition: transform .15s ease, box-shadow .15s ease, filter .15s ease !important;
+            font-family: 'Fredoka','Quicksand',sans-serif !important;
+            letter-spacing: 0.3px;
+        }
+        body:not(.dark-mode) .btn-main:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.04);
+            box-shadow: 0 4px 0 rgba(120,90,40,0.22), 0 10px 22px rgba(212,175,55,0.28) !important;
+        }
+        body:not(.dark-mode) .sidebar,
+        body:not(.dark-mode) .main-content > div,
+        body:not(.dark-mode) .ts4-card,
+        body:not(.dark-mode) .legend-box {
+            border-radius: 18px !important;
+        }
+        body:not(.dark-mode) .legend-box,
+        body:not(.dark-mode) #legenda-arvore {
+            background: linear-gradient(180deg,#fffdf5,#fff8e7) !important;
+            border: 2px double var(--cozy-gold) !important;
+            box-shadow: 0 6px 18px rgba(120,90,40,0.12) !important;
+        }
+        body:not(.dark-mode) select,
+        body:not(.dark-mode) input[type="text"],
+        body:not(.dark-mode) input[type="number"],
+        body:not(.dark-mode) input[type="date"],
+        body:not(.dark-mode) textarea {
+            border-radius: 12px !important;
+            border: 1.5px solid #e6d5a8 !important;
+            background: #fffdf6 !important;
+        }
+        /* Container do Cytoscape com fundo papel-pergaminho */
+        body:not(.dark-mode) #cy-tree,
+        body:not(.dark-mode) #network-tree {
+            background:
+                radial-gradient(circle at 20% 30%, rgba(244,184,199,0.18) 0, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(155,199,228,0.22) 0, transparent 45%),
+                linear-gradient(180deg,#fffaee,#f6ecd6) !important;
+            border-radius: 18px !important;
+            border: 2px double var(--cozy-gold) !important;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.6), 0 6px 18px rgba(120,90,40,0.12) !important;
+        }
+    </style>
+
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script type="text/javascript">
@@ -886,8 +964,9 @@
                         <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:3px; background:#7CD700;"></div> Casados</div>
                         <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:2px; background:#FF4D4D; border-bottom: 2px dashed #FF4D4D;"></div> Separados</div>
                         <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:2px; background:#34495E; border-bottom: 2px dotted #34495E;"></div> Viúvos</div>
-                        <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:2px; background:#FF8C00;"></div> Irmãos</div>
-                        <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:2px; background:#FF8C00; border-bottom: 2px dashed #FF8C00;"></div> Meio-Irmãos</div>
+                        <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:3px; background:#FF8C00;"></div> Irmãos</div>
+                        <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:0; border-bottom: 2.5px dashed #FF8C00;"></div> Meio-Irmãos</div>
+                        <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:0; border-bottom: 2px dashed #aaaacc;"></div> Progenitor NPC</div>
                     </div>
                 </div>
 
@@ -1405,7 +1484,7 @@
                 <h3 style="margin-top: 0; color: #27ae60;">📸 8. Galeria de Recordações</h3>
                 <p>O acervo visual da sua jornada, protegido do tempo.</p>
                 <ul>
-                    <li><strong>Salvamento no Drive:</strong> As imagens cadastradas por você são salvas em seu drive, portanto só funciona para quem estiver conectado na nuvem.</li>
+                    <li><strong>Salvamento no Drive:</strong> As imagens cadastradas por você são salvas em seu drive, portanto só funciona para quem estiver conectado na nuvem, e a capacidade de armazenamento depende de sua conta no drive.</li>
                     <li><strong>Gerenciamento:</strong> A Galeria funciona como um mural de memórias. Você pode organizar os registros fotográficos de cada geração, da forma que quiser.</li>
 		    <li><strong>Salvar no Álbum:</strong> Ao gerar um print ou captura completa do perfil do seu Sim, você não precisa apenas baixar o arquivo; agora você pode clicar em "Salvar no Álbum" ou salvar automaticamente, autorizando em "Configurações". As imagens salvas ficam guardadas de forma organizada em uma seção exclusiva daquela família, criando uma linha do tempo fotográfica do seu legado.</li>
                 </ul>
@@ -1588,7 +1667,7 @@
         <span onclick="fecharModalPix()" style="position:absolute; top:10px; right:15px; cursor:pointer; font-size:24px;">&times;</span>
         
         <h3 style="color:#28a745; margin-top:0;">💸 Pagamento via PIX</h3>
-        <p style="font-size:14px; color:#444;">Copie a chave abaixo e envie qualquer valor. Obrigada pelo apoio! 💚</p>
+        <p style="font-size:14px; color:#444;">Copie a chave abaixo e envie qualquer valor para ajudar a manter o site e a trazder novidades. Obrigada pelo apoio! 💚</p>
         
         <div style="background:#f0fff4; border: 2px solid #28a745; border-radius: 10px; padding:15px; text-align:center;">
             <div style="font-size:16px; font-weight:bold; word-break: break-all; margin-bottom:10px;" id="pix-key-display">
@@ -1626,14 +1705,20 @@
 <div style="position: relative; padding-left: 20px; border-left: 2px solid #e74c3c; margin-bottom: 20px;">
     <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #e74c3c;"></div>
     <strong style="font-size: 14px; color: #333;">v52 - Novos formatos de Árvore Genealógica</strong>
-    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 15 de Junho de 2026</span>
+    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 16 de Junho de 2026</span>
     <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
         <li><strong>Visual:</strong> Nova estrutura de Árvore Genealógica (estilo Family Echo - Modelos: Família organizada; Núcleos familiares; Legado Completo).</li>
-        <li><strong>Perfil dos Sims:</strong> É possível salvar genitor(a) como NPC, e depois transformá-lo em Sim da árvore da família, se quiser</li>
+        <li><strong>Visual:</strong> Molduras dos cards em estilo "retrato de família".</li>
+        <li><strong>Perfil dos Sims:</strong> É possível salvar genitor(a) como NPC, e depois transformá-lo em Sim da árvore da família, se quiser.</li>
+        <li><strong>Perfil dos Sims:</strong> Novo campo Aspiração, com botão 🎲 Sortear, exibido no perfil do sim.</li>
+        <li><strong>Perfil dos Sims:</strong> Novo campo Natureza Oculta com as opções para selecionar se o sim é humano ou algum oculto.</li>
         <li><strong>Roleta:</strong> Nova roleta com diversas opções de "Regras" para o seu jogo (você encontra em Laboratório). Gostou da Regra? Pode clicar para registrá-la no seu livro de regras.</li>
         <li><strong>Gerenciamento de Metas:</strong> Você pode sortear metas no Dashboard, registrá-las no livro de metas e acompanhar seu progresso. Possibilidade de editar metas, desistir, concluir, filtrá-las por tags no livro da família, e vinculá-las a um sim cadastrado.</li>
+        <li><strong>Galeria:</strong> Adicionada a opção de Remover capa do álbum.</li>
+        <li><strong>Galeria:</strong> Adicionada a opção de navegar entre as fotos com as setas ou botões.</li>
         <li><strong>PWA:</strong> SimStoria agora é instalável como aplicativo nativo no PC e Mobile.</li>
         <li><strong>UI Mobile:</strong> Nova navegação inferior para telas pequenas.</li>
+	<li><strong>Estilo:</strong> Novo tema Cozy do site, para uma navegação mais aconchegante.</li>
         <li><strong>Correção:</strong> Correção de bugs.</li>
     </ul>
 </div>
@@ -1779,7 +1864,9 @@
                 <div class="profile-field" id="campo-historico-rel" style="display:none; grid-column: span 2; border-left-color: #9B59B6;"><strong style="color:#9B59B6;">💌 Relacionamentos Anteriores</strong><div id="v-historico-rel" style="margin-top: 5px; font-size: 13px;"></div></div>
                 <div class="profile-field" style="grid-column: span 2;"><strong>Filhos(as)</strong><span id="v-filhos">Nenhum</span></div>
                 <div class="profile-field" style="grid-column: span 2;"><strong>Dinâmicas Especiais (Crush, Inimigo, Amante)</strong><span id="v-crush">Nenhum</span></div>
-                <div class="profile-field" style="grid-column: span 2;"><strong>Traços e Aspirações</strong><span id="v-tracos">...</span></div>
+                <div class="profile-field" style="grid-column: span 2;"><strong>Traços</strong><span id="v-tracos">...</span></div>
+                <div class="profile-field"><strong>Aspiração</strong><span id="v-aspiracao">—</span></div>
+                <div class="profile-field"><strong>Natureza</strong><span id="v-oculto">👤 Humano</span></div>
                 <div class="profile-field" style="grid-column: span 2;"><strong>Anotações / História do Sim</strong><span id="v-extra">...</span></div>
                 <div class="profile-field" style="grid-column: span 2;">
                     <strong style="color:var(--ts4-green)">Árvore de Parentesco</strong>
@@ -1983,7 +2070,31 @@
                     <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Anote aqui os traços e aspirações. Eles serão exibidos com destaque no Card Exportável do Sim.">❓</span>
                 </label>
                 <textarea id="e-tracos" style="height:50px; font-size:12px; padding:8px;" placeholder="Ex: Maligno, Ambicioso, Devorador de Livros..."></textarea>
-                
+
+                <label style="margin-top:10px; font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                    Aspiração:
+                    <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Aspiração de vida do Sim (campo único). Usado pela IA e pelos cards exportáveis para narrativa mais precisa.">❓</span>
+                    <button type="button" onclick="sortearRapido('aspiracoes','e-aspiracao')" style="margin-left:auto; font-size:10px; padding:3px 8px; border-radius:8px; border:1px solid var(--ts4-blue); background:transparent; color:var(--ts4-blue); cursor:pointer; font-weight:700;">🎲 Sortear</button>
+                </label>
+                <input type="text" id="e-aspiracao" placeholder="Ex: Mestre da Mixologia, Família Grande e Feliz..." style="font-size:12px; padding:8px;">
+
+                <label style="margin-top:10px; font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
+                    Natureza Oculta:
+                    <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Tipo de Sim (Humano, Vampiro, Bruxo...). Padroniza as cores da árvore sem depender de palavras-chave nas notas.">❓</span>
+                </label>
+                <select id="e-oculto" style="font-size:12px; padding:8px;">
+                    <option value="humano">👤 Humano</option>
+                    <option value="vampiro">🧛 Vampiro</option>
+                    <option value="bruxo">🧙 Bruxo / Feiticeiro</option>
+                    <option value="lobisim">🐺 Lobisim</option>
+                    <option value="sereia">🧜 Sereia</option>
+                    <option value="alien">👽 Alien</option>
+                    <option value="fantasma">👻 Fantasma</option>
+                    <option value="robo">🤖 Servo / Robô</option>
+                    <option value="planta">🌱 PlantaSim</option>
+                    <option value="outro">✨ Outro</option>
+                </select>
+
                 <label style="margin-top:10px; font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
                     Notas Extras (História, Ocultismo, etc):
                     <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Espaço livre para contar um resumo da lore, lendas e o objetivo de vida desse Sim.">❓</span>
@@ -2002,6 +2113,8 @@
 
     <div id="lightbox-overlay" onclick="fecharLightbox()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.93); z-index:500; justify-content:center; align-items:center; flex-direction:column; cursor:zoom-out;">
         <button onclick="fecharLightbox()" title="Fechar (Esc)" style="position:absolute; top:18px; right:22px; background:rgba(255,255,255,0.12); border:none; color:white; font-size:26px; cursor:pointer; line-height:1; font-family:'Nunito',sans-serif; font-weight:700; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center;">✕</button>
+        <button id="lightbox-prev" onclick="event.stopPropagation(); lightboxAnt()" title="Anterior (←)" style="position:absolute; left:18px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.12); border:none; color:white; font-size:32px; cursor:pointer; line-height:1; font-family:'Nunito',sans-serif; font-weight:700; border-radius:50%; width:54px; height:54px; display:flex; align-items:center; justify-content:center;">‹</button>
+        <button id="lightbox-next" onclick="event.stopPropagation(); lightboxProx()" title="Próxima (→)" style="position:absolute; right:18px; top:50%; transform:translateY(-50%); background:rgba(255,255,255,0.12); border:none; color:white; font-size:32px; cursor:pointer; line-height:1; font-family:'Nunito',sans-serif; font-weight:700; border-radius:50%; width:54px; height:54px; display:flex; align-items:center; justify-content:center;">›</button>
         <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()" style="max-width:88vw; max-height:78vh; border-radius:18px; object-fit:contain; box-shadow:0 8px 60px rgba(0,0,0,0.7); cursor:default;">
         <div id="lightbox-caption" style="color:rgba(255,255,255,0.9); font-size:13px; font-weight:800; margin-top:16px; text-transform:uppercase; letter-spacing:1.5px; font-family:'Nunito',sans-serif; background:rgba(255,255,255,0.08); padding:6px 18px; border-radius:20px;"></div>
     </div>
@@ -2202,6 +2315,25 @@
                 // Migração: converte campo legado s.irmao (string) para s.irmaos (array)
                 if (!s.irmaos) {
                     s.irmaos = s.irmao ? [String(s.irmao)] : [];
+                }
+                // Migração: campo Aspiração dedicado (extrai de tracos/extra se possível)
+                if (s.aspiracao === undefined) {
+                    const _txt = ((s.tracos || '') + ' ' + (s.extra || ''));
+                    const _m = _txt.match(/aspira[cç][aã]o[:\-\s]+([^\.\n;]+)/i);
+                    s.aspiracao = _m ? _m[1].trim() : '';
+                }
+                // Migração: Natureza Oculta dedicada (deduz de tracos/extra)
+                if (!s.oculto) {
+                    const _t = ((s.tracos || '') + ' ' + (s.extra || '')).toLowerCase();
+                    if (_t.includes('vampir')) s.oculto = 'vampiro';
+                    else if (_t.includes('bruxo') || _t.includes('feitic') || _t.includes('feiticei')) s.oculto = 'bruxo';
+                    else if (_t.includes('lobis')) s.oculto = 'lobisim';
+                    else if (_t.includes('sereia') || _t.includes('tritão')) s.oculto = 'sereia';
+                    else if (_t.includes('alien')) s.oculto = 'alien';
+                    else if (_t.includes('fantasma')) s.oculto = 'fantasma';
+                    else if (_t.includes('servo') || _t.includes('robô') || _t.includes('robo ') || _t.includes('androide')) s.oculto = 'robo';
+                    else if (_t.includes('planta')) s.oculto = 'planta';
+                    else s.oculto = 'humano';
                 }
             });
         }
@@ -2662,9 +2794,14 @@ if (fase === 'recem_nascido') {
             document.getElementById('btn-save-oraculo').style.display = document.getElementById('sel-sim-link').value ? 'block' : 'none';
         }
 
-        function sortearRapido(tipo) {
+        function sortearRapido(tipo, targetId) {
             let result = rand(getPool(tipo, tipo === 'aspiracoes' ? 'comum' : ''));
-            document.getElementById('res-rapido').innerHTML = `<span style="color:var(--ts4-blue)">${tipo}:</span> <strong>${result}</strong>`;
+            if (targetId) {
+                const el = document.getElementById(targetId);
+                if (el) { el.value = result; el.dispatchEvent(new Event('input', {bubbles:true})); }
+            } else {
+                document.getElementById('res-rapido').innerHTML = `<span style="color:var(--ts4-blue)">${tipo}:</span> <strong>${result}</strong>`;
+            }
         }
         
         function salvarOraculoNoSim() {
@@ -3306,9 +3443,10 @@ if (fase === 'recem_nascido') {
             const defaultImgObj = {"recem_nascido":"","bebe-colo":"","bebe":"","crianca":"","adolescente":"","jovem-adulto":"","adulto":"","idoso":""};
             const s = db.sims.find(x => String(x.id) === String(currentSimId)) || { nome: "", status: "Vivo", p1: "", p2: "", spouse: "", relStatus: "solteiro", crush: "", tracos: "", extra: "", img: defaultImgObj, traicao: false, fase: "jovem-adulto", historico_relacionamentos: [], p1NpcNome: "", p2NpcNome: "" };
             
-            ['e-nome','e-status','e-crush','e-tracos','e-extra'].forEach(id => {
+            ['e-nome','e-status','e-crush','e-tracos','e-aspiracao','e-extra'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).value = s[id.replace('e-','')] || "";
             });
+            if(document.getElementById('e-oculto')) document.getElementById('e-oculto').value = s.oculto || 'humano';
             
             tempFotosFases = JSON.parse(JSON.stringify(s.img || defaultImgObj)); 
             tempHistoricoRelacionamentos = JSON.parse(JSON.stringify(s.historico_relacionamentos || []));
@@ -3567,6 +3705,8 @@ function salvarSim() {
                 traicao: document.getElementById('e-traicao').checked, 
                 crush: document.getElementById('e-crush').value, 
                 tracos: document.getElementById('e-tracos').value, 
+                aspiracao: (document.getElementById('e-aspiracao')?.value || '').trim(),
+                oculto: document.getElementById('e-oculto')?.value || 'humano',
                 extra: document.getElementById('e-extra').value, 
                 fase: faseNova,
                 historico_relacionamentos: historicoAtual,
@@ -3745,6 +3885,9 @@ function salvarSim() {
             document.getElementById('v-filhos').innerText = filhos.length > 0 ? filhos.map(x=>x.nome).join(', ') : "Nenhum";
             document.getElementById('v-crush').innerText = s.crush || 'Nenhum';
             document.getElementById('v-tracos').innerText = s.tracos || '...';
+            const _ocLabels = {humano:'👤 Humano',vampiro:'🧛 Vampiro',bruxo:'🧙 Bruxo',lobisim:'🐺 Lobisim',sereia:'🧜 Sereia',alien:'👽 Alien',fantasma:'👻 Fantasma',robo:'🤖 Servo/Robô',planta:'🌱 PlantaSim',outro:'✨ Outro'};
+            const _vAsp = document.getElementById('v-aspiracao'); if(_vAsp) _vAsp.innerText = s.aspiracao || '—';
+            const _vOc = document.getElementById('v-oculto'); if(_vOc) _vOc.innerText = _ocLabels[s.oculto || 'humano'] || '👤 Humano';
             document.getElementById('v-extra').innerText = s.extra || '...';
             document.getElementById('v-parentesco').innerHTML = calcularParentesco(s.id);
             document.getElementById('v-timeline').innerHTML = gerarLinhaDoTempo(s);
@@ -4388,12 +4531,24 @@ function adotarFilhoPerfil() {
             });
 
 let edgesArray = [];
+            // Dicionário central de estilos — espelha 100% a legenda
+            const EDGE_STYLES = {
+                paiFilho:   { color: { color: '#0079C1' }, width: 3,   dashes: false,   arrows: 'to' },
+                casados:    { color: { color: '#7CD700' }, width: 4,   dashes: false,   arrows: { to: { enabled: false } }, label: '💍' },
+                separados:  { color: { color: '#FF4D4D' }, width: 3,   dashes: [8, 8],  arrows: { to: { enabled: false } }, label: '💔' },
+                viuvos:     { color: { color: '#34495E' }, width: 3,   dashes: [2, 6],  arrows: { to: { enabled: false } }, label: '🕊️' },
+                irmaosFull: { color: { color: '#FF8C00' }, width: 3,   dashes: false,   arrows: { to: { enabled: false } } },
+                meioIrmao:  { color: { color: '#FF8C00' }, width: 2.5, dashes: [6, 4],  arrows: { to: { enabled: false } } },
+                npc:        { color: { color: '#aaaacc' }, width: 2,   dashes: [5, 5],  arrows: 'to' }
+            };
+            const EDGE_FONT = { size: 14, strokeWidth: 0, color: '#555', background: 'rgba(255,255,255,0.7)' };
+
             // Arestas NPC
             baseSims.forEach(s => {
                 if (s.p1NpcNome && !s.p1)
-                    edgesArray.push({ from: 'npc_p1_' + s.id, to: String(s.id), color: { color: '#aaaacc' }, arrows: 'to', width: 2, dashes: [5, 5] });
+                    edgesArray.push({ from: 'npc_p1_' + s.id, to: String(s.id), ...EDGE_STYLES.npc });
                 if (s.p2NpcNome && !s.p2)
-                    edgesArray.push({ from: 'npc_p2_' + s.id, to: String(s.id), color: { color: '#aaaacc' }, arrows: 'to', width: 2, dashes: [5, 5] });
+                    edgesArray.push({ from: 'npc_p2_' + s.id, to: String(s.id), ...EDGE_STYLES.npc });
             });
             let addedSpouses = new Set();
 
@@ -4401,8 +4556,8 @@ let edgesArray = [];
             const addedFundadoresEdges = new Set();
             
             baseSims.forEach(s => {
-                if (s.p1 && baseSims.some(b => String(b.id) === String(s.p1))) edgesArray.push({ from: String(s.p1), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });
-                if (s.p2 && baseSims.some(b => String(b.id) === String(s.p2))) edgesArray.push({ from: String(s.p2), to: String(s.id), color: { color: '#0079C1' }, arrows: 'to', width: 3 });                
+                if (s.p1 && baseSims.some(b => String(b.id) === String(s.p1))) edgesArray.push({ from: String(s.p1), to: String(s.id), ...EDGE_STYLES.paiFilho });
+                if (s.p2 && baseSims.some(b => String(b.id) === String(s.p2))) edgesArray.push({ from: String(s.p2), to: String(s.id), ...EDGE_STYLES.paiFilho });
                 
                 // Linhas para Irmãos Fundadores (array irmaos)
                 let irmaosIds = s.irmaos || [];
@@ -4414,9 +4569,7 @@ let edgesArray = [];
                             edgesArray.push({
                                 from: String(s.id),
                                 to: String(irmaId),
-                                color: { color: '#FF8C00' },
-                                dashes: false,
-                                width: 2,
+                                ...EDGE_STYLES.irmaosFull,
                                 smooth: { type: 'curvedCW', roundness: 0.2 }
                             });
                             addedFundadoresEdges.add(irmaoKey1);
@@ -4431,25 +4584,17 @@ let edgesArray = [];
                     if (!addedSpouses.has(spKey1) && !addedSpouses.has(spKey2)) {
                         let isSeparated = s.relStatus === 'separado';
                         let isWidowed = s.relStatus === 'viuvo';
-                        
-                        let edgeColor = '#7CD700'; 
-                        let edgeDashes = false;
-                        
-                        if (isSeparated) {
-                            edgeColor = '#FF4D4D'; 
-                            edgeDashes = [8, 8];
-                        } else if (isWidowed) {
-                            edgeColor = '#34495E'; 
-                            edgeDashes = [3, 5];
-                        }
+
+                        let estilo = EDGE_STYLES.casados;
+                        if (isSeparated) estilo = EDGE_STYLES.separados;
+                        else if (isWidowed) estilo = EDGE_STYLES.viuvos;
 
                         edgesArray.push({
-                            from: String(s.id),       
-                            to: String(s.spouse),     
-                            color: { color: edgeColor },
-                            dashes: edgeDashes,
-                            width: 3,
-                            smooth: { type: 'curvedCW', roundness: 0.3 }  
+                            from: String(s.id),
+                            to: String(s.spouse),
+                            ...estilo,
+                            font: EDGE_FONT,
+                            smooth: { type: 'curvedCW', roundness: 0.3 }
                         });
                         addedSpouses.add(spKey1);
                     }
@@ -4480,14 +4625,12 @@ let edgesArray = [];
                     let pB = new Set([sB?.p1, sB?.p2].filter(Boolean).map(String));
                     let paisComuns = [...pA].filter(p => pB.has(p)).length;
 
-                    let dashPattern = paisComuns >= 2 ? false : [5, 7];
+                    let estiloIrm = paisComuns >= 2 ? EDGE_STYLES.irmaosFull : EDGE_STYLES.meioIrmao;
 
                     edgesArray.push({
                         from: filhos[i],
                         to: filhos[i+1],
-                        color: { color: '#FF8C00' },
-                        dashes: dashPattern,
-                        width: 2,
+                        ...estiloIrm,
                         smooth: { type: 'curvedCCW', roundness: 0.25 }
                     });
                 }
@@ -4509,7 +4652,7 @@ let edgesArray = [];
                 physics: { hierarchicalRepulsion: { nodeDistance: 245, springLength: 150 }, solver: 'hierarchicalRepulsion' },
                 interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true, navigationButtons: true },
                 nodes: { chosen: { node: function(values, id, selected, hovering) { if (hovering || selected) values.size = 88; } } },
-                edges: { smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.5 } }
+                edges: { smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.65 }, shadow: { enabled: true, color: 'rgba(0,0,0,0.15)', size: 6, x: 0, y: 2 }, hoverWidth: 1.2 }
             };
 
             if (currentTreeLayout === 2) {
@@ -4528,7 +4671,7 @@ let edgesArray = [];
                     physics: { hierarchicalRepulsion: { nodeDistance: 220, springLength: 150 }, solver: 'hierarchicalRepulsion' },
                     interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true, navigationButtons: true },
                     nodes: { chosen: { node: function(values, id, selected, hovering) { if (hovering || selected) values.size = 88; } } },
-                    edges: { smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.5 } }
+                    edges: { smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.65 }, shadow: { enabled: true, color: 'rgba(0,0,0,0.15)', size: 6, x: 0, y: 2 }, hoverWidth: 1.2 }
                 };
             } else if (currentTreeLayout === 3) {
                 options = {
@@ -4580,7 +4723,7 @@ let edgesArray = [];
                     physics: { hierarchicalRepulsion: { nodeDistance: 270, springLength: 150 }, solver: 'hierarchicalRepulsion' },
                     interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true, navigationButtons: true },
                     nodes: { chosen: { node: function(values, id, selected, hovering) { if (hovering || selected) values.size = 88; } } },
-                    edges: { smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.5 } }
+                    edges: { smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.65 }, shadow: { enabled: true, color: 'rgba(0,0,0,0.15)', size: 6, x: 0, y: 2 }, hoverWidth: 1.2 }
                 };
             }
 
@@ -4945,27 +5088,55 @@ let edgesArray = [];
                     const [aId, bId] = u.parents;
                     const aKey = nodeIdFor(aId, u.key), bKey = nodeIdFor(bId, u.key);
                     if (simPos[aKey] && simPos[bKey]) {
-                        let color = '#7CD700', dashed = false;
+                        let color = '#7CD700', dashed = 0, emoji = '💍';
                         const rel = (byId[aId] && byId[aId].spouse === bId) ? byId[aId].relStatus
                                   : (byId[bId] && byId[bId].spouse === aId) ? byId[bId].relStatus : null;
-                        if (rel === 'separado') { color = '#FF4D4D'; dashed = true; }
-                        else if (rel === 'viuvo') { color = '#34495E'; dashed = true; }
-                        elements.push({ data: { id: 'e_sp_' + u.key, source: aKey, target: bKey, kind: 'spouse', color, dashed: dashed ? 1 : 0 } });
+                        if (rel === 'separado') { color = '#FF4D4D'; dashed = 1; emoji = '💔'; }
+                        else if (rel === 'viuvo') { color = '#34495E'; dashed = 2; emoji = '🕊️'; }
+                        elements.push({ data: { id: 'e_sp_' + u.key, source: aKey, target: bKey, kind: 'spouse', color, dashed, emoji } });
                     }
                 }
                 // Parent → filho (com ou sem barra de irmandade)
                 const hasSibBar = !!sibBarPos[u.key];
                 const sourceParent = (u.type === 'couple') ? ('u_' + u.key) : nodeIdFor(u.parents[0], u.key);
+
+                // Helper: classifica cada filho como 'full' ou 'half' em relação à unidade
+                const unitParentSet = new Set(u.parents.map(String));
+                const classifyChild = (cid) => {
+                    const ch = byId[String(cid)];
+                    if (!ch) return 'full';
+                    const cps = new Set([ch.p1, ch.p2].filter(Boolean).map(String));
+                    // full = unidade do tipo couple e ambos pais do filho coincidem com os pais da unidade
+                    if (u.type === 'couple' && unitParentSet.size === 2) {
+                        let match = 0;
+                        unitParentSet.forEach(p => { if (cps.has(p)) match++; });
+                        return (match === 2 && cps.size === 2) ? 'full' : 'half';
+                    }
+                    // single parent: se o filho tem 2 pais (um externo), os irmãos podem ser meio-irmãos
+                    return (cps.size >= 2) ? 'half' : 'full';
+                };
+
                 if (hasSibBar) {
-                    // union/parent -> sibBar (tronco vertical)
+                    const childRels = u.children.map(cid => ({ cid, rel: classifyChild(cid) }));
+                    const allHalf = childRels.length > 0 && childRels.every(c => c.rel === 'half');
+                    // union/parent -> sibBar (tronco vertical) — azul (pai→filhos), independente
                     if (simPos[sourceParent] || unionPos[u.key]) {
                         elements.push({ data: { id: 'e_trunk_' + u.key, source: sourceParent, target: 'sb_' + u.key, kind: 'trunk' } });
                     }
-                    // sibBar -> cada filho (linha vertical curta)
-                    u.children.forEach(cid => {
+                    // marca a barra horizontal como meio-irmão quando TODOS são meio-irmãos
+                    if (allHalf) {
+                        ['e_sbL_' + u.key, 'e_sbR_' + u.key].forEach(id => {
+                            const ed = elements.find(e => e.data && e.data.id === id);
+                            if (ed) ed.data.relType = 'half';
+                        });
+                    }
+                    // sibBar -> cada filho
+                    childRels.forEach(({ cid, rel }) => {
                         const target = nodeIdFor(cid, u.key);
                         if (!simPos[target]) return;
-                        elements.push({ data: { id: 'e_sib_' + u.key + '_' + cid, source: 'sb_' + u.key, target, kind: 'sibling' } });
+                        const data = { id: 'e_sib_' + u.key + '_' + cid, source: 'sb_' + u.key, target, kind: 'sibling' };
+                        if (rel === 'half') data.relType = 'half';
+                        elements.push({ data });
                     });
                 } else {
                     // 1 filho: aresta direta
@@ -5077,16 +5248,19 @@ let edgesArray = [];
                 minZoom: 0.1, maxZoom: 2.5,
                 style: [
                     { selector: 'node[kind = "sim"]', style: {
-                        'shape': 'round-rectangle', 'background-color': '#fff',
+                        'shape': 'round-rectangle', 'background-color': '#fff8e7',
                         'background-image': 'data(img)', 'background-fit': 'cover', 'background-clip': 'node',
-                        'width': NODE_W, 'height': NODE_H, 'border-width': 0, 'label': ''
+                        'width': NODE_W, 'height': NODE_H,
+                        'border-width': 4, 'border-color': '#d4af37', 'border-style': 'double',
+                        'label': '',
+                        'shadow-blur': 12, 'shadow-color': '#7a5a1a', 'shadow-opacity': 0.35, 'shadow-offset-x': 0, 'shadow-offset-y': 3
                     }},
                     { selector: 'node[kind = "sim"][ghost = 1]', style: {
-                        'border-width': 3, 'border-color': '#FF8C00', 'border-style': 'dashed',
+                        'border-width': 4, 'border-color': '#FF8C00', 'border-style': 'dashed',
                         'opacity': 0.85
                     }},
                     { selector: 'node[kind = "union"]', style: {
-                        'width': 8, 'height': 8, 'background-color': '#7CD700', 'border-width': 0, 'label': ''
+                        'width': 1, 'height': 1, 'background-opacity': 0, 'border-width': 0, 'label': '', 'events': 'no'
                     }},
                     { selector: 'node[kind = "sibBar"]', style: {
                         'width': 1, 'height': 1, 'background-opacity': 0, 'border-width': 0, 'label': '', 'events': 'no'
@@ -5097,13 +5271,9 @@ let edgesArray = [];
                         'shape': 'round-rectangle', 'padding': '24px', 'label': '',
                         'compound-sizing-wrt-labels': 'exclude'
                     }},
-                    { selector: 'edge[kind = "spouse"]', style: {
-                        'width': 3, 'line-color': 'data(color)', 'curve-style': 'straight', 'target-arrow-shape': 'none'
-                    }},
-                    { selector: 'edge[kind = "spouse"][dashed = 1]', style: { 'line-style': 'dashed' }},
                     { selector: 'edge[kind = "parent"]', style: {
                         'width': 2.5, 'line-color': '#0079C1',
-                        'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 40,
+                        'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 40, 'taxi-turn-min-distance': 6,
                         'target-arrow-shape': 'none'
                     }},
                     { selector: 'edge[kind = "trunk"]', style: {
@@ -5111,14 +5281,30 @@ let edgesArray = [];
                         'curve-style': 'straight', 'target-arrow-shape': 'none'
                     }},
                     { selector: 'edge[kind = "sibling"]', style: {
-                        'width': 2.5, 'line-color': '#0079C1',
-                        'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 1,
+                        'width': 3, 'line-color': '#0079C1',
+                        'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 1, 'taxi-turn-min-distance': 6,
                         'target-arrow-shape': 'none'
                     }},
                     { selector: 'edge[kind = "sibtrunk"]', style: {
-                        'width': 2.5, 'line-color': '#0079C1',
+                        'width': 3, 'line-color': '#0079C1',
                         'curve-style': 'straight', 'target-arrow-shape': 'none'
                     }},
+                    { selector: 'edge[kind = "sibling"][relType = "half"]', style: {
+                        'width': 3, 'line-color': '#FF8C00', 'line-style': 'dashed', 'line-dash-pattern': [8, 5]
+                    }},
+                    { selector: 'edge[kind = "sibtrunk"][relType = "half"]', style: {
+                        'width': 3, 'line-color': '#FF8C00', 'line-style': 'dashed', 'line-dash-pattern': [8, 5]
+                    }},
+                    { selector: 'edge[kind = "spouse"]', style: {
+                        'width': 4, 'line-color': 'data(color)', 'curve-style': 'unbundled-bezier', 'control-point-distances': [0], 'target-arrow-shape': 'none',
+                        'label': 'data(emoji)', 'font-size': 24, 'color': '#5a3a1a',
+                        'text-background-color': '#fff8e7', 'text-background-opacity': 1,
+                        'text-background-shape': 'roundrectangle', 'text-background-padding': '5px',
+                        'text-border-width': 1.5, 'text-border-color': '#d4af37', 'text-border-opacity': 1,
+                        'text-rotation': 0, 'text-margin-y': -4
+                    }},
+                    { selector: 'edge[kind = "spouse"][dashed = 1]', style: { 'line-style': 'dashed' }},
+                    { selector: 'edge[kind = "spouse"][dashed = 2]', style: { 'line-style': 'dotted' }},
                     { selector: 'edge[kind = "hub"]', style: {
                         'width': 2.5, 'line-color': '#0079C1',
                         'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 30,
@@ -5289,7 +5475,7 @@ let edgesArray = [];
             albumSection.style.display = 'block';
 gallery.innerHTML = _albumFotos.map((foto, idx) => `
     <div class="album-item" style="position: relative; flex:0 0 auto; text-align:center; scroll-snap-align:start; cursor:pointer;">
-        <div onclick="abrirLightbox(${idx})" style="width:82px; height:82px; border-radius:14px; overflow:hidden; border:2.5px solid var(--ts4-blue); background:#e4ebf5; box-shadow:0 2px 8px rgba(0,121,193,0.15);">
+        <div onclick="_lightboxList=null; abrirLightbox(${idx})" style="width:82px; height:82px; border-radius:14px; overflow:hidden; border:2.5px solid var(--ts4-blue); background:#e4ebf5; box-shadow:0 2px 8px rgba(0,121,193,0.15);">
             <img src="${foto.src}" style="width:100%; height:100%; object-fit:cover; display:block;" alt="${foto.label}">
         </div>
         <button onclick="excluirFotoDiretoAlbum('${sim.id}', '${foto.fase}')" style="position: absolute; bottom: 20px; right: -5px; background: #ff4d4d; color: white; border: 2px solid white; border-radius: 50%; width: 24px; height: 24px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3);" title="Excluir foto">🗑️</button>
@@ -5310,20 +5496,62 @@ function excluirFotoDiretoAlbum(simId, fase) {
         showToast("🗑️ Foto removida com sucesso!");
     }
 }
+        let _lightboxIdx = 0;
+        let _lightboxList = null; // null = usa _albumFotos; senão usa lista fornecida (galeria)
         function abrirLightbox(idx) {
-            const foto = _albumFotos[idx];
+            const lista = _lightboxList || _albumFotos;
+            if (!lista || !lista.length) return;
+            _lightboxIdx = ((idx % lista.length) + lista.length) % lista.length;
+            const foto = lista[_lightboxIdx];
             if (!foto) return;
             const overlay = document.getElementById('lightbox-overlay');
             document.getElementById('lightbox-img').src = foto.src;
-            document.getElementById('lightbox-caption').textContent = foto.label;
+            document.getElementById('lightbox-caption').textContent = foto.label || foto.titulo || '';
             overlay.style.display = 'flex';
+            const lenOk = lista.length > 1;
+            const prev = document.getElementById('lightbox-prev');
+            const next = document.getElementById('lightbox-next');
+            if (prev) prev.style.display = lenOk ? 'flex' : 'none';
+            if (next) next.style.display = lenOk ? 'flex' : 'none';
         }
+        function lightboxProx() { abrirLightbox(_lightboxIdx + 1); }
+        function lightboxAnt()  { abrirLightbox(_lightboxIdx - 1); }
 
         function fecharLightbox() {
             const overlay = document.getElementById('lightbox-overlay');
             overlay.style.display = 'none';
             document.getElementById('lightbox-img').src = '';
+            _lightboxList = null;
         }
+
+        // Navegação por teclado + swipe touch no lightbox
+        (function () {
+            document.addEventListener('keydown', function (e) {
+                const overlay = document.getElementById('lightbox-overlay');
+                if (!overlay || overlay.style.display !== 'flex') return;
+                if (e.key === 'Escape') { fecharLightbox(); }
+                else if (e.key === 'ArrowRight') { lightboxProx(); }
+                else if (e.key === 'ArrowLeft')  { lightboxAnt(); }
+            });
+            let _tx0 = 0, _ty0 = 0;
+            document.addEventListener('touchstart', function (e) {
+                const overlay = document.getElementById('lightbox-overlay');
+                if (!overlay || overlay.style.display !== 'flex') return;
+                if (!e.changedTouches || !e.changedTouches[0]) return;
+                _tx0 = e.changedTouches[0].clientX;
+                _ty0 = e.changedTouches[0].clientY;
+            }, { passive: true });
+            document.addEventListener('touchend', function (e) {
+                const overlay = document.getElementById('lightbox-overlay');
+                if (!overlay || overlay.style.display !== 'flex') return;
+                if (!e.changedTouches || !e.changedTouches[0]) return;
+                const dx = e.changedTouches[0].clientX - _tx0;
+                const dy = e.changedTouches[0].clientY - _ty0;
+                if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+                    if (dx < 0) lightboxProx(); else lightboxAnt();
+                }
+            }, { passive: true });
+        })();
 
         function fecharModal() {
             document.getElementById('modal-sim').style.display = 'none';
@@ -5484,7 +5712,10 @@ function renderizarAbasGaleria() {
             <div id="capa-album-${album.id}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:12px; background:#eef3fa; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:30px;">📁</div>
             <h3 style="margin:0; color:var(--ts4-blue)">📁 ${album.nome}</h3>
             <p style="font-size:13px; color:#666; margin:8px 0 4px 0;">${album.desc}</p>
-            <span style="font-size:11px; color:#999; font-weight:700;">📸 ${numFotos} foto(s)</span>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:6px;">
+                <span style="font-size:11px; color:#999; font-weight:700;">📸 ${numFotos} foto(s)</span>
+                ${album.capa ? `<button onclick="event.stopPropagation(); removerCapaAlbum('${album.id}')" style="font-size:10px; padding:3px 8px; border-radius:8px; border:1px solid #ff4d4d; background:transparent; color:#ff4d4d; cursor:pointer; font-weight:700;" title="Remover a capa deste álbum">✕ Remover capa</button>` : ''}
+            </div>
         `;
         grid.appendChild(div);
 
@@ -5681,6 +5912,16 @@ function definirCapaAlbum(idFoto) {
     showToast("⭐ Foto definida como capa do álbum!");
 }
 
+function removerCapaAlbum(idAlbum) {
+    let album = db.galeria.albuns.find(a => a.id === idAlbum);
+    if (!album || !album.capa) return;
+    if (!confirm('Remover a capa deste álbum?')) return;
+    delete album.capa;
+    salvarTudo();
+    renderizarAbasGaleria();
+    showToast('Capa removida.');
+}
+
 async function renderizarFotosDoAlbum() {
     let grid = document.getElementById('grid-fotos');
     if(!grid) return;
@@ -5708,6 +5949,13 @@ async function renderizarFotosDoAlbum() {
 
     grid.innerHTML = '';
 
+    // Lista para navegação por setas/swipe no lightbox da galeria
+    window._galeriaLightboxList = fotosFiltradas.map((foto, i) => ({
+        src: imagensSrcs[i],
+        label: foto.titulo,
+        titulo: foto.titulo
+    }));
+
     fotosFiltradas.forEach((foto, index) => {
         let imagemSrc = imagensSrcs[index];
 
@@ -5721,7 +5969,8 @@ async function renderizarFotosDoAlbum() {
         // Estilização estilo Polaroid charmosa
         div.style = "background: white; padding: 15px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); border-bottom: 20px solid white; text-align: center; display: flex; flex-direction: column; gap: 8px;";
         div.innerHTML = `
-            <img src="${imagemSrc}" onclick="abrirLightboxGaleria('${imagemSrc}', '${foto.titulo}')" style="width: 100%; height: 220px; object-fit: cover; border: 1px solid #eee; cursor: zoom-in;">
+            <img src="${imagemSrc}" onclick="abrirLightboxGaleria(${index})" style="width: 100%; height: 220px; object-fit: cover; border: 1px solid #eee; cursor: zoom-in;">
+
             <div style="text-align: left; margin-top: 5px;">
                 <strong style="color: var(--ts4-blue); font-size:14px; display:block;">${foto.titulo}</strong>
                 <span style="font-size: 11px; background: #e6f2ff; color: var(--ts4-blue); padding: 2px 6px; border-radius: 6px; font-weight: bold; display: inline-block; margin-top:4px;">📅 ${foto.data}</span>
@@ -5754,7 +6003,10 @@ async function deletarFotoPrincipal(idFoto) {
     
     // Remove o registro de texto do banco
     db.galeria.fotos = db.galeria.fotos.filter(f => f.id !== idFoto);
-    
+
+    // Limpa capa órfã (qualquer álbum que apontasse para esta foto)
+    (db.galeria.albuns || []).forEach(a => { if (a.capa === idFoto) delete a.capa; });
+
     salvarTudo();
     renderizarFotosDoAlbum();
     showToast("Foto removida.");
@@ -6416,27 +6668,15 @@ async function guardarImagemNaGaleriaDoSistema(base64Data, titulo, comentario) {
 }
 
 // Esta função faz a mágica de abrir a foto maior
-function abrirLightboxGaleria(src, titulo) {
-    // 1. Cria o fundo escuro (overlay) se ele não existir
-    let overlay = document.getElementById('lightbox-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'lightbox-overlay';
-        overlay.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); display:none; justify-content:center; align-items:center; z-index:9999; cursor:pointer;";
-        overlay.innerHTML = `
-            <div style="position:relative; max-width:90%; max-height:90%;">
-                <img id="lightbox-img" style="max-width:100%; max-height:80vh; border: 4px solid white; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
-                <p id="lightbox-caption" style="color:white; text-align:center; margin-top:10px; font-family:sans-serif;"></p>
-            </div>
-        `;
-        overlay.onclick = function() { this.style.display = 'none'; }; // Fecha ao clicar no fundo
-        document.body.appendChild(overlay);
+function abrirLightboxGaleria(idxOrSrc, titulo) {
+    // Compat: aceita (idx) novo OU (src, titulo) legado
+    if (typeof idxOrSrc === 'number') {
+        _lightboxList = window._galeriaLightboxList || [];
+        abrirLightbox(idxOrSrc);
+    } else {
+        _lightboxList = [{ src: idxOrSrc, label: titulo || '', titulo: titulo || '' }];
+        abrirLightbox(0);
     }
-    
-    // 2. Coloca a imagem no tamanho real e mostra na tela
-    document.getElementById('lightbox-img').src = src;
-    document.getElementById('lightbox-caption').textContent = titulo;
-    overlay.style.display = 'flex';
 }
 function atualizarIndicadorMemoria() {
     // 1. Verifica se o banco de dados 'db' e os elementos visuais existem na tela
@@ -6582,7 +6822,37 @@ function atualizarIndicadorMemoria() {
             alert("Chave PIX copiada!");
         });
     }
+    // ============================================================
+    // Proteção leve contra inspeção casual (somente para leigos).
+    // Não bloqueia copiar/colar em inputs, textareas e contenteditable.
+    // ============================================================
+    document.addEventListener('contextmenu', function (e) {
+        if (e.target.closest && e.target.closest('input, textarea, [contenteditable=""], [contenteditable="true"]')) return;
+        e.preventDefault();
+    });
+    document.addEventListener('keydown', function (e) {
+        const k = (e.key || '').toLowerCase();
+        if (e.key === 'F12') { e.preventDefault(); return; }
+        if (e.ctrlKey && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) { e.preventDefault(); return; }
+        if (e.ctrlKey && !e.shiftKey && (k === 'u' || k === 's')) {
+            // Permite Ctrl+S/Ctrl+U se o foco estiver em campo editável
+            if (e.target.closest && e.target.closest('input, textarea, [contenteditable=""], [contenteditable="true"]')) return;
+            e.preventDefault();
+        }
+    });
 </script>
+<style>
+    /* Desestimula seleção em áreas visuais (árvore e grade da galeria). */
+    .tree-container, #grid-albuns {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    /* Inputs e textareas continuam selecionáveis normalmente. */
+    .tree-container input, .tree-container textarea,
+    #grid-albuns input, #grid-albuns textarea { user-select: text; }
+</style>
 
 </body>
 </html>
