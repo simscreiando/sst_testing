@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEST - V52 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE 52 - 20 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -624,6 +624,59 @@
     .sidebar-extra-widgets.active {
         display: block !important;
     }
+
+    /* === Fix #4: aba ativa visível no mobile (modo claro) === */
+    .sidebar .nav-btn.active {
+        background: var(--ts4-blue) !important;
+        color: #fff !important;
+        border-color: var(--ts4-blue);
+        box-shadow: 0 4px 0 #005a8f;
+    }
+
+    /* === Fix #2: botões da árvore numa só linha no celular === */
+    .tree-actions {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        width: 100%;
+        overflow: hidden;
+    }
+    .tree-actions .btn-main {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+        font-size: 11px !important;
+        padding: 8px 4px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .tree-actions .lbl-full  { display: none; }
+    .tree-actions .lbl-short { display: inline; }
+
+    /* === Fix #3: modal de perfil menor no celular === */
+    .modal-overlay {
+        padding: 30px 12px !important;
+        align-items: flex-start !important;
+    }
+    .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 16px !important;
+        border-radius: 18px !important;
+        max-height: calc(100vh - 60px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    .modal-content img,
+    .modal-content table { max-width: 100%; height: auto; }
+    .modal-content * { word-break: break-word; }
+}
+
+/* Em telas maiores, mostra o texto completo dos botões da árvore */
+@media (min-width: 769px) {
+    .tree-actions .lbl-short { display: none; }
+    .tree-actions .lbl-full  { display: inline; }
 }
     </style>
 </head>
@@ -815,11 +868,11 @@
         <div id="tab-tree" class="tab-pane">
             <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:20px; flex-wrap: wrap; gap: 10px;">
                 <h2 style="margin:0;">Legado Familiar</h2>
-                <div style="display:flex; gap: 10px;">
-                    <button class="btn-main btn-sec" style="width:auto; margin:0; border-color:var(--ts4-blue); color:var(--ts4-blue);" onclick="exportarArvoreImagem()">📸 Exportar Árvore Genealógica</button>
-                    <button class="btn-main btn-sec" style="width:auto; margin:0;" onclick="centralizarArvore()" title="Centralizar visualização">🎯 Centralizar</button>
-                    <button class="btn-main btn-sec" style="width:auto; margin:0;" onclick="toggleMortosArvore()" id="btn-toggle-mortos">👁️ Ocultar Mortos</button>
-                    <button class="btn-main" style="width:180px; margin:0" onclick="abrirNovoSim()">+ Novo Sim</button>
+                <div class="tree-actions" style="display:flex; gap: 10px;">
+                    <button class="btn-main btn-sec" style="width:auto; margin:0; border-color:var(--ts4-blue); color:var(--ts4-blue);" onclick="exportarArvoreImagem()"><span class="lbl-full">📸 Exportar Árvore Genealógica</span><span class="lbl-short">📸 Exportar</span></button>
+                    <button class="btn-main btn-sec" style="width:auto; margin:0;" onclick="centralizarArvore()" title="Centralizar visualização"><span class="lbl-full">🎯 Centralizar</span><span class="lbl-short">🎯</span></button>
+                    <button class="btn-main btn-sec" style="width:auto; margin:0;" onclick="toggleMortosArvore()" id="btn-toggle-mortos"><span class="lbl-full">👁️ Ocultar Mortos</span><span class="lbl-short">👁️ Mortos</span></button>
+                    <button class="btn-main" style="width:180px; margin:0" onclick="abrirNovoSim()"><span class="lbl-full">+ Novo Sim</span><span class="lbl-short">+ Sim</span></button>
                 </div>
             </div>
             
@@ -962,6 +1015,9 @@
                     <button class="filter-btn" onclick="filtrarLivro('MORTE', this)">Mortes</button>
                     <button class="filter-btn" onclick="filtrarLivro('CASAMENTO', this)">Casamentos</button>
                     <button class="filter-btn" onclick="filtrarLivro('DRAMA', this)">Dramas</button>
+                    <button class="filter-btn" onclick="filtrarLivro('META', this)">🎯 Metas</button>
+                    <button class="filter-btn" onclick="filtrarLivro('CONQUISTA', this)">🏆 Conquistas</button>
+                    <button class="filter-btn" onclick="filtrarLivro('META-DESISTIDA', this)">🏳️ Desistidas</button>
                     <div id="filtros-tags-custom" style="display:contents;"></div>
                 </div>
 
@@ -984,6 +1040,17 @@
 
                 <hr style="margin: 30px 0; border: 1px solid #eee;">
 
+                <h2 style="margin-top:0;">🎯 Metas do Legado</h2>
+                <div style="display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
+                    <input type="text" id="nova-meta" placeholder="Ex: Dominar a habilidade de Culinária Gourmet..." style="flex:1; min-width:220px;">
+                    <select id="nova-meta-sim" style="width:200px; margin:0;"><option value="">— Sem Sim vinculado —</option></select>
+                    <button class="btn-main" style="width:150px; margin:0; background:var(--ts4-blue);" onclick="addMeta()">Adicionar Meta</button>
+                </div>
+                <p style="font-size:11px; color:#888; margin:0 0 12px 0;">💡 Vincular a um Sim é opcional. Use ⭐ para priorizar, ✏️ para editar, 🏳️ para desistir.</p>
+                <div id="lista-metas"></div>
+
+                <hr style="margin: 30px 0; border: 1px solid #eee;">
+
                 <div style="display:flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap: 10px;">
                     <h2 style="margin-top:0; margin-bottom:0;">📋 Importar Log do MCCC</h2>
                     
@@ -999,15 +1066,6 @@
                     <button class="btn-main btn-sec" style="flex:1; min-width:140px;" onclick="document.getElementById('txt-mccc-import').value=''">🗑️ Limpar</button>
                 </div>
                 <div id="mccc-preview" style="display:none; margin-top:12px; background:#f0f7ff; border-radius:10px; padding:15px; border-left:4px solid var(--ts4-blue);"></div>
-
-                <hr style="margin: 30px 0; border: 1px solid #eee;">
-
-                <h2 style="margin-top:0;">🎯 Metas do Legado</h2>
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <input type="text" id="nova-meta" placeholder="Ex: Dominar a habilidade de Culinária Gourmet...">
-                    <button class="btn-main" style="width:150px; margin:0; background:var(--ts4-blue);" onclick="addMeta()">Adicionar Meta</button>
-                </div>
-                <div id="lista-metas"></div>
             </div>
         </div>
 <div id="tab-galeria" class="tab-pane">
@@ -1100,8 +1158,20 @@
         <div id="tab-laws" class="tab-pane">
             <div class="panel">
                 <h2>📜 Livro de Regras</h2>
-                <textarea id="txt-laws" style="height:450px" placeholder="Ex: Somente o primogênito herda a casa; Proibido usar a cama mais cara; etc..."></textarea>
-                <button class="btn-main" onclick="salvarGeral()">Salvar Regras</button>
+                <p style="font-size:13px; color:#666; margin-top:0;">As regras estruturadas abaixo podem ser editadas, excluídas ou sorteadas pela <strong>Roleta de Regras</strong> no Laboratório 🧪. Use também o bloco de Notas Livres para anotações soltas.</p>
+
+                <h3 style="margin-top:18px;">📜 Regras Registradas</h3>
+                <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+                    <input type="text" id="nova-regra" placeholder="Escrever nova regra..." style="flex:1; min-width:220px;" onkeydown="if(event.key==='Enter'){event.preventDefault();addRegra();}">
+                    <button class="btn-main" style="width:170px; margin:0; background:var(--ts4-blue);" onclick="addRegra()">+ Adicionar Regra</button>
+                </div>
+                <div id="lista-regras" style="margin-bottom:25px;"></div>
+
+                <hr style="margin:25px 0; border:0; border-top:1px dashed #ddd;">
+
+                <h3>🗒️ Notas Livres</h3>
+                <textarea id="txt-laws" style="height:300px" placeholder="Ex: Somente o primogênito herda a casa; Proibido usar a cama mais cara; etc..."></textarea>
+                <button class="btn-main" onclick="salvarGeral()">Salvar Notas</button>
             </div>
         </div>
 
@@ -1126,7 +1196,35 @@
                     </div>
                 </div>
 
-                <div class="config-header" style="font-weight: bold; margin-top: 25px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">📂 TRAÇOS, CARREIRAS E ASPIRAÇÕES (CUSTOM)</div>
+                <div class="config-header" style="font-weight: bold; margin-top: 25px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🌙 APARÊNCIA / MODO ESCURO</div>
+                <p style="font-size: 12px; color: var(--ts4-subtle-text); margin-bottom: 5px;">Simmers noturnos, este é para vocês. Reduza o brilho da tela e jogue com mais conforto em ambientes escuros.</p>
+                <div style="display:flex; align-items:center; gap:15px; margin-top:12px; flex-wrap:wrap;">
+                    <button id="btn-dark-mode" class="btn-main btn-sec" style="width:auto; margin:0; padding:10px 22px; font-size:14px;" onclick="toggleDarkMode()">🌙 Modo Escuro</button>
+                    <span id="dark-mode-status" style="font-size:12px; font-weight:700; color:var(--ts4-subtle-text);">Modo atual: ☀️ Claro</span>
+                </div>
+
+		<div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">📸 CONFIGURAÇÕES DO ÁLBUM E GALERIA</div>
+<p style="font-size: 12px; color: var(--ts4-subtle-text);">Escolha o comportamento padrão ao exportar imagens dos seus Sims.</p>
+<div style="margin-top:10px; background: var(--ts4-secondary-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--ts4-border);">
+    <label style="display:flex; align-items:center; gap:10px; font-weight:bold; cursor:pointer; color:var(--ts4-text);">
+        <input type="checkbox" id="chk-salvar-auto-album" checked>
+        🚀 Sempre adicionar capturas e prints automaticamente à Galeria de Recordações
+    </label>
+</div>
+
+                <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🔄 BACKUP MANUAL (OFFLINE)</div>
+                <p style="font-size: 12px; color: var(--ts4-subtle-text);">Para quem não deseja conectar no Google ou salvar no navegador.</p>
+                <div style="display:flex; flex-direction:column; gap:10px; margin-top: 15px;">
+                    <input type="file" id="import-file" style="display:none" onchange="importarArquivo(event)">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-main btn-sec" style="margin:0; flex:1" onclick="fazerBackup()">💾 Download Backup Atual (.json)</button>
+                        <button class="btn-main btn-sec" style="margin:0; flex:1; border-color:var(--ts4-blue); color:var(--ts4-blue);" onclick="fazerBackupZip()">🗜️ Exportar Tudo (.zip)</button>
+                    </div>
+                    <button class="btn-main btn-sec" style="margin:0;" onclick="document.getElementById('import-file').click()">📥 Importar Backup Existente</button>
+                    <button class="btn-main" style="margin:0; background:#ff4d4d" onclick="reiniciarConfiguracoes()">⚠️ EXCLUIR TUDO (Reset Completo)</button>
+                </div>
+
+                <div class="config-header" style="font-weight: bold; margin-top: 25px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">📂 TRAÇOS, CARREIRAS E ASPIRAÇÕES (CUSTOMIZAÇÃO)</div>
                 <div id="custom-items-area" style="margin-top: 15px;"></div>
 
                 <div class="config-header" style="font-weight: bold; margin-top: 25px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🎲 GERENCIAR ROLETAS E EVENTOS</div>
@@ -1162,223 +1260,190 @@
                 <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🔊 ÁUDIOS DE REAÇÃO (MODIFICADORES)</div>
                 <p style="font-size: 12px; color: var(--ts4-subtle-text);">O sistema possui sons nativos. Substitua enviando seus próprios áudios curtos abaixo.</p>
                 <div class="audio-config-grid" id="reaction-audio-area"></div>
-
-		<div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">📸 CONFIGURAÇÕES DO ÁLBUM E GALERIA</div>
-<p style="font-size: 12px; color: var(--ts4-subtle-text);">Escolha o comportamento padrão ao exportar imagens dos seus Sims.</p>
-<div style="margin-top:10px; background: var(--ts4-secondary-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--ts4-border);">
-    <label style="display:flex; align-items:center; gap:10px; font-weight:bold; cursor:pointer; color:var(--ts4-text);">
-        <input type="checkbox" id="chk-salvar-auto-album" checked>
-        🚀 Sempre adicionar capturas e prints automaticamente à Galeria de Recordações
-    </label>
-</div>
-
-                <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🌙 APARÊNCIA / MODO ESCURO</div>
-                <p style="font-size: 12px; color: var(--ts4-subtle-text); margin-bottom: 5px;">Simmers noturnos, este é para vocês. Reduza o brilho da tela e jogue com mais conforto em ambientes escuros.</p>
-                <div style="display:flex; align-items:center; gap:15px; margin-top:12px; flex-wrap:wrap;">
-                    <button id="btn-dark-mode" class="btn-main btn-sec" style="width:auto; margin:0; padding:10px 22px; font-size:14px;" onclick="toggleDarkMode()">🌙 Modo Escuro</button>
-                    <span id="dark-mode-status" style="font-size:12px; font-weight:700; color:var(--ts4-subtle-text);">Modo atual: ☀️ Claro</span>
-                </div>
-
-                <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🔄 BACKUP MANUAL (OFFLINE)</div>
-                <p style="font-size: 12px; color: var(--ts4-subtle-text);">Para quem não deseja conectar no Google ou salvar no navegador.</p>
-                <div style="display:flex; flex-direction:column; gap:10px; margin-top: 15px;">
-                    <input type="file" id="import-file" style="display:none" onchange="importarArquivo(event)">
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <button class="btn-main btn-sec" style="margin:0; flex:1" onclick="fazerBackup()">💾 Download Backup Atual (.json)</button>
-                        <button class="btn-main btn-sec" style="margin:0; flex:1; border-color:var(--ts4-blue); color:var(--ts4-blue);" onclick="fazerBackupZip()">🗜️ Exportar Tudo (.zip)</button>
-                    </div>
-                    <button class="btn-main btn-sec" style="margin:0;" onclick="document.getElementById('import-file').click()">📥 Importar Backup Existente</button>
-                    <button class="btn-main" style="margin:0; background:#ff4d4d" onclick="reiniciarConfiguracoes()">⚠️ EXCLUIR TUDO (Reset Completo)</button>
-                </div>
             </div>
         </div>
 <div id="tab-help" class="tab-pane">
 
     <div class="panel" style="max-width:1000px; margin:auto; padding: 30px;">
         
-        <!-- ==========================================
-             SEÇÃO 1: GUIA RÁPIDO (PRIMEIROS PASSOS)
-             ========================================== -->
-        <h2 style="color: var(--ts4-blue); border-bottom: 3px solid var(--ts4-blue); padding-bottom: 8px; margin-top: 0;">⚡ Guia Rápido de Primeiros Passos</h2>
+<h2 style="color: var(--ts4-blue); border-bottom: 3px solid var(--ts4-blue); padding-bottom: 8px; margin-top: 0;">⚡ Guia Rápido de Primeiros Passos</h2>
 
         <div style="background:#f0f7ff; padding:20px; border-radius:15px; margin-bottom:25px; border-left:4px solid var(--ts4-blue); font-weight: 600;">
             <strong>Bem-vindo ao SimStoria!</strong><br>
             O SimStoria foi criado para ajudar você a organizar famílias, construir legados e registrar histórias no The Sims 4 de forma simples e divertida.
         </div>
 
-<div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 5px solid var(--ts4-blue); margin-bottom: 25px;">
-    <h3 style="margin-top: 0; color: var(--ts4-blue);">✨ Aba Início (Sua Central de Boas-Vindas)</h3>
-    <p>O ponto de partida perfeito para cada sessão de gameplay. A aba Início funciona como a capa interativa do seu legado.</p>
-    <ul>
-        <li><strong>Painel Geral:</strong> Veja um resumo rápido da sua família ativa antes de começar a jogar.</li>
-        <li><strong>Navegação Simplificada:</strong> Encontre atalhos rápidos para retomar a história exatamente de onde você parou na última geração.</li>
-    </ul>
-</div>
+        <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 5px solid var(--ts4-blue); margin-bottom: 25px;">
+            <h3 style="margin-top: 0; color: var(--ts4-blue);">✨ Aba Início (Sua Central de Boas-Vindas)</h3>
+            <p>O ponto de partida perfeito para cada sessão de gameplay. A aba Início funciona como a capa interativa do seu legado.</p>
+            <ul style="margin-bottom: 0;">
+                <li><strong>Painel Geral:</strong> Veja um resumo rápido da sua família ativa antes de começar a jogar.</li>
+                <li><strong>Navegação Simplificada:</strong> Encontre atalhos rápidos para retomar a história exatamente de onde você parou na última geração.</li>
+            </ul>
+        </div>
 
         <div style="line-height: 1.6; color: var(--ts4-text);">
             <p><strong>☁️ 1. Escolha como salvar seus dados</strong><br>
-            Clique em <em>Conectar Google Drive</em> no menu lateral para salvar na nuvem de forma segura, ou ative <em>Salvar automaticamente no navegador</em> para guardar localmente na memória do navegador.</p>
+            Clique em <em>Conectar Google Drive</em> no menu lateral para salvar na nuvem de forma segura, ou ative <em>Salvar automaticamente no navegador</em> para guardar localmente na memória do navegador (ideal para testar ou acessos rápidos).</p>
 
             <p><strong>👨‍👩‍👧‍👦 2. Crie sua Família</strong><br>
-            Na seção <em>Minhas Famílias</em> no menu lateral, clique em <span class="tag">✨ Criar Nova Família</span> para iniciar a linhagem do seu legado.</p>
+            Na seção <em>Minhas Famílias</em> no menu lateral, clique em <strong>✨ Criar Nova Família</strong> para iniciar a linhagem do seu legado e dar um nome à sua dinastia.</p>
 
-            <p><strong>🌳 3. Monte sua Árvore</strong><br>
-            Acesse a aba <em>Árvore Genealógica</em> e use o botão <span class="tag">+ Novo Sim</span> para cadastrar os membros, personalizar fotos por fases da vida e criar vínculos de casamento ou parentesco.</p>
+            <p><strong>🌳 3. Popule a sua Árvore</strong><br>
+            Acesse a aba <em>Árvore Genealógica</em> e use o botão <strong>+ Novo Sim</strong> para cadastrar seus primeiros fundadores. Coloque fotos, preencha os dados e defina os vínculos amorosos e familiares.</p>
 
-            <p><strong>🎲 4. Gire o Destino e Registre</strong><br>
-            Use as roletas do <em>Dashboard</em>, do <em>Laboratório</em> e de <em>Personalidade</em> para ditar os traços e reviravoltas da história. Tudo o que acontecer de marcante pode ser eternizado na aba <em>Livro e Metas</em>.</p>
+            <p><strong>🎲 4. Jogue, Gire e Registre!</strong><br>
+            Use as roletas de eventos no <em>Dashboard</em> para ditar as reviravoltas do dia a dia. Tudo o que acontecer de importante (um casamento, uma promoção ou uma tragédia) deve ser eternizado na aba <em>Livros e Metas</em>.</p>
         </div>
 
-        <!-- Divisor sutil entre as seções -->
         <hr style="margin: 40px 0; border: 0; border-top: 2px dashed #ddd;">
 
-<!-- ==========================================
-     SEÇÃO 2: MANUAL COMPLETO OFICIAL
-     ========================================== -->
-<h2 style="color: var(--ts4-blue); border-bottom: 3px solid var(--ts4-blue); padding-bottom: 8px;">📖 Manual Completo: O Guia do seu Legado</h2>
+        <h2 style="color: var(--ts4-blue); border-bottom: 3px solid var(--ts4-blue); padding-bottom: 8px;">📖 Manual Completo: O Guia do seu Legado</h2>
 
-<p style="font-size: 15px; line-height: 1.6; margin-bottom: 30px; font-style: italic;">
-    Bem-vindo ao SimStoria! Esta ferramenta foi pensada para ser o "Mestre de RPG" das suas histórias no The Sims 4. Este manual não serve apenas para explicar botões, mas para ajudar você a tirar o máximo de proveito das ferramentas de narrativa, organização e registro. Prepare sua família, pegue um café e vamos construir um legado épico.
-</p>
+        <p style="font-size: 15px; line-height: 1.6; margin-bottom: 30px; font-style: italic;">
+            Bem-vindo ao SimStoria! Esta ferramenta foi pensada para ser o seu "Mestre de RPG" e diário digital durante as suas jogatinas de The Sims 4. Este manual vai ajudar você a dominar todos os recursos narrativos para construir um legado épico, seja você um jogador casual ou focado em desafios pesados de gerações.
+        </p>
 
-<div style="display: flex; flex-direction: column; gap: 30px; line-height: 1.6;">
+        <div style="display: flex; flex-direction: column; gap: 30px; line-height: 1.6;">
 
-    <!-- ☁️ GESTÃO DE SAVES -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #757575;">
-        <h3 style="margin-top: 0; color: #444;">☁️ Gestão de Saves: Sua História em Segurança</h3>
-        <p>O SimStoria foi desenhado para respeitar sua liberdade. O seu progresso é o seu bem mais precioso.</p>
-        <ul>
-            <li><strong>Conectar Google Drive:</strong> A opção mais recomendada. Ao conectar, salvamos suas famílias na nuvem em tempo real. Se você trocar de PC ou reinstalar o navegador, basta logar e sua história estará lá.</li>
-            <li><strong>Salvar no Navegador (LocalStorage):</strong> Ideal para sessões rápidas onde você não quer realizar login. <span style="color: #d35400;">Atenção:</span> Se você limpar o cache do seu navegador ou usar programas de limpeza (como CCleaner), esses dados serão apagados permanentemente.</li>
-            <li><strong>Backup Manual:</strong> Nunca confie apenas na tecnologia. Periodicamente, vá em "Configurações" e clique em "Exportar Backup". Guarde esse arquivo em um pendrive ou pasta segura.</li>
-            <li><strong>Sincronização de Versões:</strong> O SimStoria é um projeto vivo. Se você importar um arquivo antigo, o sistema reconhece a estrutura anterior e a migra automaticamente para os padrões mais novos, garantindo que nenhum dado seja perdido na transição.</li>
-        </ul>
-    </div>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #757575;">
+                <h3 style="margin-top: 0; color: #444;">☁️ Gestão de Saves: Sua História em Segurança</h3>
+                <p>O seu progresso é o seu bem mais precioso. Temos diferentes formas de guardar sua jornada:</p>
+                <ul>
+                    <li><strong>Conectar Google Drive:</strong> É a opção mais segura e recomendada. Seus dados são salvos na nuvem em tempo real. Você pode jogar no PC, e depois abrir o site no celular para ler sua história e tudo estará sincronizado.</li>
+                    <li><strong>Salvar no Navegador (LocalStorage):</strong> Guarda as informações localmente no dispositivo que você está usando agora. <span style="color: #d35400;">Atenção:</span> Se você limpar o cache do navegador ou usar programas como CCleaner, esses dados serão perdidos.</li>
+                    <li><strong>Backup Manual:</strong> Periodicamente, vá em "Configurações" e clique em "Exportar Backup". Você fará o download de um arquivo físico seguro que pode ser guardado onde quiser para proteção extra.</li>
+                </ul>
+            </div>
 
-    <!-- 🏠 DASHBOARD -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid var(--ts4-blue);">
-        <h3 style="margin-top: 0; color: var(--ts4-blue);">🏠 1. Dashboard: O Destino em Suas Mãos</h3>
-        <p>O Dashboard é o coração do seu gameplay. Ele serve para quando você está em um "bloqueio criativo" ou quando deseja adicionar um elemento de imprevisibilidade ao seu jogo.</p>
-        <ul>
-            <li><strong>As Roletas Base:</strong> Elas cobrem o essencial: Eventos Diários, Metas de Geração, Relações e Carreiras. Use-as para definir o tom do dia do seu Sim.</li>
-            <li><strong>O Poder do Sorteio:</strong> Se a roleta sugerir algo que não faz sentido, não force. Use o botão <em>Sortear Novamente</em>. O objetivo é a diversão, não a frustração.</li>
-            <li><strong>Registro Automático:</strong> Gostou do desafio sorteado? Clique em <em>Registrar no Livro</em>. Isso transforma um evento aleatório em um marco histórico permanente do seu Legado.</li>
-            <li><strong>Customização (Pro Tip):</strong> Quer um desafio de 100 bebês ou um legado focado em carreira criminal? Crie suas próprias roletas personalizadas nas configurações e nomeie-as como quiser.</li>
-        </ul>
-    </div>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid var(--ts4-blue);">
+                <h3 style="margin-top: 0; color: var(--ts4-blue);">🏠 1. Dashboard: O Destino em Suas Mãos</h3>
+                <p>O Dashboard é a tela que você deve deixar aberta enquanto joga. Ele é o motor das surpresas.</p>
+                <ul>
+                    <li><strong>Roletas Diárias:</strong> Temáticas focadas em Eventos Diários, Metas, Relações e Carreiras. Gire sempre que o jogo parecer monótono ou no início do dia do Sim.</li>
+                    <li><strong>Sorteio Livre:</strong> O SimStoria é um guia, não uma prisão. Se uma roleta sortear um evento que arruíne seu planejamento criativo,  use o botão Sortear Novamente!</li>
+                    <li><strong>Registrar no Livro:</strong> Gostou do desafio sorteado? Se escolher que ele vai acontevcer, clique em Registrar no Livro. Isso transforma um evento aleatório em um marco histórico permanente da família.</li>
+		    <li><strong>Customização:</strong> Quer um desafio de 100 bebês ou um legado focado em carreira criminal? Crie suas próprias roletas personalizadas nas configurações e nomeie-as como quiser, ou adicione opções novas às roletas já existentes.</li>
+                </ul>
+            </div>
 
-    <!-- 🧪 LABORATÓRIO -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #9b59b6;">
-        <h3 style="margin-top: 0; color: #9b59b6;">🧪 2. Laboratório: O Ponto de Partida</h3>
-        <p>O Laboratório é onde a vida começa. Ideal para iniciar um novo <em>Save</em> ou gerar aquele personagem coadjuvante (NPC) inesquecível.</p>
-        <ul>
-            <li><strong>Bases Biológicas e Sociais:</strong> O sistema sorteia de forma equilibrada, sugerindo gênero, idade e sexualidade, além de mundos ideais.</li>
-            <li><strong>Ocultismo e Carreira:</strong> Já define se seu Sim será um vampiro, bruxo ou um humano comum, e qual será sua inclinação profissional ou acadêmica, dando um contexto imediato para você começar a jogar.</li>
-            <li><strong>Fundos Iniciais:</strong> O sistema sugere um valor de fundos iniciais condizente com a história (ex: um Sim pobre que fugiu de casa vs. um Sim rico que herdou fortuna), evitando o uso excessivo de "Motherlode".</li>
-        </ul>
-    </div>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #9b59b6;">
+                <h3 style="margin-top: 0; color: #9b59b6;">🧪 2. Laboratório: O Ponto de Partida</h3>
+                <p>A aba de Laboratório é fantástica para iniciar um novo <em>Save</em> (Founders) ou para gerar rapidamente aquele vizinho ou pretendente NPC do zero.</p>
+                <ul>
+                    <li><strong>Bases Biológicas e Sociais:</strong> O sistema sugere características vitais, como idade, gênero e até o mundo ideal do The Sims para eles morarem.</li>
+                    <li><strong>Ocultismo e Fundos Iniciais:</strong> Quer saber se o Sim será um vampiro falido ou um humano herdeiro de uma fortuna? O Laboratório gera o contexto completo antes mesmo de você abrir o Criar um Sim (CAS).</li>
+                    <li><strong>Regras:</strong> Sorteie também as regras do seu novo save, e, se gostar, registre-as no livro de regras.</li>		    
+                </ul>
+            </div>
 
-    <!-- 🔮 PERSONALIDADE -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #e67e22;">
-        <h3 style="margin-top: 0; color: #e67e22;">🔮 3. Personalidade: Definindo a Essência</h3>
-        <p>Traços e aspirações definem quem o Sim é. Aqui, você para de escolher sempre os mesmos traços e deixa a genética narrativa agir.</p>
-        <ul>
-            <li><strong>Fluxo de Trabalho:</strong> Selecione o Sim na árvore antes de girar. Assim, o resultado é aplicado instantaneamente ao perfil dele.</li>
-            <li><strong>Fases da Vida:</strong> Respeitamos as regras do jogo. Bebês e crianças recebem um traço/aspiração; conforme crescem, o SimStoria libera o sorteio dos slots adicionais.</li>
-            <li><strong>Visão de Futuro (Planner):</strong> Use a opção <em>Gerar Todas as Fases</em> para planejar a jornada completa do seu herdeiro, definindo desde a aspiração de criança até a carreira de idoso. É excelente para manter a coesão da história ao longo das décadas.</li>
-        </ul>
-    </div>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #e67e22;">
+                <h3 style="margin-top: 0; color: #e67e22;">🔮 3. Personalidade: Definindo a Essência</h3>
+                <p>Esqueça o hábito de escolher os mesmos traços para todo Sim. Deixe a "genética narrativa" decidir por você!</p>
+                <ul>
+                    <li><strong>Fases da Vida Realistas:</strong> As nomenclaturas acompanham rigorosamente as idades do jogo: <em>Bebê de colo, Bebê, Criança, Adolescente e Jovem adulto em diante</em>. Conforme o Sim cresce na história, o sistema libera os slots para girar os traços e aspirações adequados à idade.</li>
+                    <li><strong>Seleção Inteligente:</strong> Escolha o Sim na lista da esquerda e clique em girar; caso se interesse, é só clicar para anexar o(s) traço(s) sorteado(s) ao perfil dele.</li>
+                    <li><strong>Gerar Todas as Fases (Planner):</strong> Uma opção de planejamento para quem gosta de saber o futuro. Gire a vida toda de um bebê de uma vez e jogue focado em realizar aquele destino traçado.</li>
+                    <li><strong>Carreiras e Aspirações:</strong> Esse sistema já sugere carreiras e aspirações nos sorteios, mas caso não goste, pode sortear outras.</li>
+                </ul>
+            </div>
 
-    <!-- 🌳 ÁRVORE GENEALÓGICA -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid var(--ts4-green);">
-        <h3 style="margin-top: 0; color: var(--ts4-green);">🌳 4. Árvore Genealógicat: O Mapa do Seu Legado</h3>
-        <p>Sua árvore genealógica não é apenas uma lista de nomes, é o mapa visual da sua história.</p>
-        <ul>
-            <li><strong>Cadastrando Membros:</strong> Clique em <em>+ Novo Sim</em> para preencher a ficha do personagem (nome, idade, traços, notas de história). O perfil é dividido entre Dados Básicos e Relacionamentos, facilitando a navegação.</li>
-            <li><strong>Inteligência de Vínculos:</strong> Ao clicar em <em>Adicionar Filho</em> ou <em>Adotar</em>, o sistema analisa os pais cadastrados. Se o Sim possui cônjuge, ele preenche o segundo progenitor automaticamente para você. Menos cliques, mais jogo.</li>
-            <li><strong>Gestão de Irmãos:</strong> Use o seletor por checkboxes para adicionar grupos de irmãos fundadores simultaneamente.</li>
-	    <li><strong>Progenitores NPCs:</strong> Nem toda história precisa de dois Sims ativos. Ao adicionar pais, você pode marcar um deles como "NPC". Isso mantém sua árvore genealógica completa e fiel à genética dos seus Sims, mas avisa ao sistema que você não precisa rastrear as carreiras ou aspirações dessa pessoa. Ideal para Sims que não moram na casa ou apenas para completar a árvore sem sobrecarregar seu gerenciamento de gameplay. Por enquanto para eles é possível apenas adicionar foto e alterar o nome.</li>
-            <li><strong>Visualização Elegante:</strong> Casais centralizados e filhos abaixo. Se o Sim for um fundador, deixe os campos de pais em branco (use o ícone ❓ se tiver dúvida sobre o que preencher).</li>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid var(--ts4-green);">
+                <h3 style="margin-top: 0; color: var(--ts4-green);">🌳 4. Árvore Genealógica: A Navegação</h3>
+                <p>Aqui é onde você visualiza a extensão do seu legado. Um mapa interativo que cresce com as suas gerações.</p>
+                <ul>
+                    <li><strong>Modos de Visão:</strong> Escolha entre "Organizada" (linhas clássicas), "Núcleos" (foco no ramo familiar ativo, excelente para famílias gigantes) ou "Legado Completo" (uma teia massiva de todas as gerações interligadas).</li>
+                    <li><strong>Status Visual de Relacionamento:</strong> Para que você entenda a história de cada casal batendo o olho, os vínculos entre os Sims exibem ícones claros: anéis unidos 💍 significam casamentos ativoss, e anéis partidos 💔 indicam separações históricas.</li>
+                    <li><strong>Exportação de Layouts:</strong> No topo da árvore você pode exportar a imagem total do seu mapa familiar. Clicando em um Sim individualmente, você pode gerar um "Card Resumido" estilizado para postar no Twitter/Instagram, ou gerar um "Print de Perfil Completo", capturando toda a biografia em alta qualidade.</li>
+                </ul>
+            </div>
+
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #ff4757;">
+                <h3 style="margin-top: 0; color: #ff4757;">👤 5. Criação e Gestão de Sims (Formulário)</h3>
+                <p>Dentro da própria aba da Árvore Genealógica, você encontra o botão <strong>+ Novo Sim</strong>. É ele quem gerencia a adição e edição de membros.</p>
+                <ul>
+                    <li><strong>Cadastrando Membros:</strong> Clique em <em>+ Novo Sim</em> para preencher a ficha do personagem (nome, idade, traços, notas de história).</li>	
+                    <li><strong>Dados vs. Relações:</strong> O perfil de edição é organizado em duas abas. Em "Dados Básicos", você atualiza foto, idade e notas de história. Em "Relacionamentos", você forma casais, cadastra filhos ou aprova adoções.</li>
+                    <li><strong>Inteligência de Vínculos:</strong> Ao registrar um filho para um Sim que já está casado, o sistema analisa os casais e preenche o nome do segundo progenitor automaticamente para você poupar tempo!</li>
+                    <li><strong>Progenitores NPCs:</strong> Quer registrar o pai biológico de um Sim apenas para o mapa da árvore ficar coerente, mas não quer ter o trabalho de jogar com ele? Marque-o como "Progenitor NPC". Ele aparecerá com destaque na árvore, mas será excluído das suas roletas de sorteio diário.</li>
+                    <li><strong>Gestão de Morte e Luto:</strong> Quando um Sim falecer, basta ativar a chave "Falecido" no perfil ou na edição. A foto do Sim ficará em preto e branco na árvore, criando uma bela marca visual na sua linhagem.</li>
+                    <li><strong>Álbum de Fotos Dinâmico:</strong> Você pode carregar e cortar uma foto específica para cada fase da vida do Sim. A foto se atualiza conforme ele envelhece, e fica registrada no perfil!</li>	
                     <li><strong>Exportar Card Resumido:</strong> Ideal para compartilhar rapidamente nas redes sociais ou em fóruns, gerando um resumo elegante dos dados principais do seu Sim.</li>
                     <li><strong>Exportar Perfil Completo (Print):</strong> Esta é a ferramenta de "Arquivo Histórico". Ao clicar, o sistema captura a ficha completa do Sim, percorrendo todo o conteúdo (inclusive históricos longos e árvores genealógicas). É a solução definitiva para guardar a "biografia oficial" de cada geração em alta definição.</li>
                     <li><strong>Exportar Árvore Genealógica Completa:</strong> Exporte a imagem total do seu mapa familiar para postar nas redes sociais ou imprimir e montar o álbum do seu legado.</li>
-        </ul>
-    </div>
+		    <li><strong>Auxílio de Preenchimento (❓):</strong> Em campos como <em>Progenitor</em>, <em>Status Civil</em> e <em>Vínculos</em>, você verá ícones de interrogação. Clique neles para entender exatamente o que aquele dado impacta na sua árvore (ex: "Deixe em branco se for o fundador").</li>
+	            <li><strong>Botões de Ação Rápida dentro do perfil:</strong>
+            <ul>
+                <li>💍 <strong>Adicionar Cônjuge:</strong> Cria o vínculo de casamento instantaneamente.</li>
+                <li>👶 <strong>Adicionar Irmão(ã):</strong> Segue a lógica dos pais (se os pais já existirem no sistema, o vínculo é criado automaticamente).</li>
+            </ul>
+	            <li><strong>Seletor de Irmãos:</strong> Ao adicionar irmãos, você pode selecioná-los via checkbox em uma lista, permitindo criar grupos de irmãos fundadores de uma só vez com precisão.</li>
+                </ul>
+            </div>
 
-    <!-- 🤖 I.A. E HISTÓRIAS -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #1abc9c;">
-        <h3 style="margin-top: 0; color: #1abc9c;">🤖 5. Co-Narrador: Sua I.A. Criativa</h3>
-        <p>Às vezes a criatividade trava. Quando isso acontecer, chame o Co-Narrador.</p>
-        <ul>
-                    <li><strong>Ponto de Partida (Novo Save):</strong> Escolha uma temática (Dramático, Caótico, Tradicional, Místico, Romântico, Social) e receba instantaneamente um contexto de cenário complexo e objetivos iniciais para começar do zero.</li>
-                    <li><strong>Gerador de Dinâmicas:</strong> Escolha o estilo do texto (Fofocas da Vizinhança, Diário do Sim, Pop-ups simulando o jogo ou até as anotações da Dona Morte) e defina o nível de caos. O sistema lerá os dados dos seus Sims vivos para criar um acontecimento exclusivo e sob medida. Selecione todos os sims, ou sims individualmente, para gerar suas histórias.</li>
-        </ul>
-    </div>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #1abc9c;">
+                <h3 style="margin-top: 0; color: #1abc9c;">🤖 6. Co-Narrador: Sua I.A. Criativa</h3>
+                <p>Sofrendo de bloqueio criativo? Chame a inteligência artificial para trazer caos ou drama para o bairro.</p>
+                <ul>
+                    <li><strong>Ponto de Partida:</strong> Excelente para iniciar novos legados. Escolha uma temática (Dramático, Caótico, Tradicional, Místico, Romântico, Social) e receba instantaneamente um contexto de cenário para começar do zero.</li>
+                    <li><strong>Gerador de Dinâmicas:</strong> Escolha entre estilos de texto envolventes (Fofocas, Diário, Pop-ups simulando o jogo), defina o "Nível de Caos" e selecione os Sims para gerar novas tramas. Selecione todos os sims ou sims individualmente para gerar suas histórias.</li>
+                </ul>
+            </div>
 
-    <!-- 📖 LIVROS E METAS -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #34495e;">
-        <h3 style="margin-top: 0; color: #34495e;">📖 6. Livros e Metas: O Diário de Bordo</h3>
-        <p>Seu Legado é um livro. O SimStoria é a caneta.</p>
-        <ul>
-                    <li><strong>O que faz:</strong> Exibe de forma cronológica todas as mudanças, mortes, casamentos e sorteios aceitos.</li>
-                    <li><strong>Adição Manual:</strong> Aconteceu algo marcante no seu jogo que o sistema não sorteou? Digite na barra de texto, escolha uma Tag correspondente (👶 NASCIMENTO, 💍 CASAMENTO, 💀 MORTE, etc.) e clique em registrar.</li>
-                    <li><strong>Organização:</strong> Filtre as histórias clicando nas tags para rever momentos específicos de gerações passadas.</li>
-		    <li><strong>Linha do Tempo:</strong> Exibe cronologicamente mortes, casamentos e metas concluídas. Você pode inserir eventos manualmente usando as Tags de categoria.</li>
-                    <li><strong>Controle de Metas:</strong> Adicione ou sorteie metas. O sistema as mantém como "Pendentes" até que você, após realizar no jogo, marque como "Concluída", gerando um registro automático no histórico.</li>
-                    <li><strong>Modo Apresentação:</strong> No topo da tela de livros, ative este modo para transformar sua história em um <strong>slide cinematográfico</strong> em tela cheia, perfeito para criar conteúdo para as redes socais (tiktok, instagram, X, tumblr, youtube, etc.) ou relembrar o legado.</li>
-        </ul>
-    </div>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #34495e;">
+                <h3 style="margin-top: 0; color: #34495e;">📖 7. Livros e Metas: O Diário de Bordo</h3>
+                <p>É aqui que o jogo ganha peso emocional e histórico. O Livro é a verdadeira memória da sua dinastia.</p>
+                <ul>
+                    <li><strong>Registro Manual e Tags:</strong> Aconteceu algo drástico que a roleta não sorteou? Digite o evento na barra, escolha a Tag correspondente (👶 NASCIMENTO, 💍 CASAMENTO, 💀 MORTE, etc.) e eternize no mural.</li>
+                    <li><strong>Linha do Tempo e Filtros:</strong> Use os botões de Tags no topo para filtrar a cronologia e relembrar todas as mortes ou conquistas de décadas passadas.</li>
+                    <li><strong>A Lógica das Metas:</strong> Você pode adicionar objetivos de geração em uma lista de tarefas, seja escrita por você ou as sorteadas no dashboard. O segredo da organização é que as tarefas permanecem ativas na tela como <em>"Pendentes"</em>. Somente quando você realizar a ação no jogo e clicar manualmente em <em>"Concluída"</em> (ou "Desistir"), o sistema encerra a pendência e crava um log glorioso no Livro de Histórias oficial.</li>
+                    <li><strong>Modo Apresentação:</strong> No topo da tela, clique para transformar a linha do tempo da sua família em uma apresentação cinematográfica de slides (ótimo para gerar vídeos pro TikTok/Instagram/Tumblr/Youtube ou relembrar o legado).</li>
+                </ul>
+            </div>
 
-    <!-- 📸 GALERIA -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #27ae60;">
-        <h3 style="margin-top: 0; color: #27ae60;">📸 7. Galeria de Recordações</h3>
-        <p>O acervo visual da sua dinastia.</p>
-        <ul>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #27ae60;">
+                <h3 style="margin-top: 0; color: #27ae60;">📸 8. Galeria de Recordações</h3>
+                <p>O acervo visual da sua jornada, protegido do tempo.</p>
+                <ul>
                     <li><strong>Salvamento no Drive:</strong> As imagens cadastradas por você são salvas em seu drive, portanto só funciona para quem estiver conectado na nuvem.</li>
-                    <li><strong>Gerenciamento:</strong> A Galeria funciona como um mural de memórias. Você pode organizar, filtrar ou revisar os registros fotográficos de cada geração.</li>
-                    <li><strong>Performance:</strong> O sistema comprime as imagens automaticamente, garantindo que o acesso à sua galeria seja rápido, mesmo com muitos anos de legado acumulados.</li>
-		    <li><strong>Salvar no Álbum:</strong> Ao gerar um print ou captura completa do perfil do seu Sim, você não precisa apenas baixar o arquivo; agora você pode clicar em "Salvar no Álbum" ou salvar automaticamente, autorizando em "Configurações".</li>
-        <li><strong>Mural por Família:</strong> As imagens salvas ficam guardadas de forma organizada em uma seção exclusiva daquela família, criando uma linha do tempo fotográfica do seu legado.</li>
-        </ul>
-    </div>
+                    <li><strong>Gerenciamento:</strong> A Galeria funciona como um mural de memórias. Você pode organizar os registros fotográficos de cada geração, da forma que quiser.</li>
+		    <li><strong>Salvar no Álbum:</strong> Ao gerar um print ou captura completa do perfil do seu Sim, você não precisa apenas baixar o arquivo; agora você pode clicar em "Salvar no Álbum" ou salvar automaticamente, autorizando em "Configurações". As imagens salvas ficam guardadas de forma organizada em uma seção exclusiva daquela família, criando uma linha do tempo fotográfica do seu legado.</li>
+                </ul>
+            </div>
 
-    <!-- 📜 LIVRO DE REGRAS -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #f1c40f;">
-        <h3 style="margin-top: 0; color: #d4a306;">📜 8. Livro de Regras: A Constituição do Save</h3>
-        <p>Todo grande desafio precisa de regras. O Livro de Regras é o seu lembrete constante de como seu jogo deve se comportar.</p>
-        <p><em>Exemplo de uso:</em> Anote "Proibido usar Motherlode até a 2ª geração" ou "O herdeiro deve obrigatoriamente seguir a carreira de Escritor". Manter isso visível evita que você quebre as regras do desafio sem querer no meio da jogatina.</p>
-    </div>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #f1c40f;">
+                <h3 style="margin-top: 0; color: #d4a306;">📜 9. Livro de Regras: A Constituição do Save</h3>
+                <p>Todo legado épico ou desafio precisa de restrições. O Livro de Regras é o seu lembrete constante da conduta do gameplay.</p>
+<ul>
+                <li><strong>Exemplo de uso:</strong> "Proibido usar Motherlode" ou "Todo herdeiro da 3ª geração deve ter o traço Cleptomaníaco". Manter isso acessível evita confusões e esquecimentos após meses jogando a mesma linhagem. Você pode editá-las ou excluí-las.</li>
+		<li><strong>Sorteado das roletas:</strong> As regras podem ser as definidas por você e/ou sorteadas da roleta de regras que você encontra em "Laboratório".</li>
+</ul>
+            </div>
 
-    <!-- ⚙️ CONFIGURAÇÕES -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #e74c3c;">
-        <h3 style="margin-top: 0; color: #e74c3c;">⚙️ 9. Configurações: A Central de Controle</h3>
-        <ul>
-                    <li><strong>Controle de Base de Dados:</strong> Adicione novos traços, carreiras e aspirações personalizados (de Mods ou expansões novas). <small style="color: #666; display: block; margin-top: 4px;">Nota de segurança: Os itens originais de fábrica do sistema são protegidos e não podem ser apagados, garantindo que o núcleo do app nunca quebre.</small></li>
-                    <li><strong>Edição de Roletas:</strong> Insira ou remova opções de dentro de qualquer roleta existente ou crie roletas do zero.</li>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #e74c3c;">
+                <h3 style="margin-top: 0; color: #e74c3c;">⚙️ 10. Configurações: A Central de Controle</h3>
+                <ul>
+                    <li><strong>Proteção e Edição da Base de Dados:</strong> O jogo lançou expansões ou você baixou Mods novos? Adicione novos traços, carreiras e aspirações no seu SimStoria livremente! <em>Nota de integridade:</em> Como uma regra rígida de segurança da plataforma, os traços, carreiras e aspirações do "jogo base oficial" não podem ser excluídos, evitando que o sistema quebre. Mas você tem poder total para editar e apagar os itens que você mesmo adicionou!</li>
+                    <li><strong>Edição de Roletas:</strong> Customização absoluta. Insira ou remova opções de dentro de qualquer roleta existente ou crie roletas do zero para adaptar o SimStoria às necessidades do seu Desafio.</li>
                     <li><strong>Som e Imagem:</strong> Altere os efeitos sonoros de feedback do sistema e mude o estilo visual do fundo da sua árvore genealógica.</li>
-        <li><strong>🌙 Modo Escuro (Dark Mode):</strong> Conforto visual completo para acompanhar as suas maratonas de gameplay durante a madrugada. Ative o Modo Escuro no menu de configurações para transformar toda a interface do site em tons escuros e relaxantes, reduzindo o cansaço visual.</li>
-        </ul>
-    </div>
+                    <li><strong>🌙 Modo Escuro (Dark Mode):</strong> O conforto visual que toda maratona de fim de noite pede. Reduza a fadiga visual ativando o tema noturno que escurece completamente a interface.</li>
+                    <li><strong>Importar/Exportar:</strong>Você pode exportar apenas aquela família que está ativa no momento ou todas as famílias salvas. Ainda nas configurações você pode importar as famílias salvas em seu computador. Arquivos em .json.</li>
+                </ul>
+            </div>
 
-    <!-- 📱 PWA -->
-    <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid var(--ts4-blue);">
-        <h3 style="margin-top: 0; color: var(--ts4-blue);">📱 SimStoria Nativo (PWA)</h3>
-        <p>Para uma experiência verdadeiramente <em>cozy</em>, instale o SimStoria como um aplicativo no seu PC ou celular.</p>
-        <ul>
-            <li><strong>Sem distrações:</strong> Ao instalar, o site abre em uma janela própria, sem a barra de endereços do navegador. É como ter um programa dedicado instalado no seu computador.</li>
-            <li><strong>Modo Mobile (Bottom Nav):</strong> No celular, a interface se adapta. A navegação passa para a parte inferior da tela, permitindo que você registre acontecimentos com apenas uma mão enquanto joga no computador com a outra.</li>
-        </ul>
-    </div>
+            <div style="background: #fafafa; padding: 20px; border-radius: 15px; border-left: 4px solid #2980b9;">
+                <h3 style="margin-top: 0; color: #2980b9;">📱 11. O Companion Mobile (A Magia de Usar no Celular)</h3>
+                <p>Para uma experiência de jogo fluida e imersiva, o SimStoria possui arquitetura PWA (Progressive Web App). Isso significa que você pode jogar no monitor do computador, e usar a tela do celular como o "controle" do destino e bloco de anotações da família, tudo de forma nativa e rápida.</p>
+                <ul>
+                    <li><strong>Como "Instalar" Sem Loja de Apps:</strong> É simples! Abra o site do SimStoria no navegador do celular (Chrome, Safari, Edge). Abra as opções do navegador e clique em <em>"Adicionar à Tela de Início"</em> ou <em>"Instalar Aplicativo"</em>. Um ícone lindo do SimStoria aparecerá no celular. Ao clicar nele, o app se abre em tela inteira, sem a barra de busca, focado 100% na experiência. Pode ser instalado no PC dessa mesma forma!</li>
+                    <li><strong>Experiência de Uma Mão (Bottom Nav):</strong> Quando aberto no modo Mobile, o layout muda de forma inteligente. O menu lateral some e vai para a parte de baixo da tela. Isso permite que você navegue nas gerações com apenas o dedão de uma mão, enquanto sua outra mão continua no mouse do computador jogando The Sims.</li>
+                </ul>
+            </div>
 
-</div>
         </div>
 
-        <!-- Divisor sutil entre as seções -->
         <hr style="margin: 40px 0; border: 0; border-top: 2px dashed #ddd;">
 
-        <!-- ==========================================
-             SEÇÃO 3: PERGUNTAS FREQUENTES (FAQ)
-             ========================================== -->
         <h2 style="color: var(--ts4-blue); border-bottom: 3px solid var(--ts4-blue); padding-bottom: 8px;">❓ Perguntas Frequentes (FAQ)</h2>
         
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
@@ -1399,7 +1464,7 @@
         <span style="font-size: 12px; color: #aaa;">▼</span>
     </summary>
     <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
-        Por enquanto, não. Para um Sim NPC poderá apenas cadastrar uma foto e editar o nome, mas essa função pode ser implementada em novas atualizações. Fique ligado(a)!
+        Pode sim, é só abrir o card do npc e clicar em "Tornar Jogável", preencher os dados e salvar!
     </p>
 </details>
 
@@ -1439,7 +1504,7 @@
         <span style="font-size: 12px; color: #aaa;">▼</span>
     </summary>
     <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
-        O sistema agora conta com um atualizador inteligente de banco de dados. Ele lê o seu arquivo antigo, reconhece o que mudou e injeta as novas tabelas e funções automaticamente sem corromper nenhuma informação do seu progresso histórico!
+        O sistema conta com um atualizador inteligente de banco de dados. Ele lê o seu arquivo antigo, reconhece o que mudou e injeta as novas tabelas e funções automaticamente sem corromper nenhuma informação do seu progresso histórico!
     </p>
 </details>
 
@@ -1449,8 +1514,7 @@
         <span style="font-size: 12px; color: #aaa;">▼</span>
     </summary>
     <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
-        Se você estiver conectado ao Google Drive, as imagens vão direto para a sua nuvem segura de forma organizada. Se estiver usando o modo local, elas utilizam a memória do navegador. Para evitar travamentos, o sistema comprime as imagens automaticamente antes de guardar.
-    </p>
+        A galeria de recordações só funciona conectado na nuvem, portanto, se você estiver conectado ao Google Drive, as imagens vão direto para a sua nuvem segura de forma organizada.    </p>
 </details>
 
 	    <details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s;">
@@ -1460,16 +1524,6 @@
     </summary>
     <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
         Isso é o nosso sistema de "Inteligência de Vínculos". Se o Sim que você está editando é casado, o SimStoria entende que é muito provável que o cônjuge também seja pai/mãe do filho que você está adicionando. Isso poupa cliques! Se não for o caso, você pode apagar ou alterar o nome manualmente.
-    </p>
-</details>
-
-<details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s;">
-    <summary style="font-weight: 700; color: var(--ts4-blue); font-size: 14px; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
-        <span>A adoção de um Sim é salva automaticamente no livro?</span>
-        <span style="font-size: 12px; color: #aaa;">▼</span>
-    </summary>
-    <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
-        Não exatamente. O sistema prepara o registro da adoção, mas ele só é efetivado e gravado permanentemente no seu Livro de Histórias após você confirmar e salvar a operação. Assim, você tem controle total sobre o que entra ou não no seu diário de legado.
     </p>
 </details>
 
@@ -1503,20 +1557,9 @@
                 </p>
             </details>
 
-            <details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s;">
-                <summary style="font-weight: 700; color: var(--ts4-blue); font-size: 14px; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
-                    <span>Por que os itens oficiais do The Sims 4 não podem ser excluídos da base de dados?</span>
-                    <span style="font-size: 12px; color: #aaa;">▼</span>
-                </summary>
-                <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5; cursor: default;">
-                    Isso é uma trava de segurança estrutural. Bloqueamos a remoção dos traços, aspirações e carreiras originais do sistema para garantir que os geradores automáticos e os perfis nunca quebrem ou fiquem sem opções núcleo. Sinta-se livre para acrescentar e remover qualquer conteúdo customizado que você mesma adicionar!
-                </p>
-            </details>
-
         </div>
-
     </div>
-
+</div>
 <div id="tab-apoio" class="tab-pane">
     <div class="panel" style="padding: 30px; text-align: center;">
 
@@ -1585,8 +1628,10 @@
     <strong style="font-size: 14px; color: #333;">v52 - Novos formatos de Árvore Genealógica</strong>
     <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 15 de Junho de 2026</span>
     <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
-        <li><strong>Visual:</strong> Nova estrutura de Árvore Genealógica (estilo Family Echo).</li>
-        <li><strong>Perfil dos Sims:</strong> É possível salvar genitor(a) como NPC.</li>
+        <li><strong>Visual:</strong> Nova estrutura de Árvore Genealógica (estilo Family Echo - Modelos: Família organizada; Núcleos familiares; Legado Completo).</li>
+        <li><strong>Perfil dos Sims:</strong> É possível salvar genitor(a) como NPC, e depois transformá-lo em Sim da árvore da família, se quiser</li>
+        <li><strong>Roleta:</strong> Nova roleta com diversas opções de "Regras" para o seu jogo (você encontra em Laboratório). Gostou da Regra? Pode clicar para registrá-la no seu livro de regras.</li>
+        <li><strong>Gerenciamento de Metas:</strong> Você pode sortear metas no Dashboard, registrá-las no livro de metas e acompanhar seu progresso. Possibilidade de editar metas, desistir, concluir, filtrá-las por tags no livro da família, e vinculá-las a um sim cadastrado.</li>
         <li><strong>PWA:</strong> SimStoria agora é instalável como aplicativo nativo no PC e Mobile.</li>
         <li><strong>UI Mobile:</strong> Nova navegação inferior para telas pequenas.</li>
         <li><strong>Correção:</strong> Correção de bugs.</li>
@@ -1992,9 +2037,11 @@
         <label style="display:block; font-size:12px; font-weight:bold; text-align:left; margin-bottom:4px;">Nome:</label>
         <input type="text" id="npc-edit-nome" placeholder="Nome do NPC..." style="width: 100%; font-size: 13px; padding: 8px; box-sizing: border-box; margin-bottom: 16px;">
 
-        <div style="display: flex; gap: 10px;">
-            <button class="btn-main" style="background: var(--ts4-green); margin:0; flex:1;" onclick="salvarModalNpc()">✅ Salvar</button>
-            <button class="btn-main btn-sec" style="margin:0; flex:1;" onclick="fecharModalNpc()">❌ Cancelar</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <button class="btn-main" style="background: var(--ts4-green); margin:0;" onclick="salvarModalNpc()">✅ Salvar</button>
+            <button class="btn-main btn-sec" style="margin:0;" onclick="fecharModalNpc()">❌ Cancelar</button>
+            <button class="btn-main" style="background: var(--ts4-blue); margin:0;" onclick="transformarNpcEmSim()">🎮 Tornar Jogável</button>
+            <button class="btn-main" style="background: #c0392b; color:#fff; margin:0;" onclick="excluirModalNpc()">🗑️ Excluir NPC</button>
         </div>
     </div>
 </div>
@@ -2052,8 +2099,8 @@
             'Social': ["Um Sim recém-chegado decide que conhecer apenas alguns vizinhos não é suficiente. Determinado a se tornar um rosto familiar em cada rua, ele passa os dias visitando casas, frequentando eventos e decorando nomes, histórias e segredos. O problema é que quanto mais conexões faz, mais se envolve nos dramas dos outros. Em pouco tempo, amizades, rivalidades e romances cruzados começam a depender dele. Mas até onde alguém consegue agradar todo mundo antes de se tornar alvo das próprias fofocas?", "Uma jovem sonha em transformar uma pequena cafeteria de bairro no principal ponto de encontro da cidade. Entre cafés, sobremesas e conversas casuais, ela passa a ouvir histórias de todos os tipos e rapidamente se torna a guardiã involuntária dos segredos locais. Conforme sua influência cresce, moradores começam a disputar sua atenção e confiança. Mas quando um segredo importante cair em suas mãos, ela conseguirá permanecer neutra ou acabará mudando o destino de toda a vizinhança?", "Um grupo de amigos percebe que as festas da cidade estão ficando previsíveis e resolve assumir o controle da vida social local. A cada semana, um evento maior e mais extravagante atrai novos rostos, novas amizades e inevitáveis confusões. O sucesso transforma o grupo em referência social, mas também cria rivalidades com moradores que não gostam de tanta exposição. Quando uma festa sair completamente do controle, quem ficará com a culpa?", "Uma adolescente cansada de passar despercebida decide reinventar sua imagem e conquistar espaço entre os grupos mais influentes da escola. Com carisma, observação e algumas alianças cuidadosamente escolhidas, ela começa a subir na hierarquia social. Porém, cada novo degrau exige decisões mais difíceis e amizades mais frágeis. Enquanto a popularidade cresce, uma pergunta permanece: quem continuará ao seu lado quando os rumores começarem?", "Um Sim extremamente sociável cria o hábito de aceitar todos os convites que recebe, sem exceção. Aniversários, festivais, encontros, churrascos e reuniões acabam preenchendo cada hora de sua agenda. Em pouco tempo, ele conhece metade da cidade, mas também acumula promessas, favores e expectativas impossíveis de atender. Quando diferentes grupos exigirem sua lealdade ao mesmo tempo, qual relação sobreviverá?", "Uma família decide abrir as portas de casa para qualquer vizinho que precise de companhia, ajuda ou simplesmente uma boa conversa. Aos poucos, a residência se transforma em um verdadeiro centro comunitário, onde todos aparecem para compartilhar alegrias, problemas e novidades. O que parecia um gesto simples começa a gerar responsabilidades inesperadas. Até quando será possível acolher todos sem que os próprios conflitos familiares venham à tona?", "Uma influenciadora em ascensão acredita que a melhor forma de crescer é transformar a cidade inteira em cenário para seu conteúdo. Festivais, encontros e até conversas cotidianas passam a ser registrados e compartilhados. O público adora, mas nem todos os moradores gostam de viver diante das câmeras. Quando alguém decidir confrontá-la publicamente, sua popularidade resistirá à pressão?", "Um Sim cria um clube dedicado a aproximar pessoas que normalmente jamais se encontrariam. Artistas conhecem empresários, estudantes conhecem aposentados e rivais acabam sentados na mesma mesa. O experimento social rapidamente chama atenção pela quantidade de amizades improváveis que produz. Porém, quanto mais diferentes os participantes, maiores os conflitos. Será que o clube conseguirá unir a cidade ou acabará dividindo-a ainda mais?", "Uma socialite determinada acredita que reputação é tudo. Para garantir sua posição, ela frequenta os melhores eventos, cultiva amizades estratégicas e monitora cuidadosamente sua imagem pública. Mas manter aparências perfeitas exige esforço constante, especialmente quando pessoas do passado começam a reaparecer. O que acontecerá quando sua vida cuidadosamente construída começar a apresentar rachaduras?", "Um jovem adulto decide documentar todas as histórias interessantes do bairro em um blog comunitário. Inicialmente, a ideia aproxima os moradores, mas logo ele descobre que cada família possui segredos que preferiria manter escondidos. Entre relatos inspiradores e revelações delicadas, sua influência cresce rapidamente. Quando publicar uma informação capaz de mudar várias relações ao mesmo tempo, qual será o preço da verdade?", "Uma família recém-chegada percebe que ninguém parece conhecê-los e decide mudar isso o mais rápido possível. Jantares, visitas e eventos são organizados constantemente na tentativa de criar laços com todos os vizinhos. O plano funciona melhor do que imaginavam, mas também atrai curiosidade excessiva sobre suas vidas. Quanto tempo conseguirão controlar a narrativa antes que alguém descubra o que realmente os trouxe para a cidade?", "Um Sim apaixonado por festivais estabelece uma meta ambiciosa: participar de todas as celebrações possíveis ao longo do ano. Em cada evento ele faz novos amigos, reencontra conhecidos e se envolve em histórias inesperadas. Porém, ao tentar estar presente em todos os lugares ao mesmo tempo, acaba criando compromissos conflitantes. Quando precisar escolher entre diferentes círculos sociais, quem ficará decepcionado?", "Uma adolescente cria um jornal escolar independente com a intenção de informar os colegas sobre tudo o que acontece nos corredores. O que começa como um projeto inocente rapidamente se transforma na principal fonte de rumores da escola. Com cada nova edição, sua influência aumenta, mas também crescem os inimigos. Quando uma matéria atingir a pessoa errada, como ela lidará com as consequências?", "Um casal extremamente extrovertido transforma cada reunião familiar em um grande evento social. Com o tempo, sua casa vira o ponto de encontro preferido de amigos, parentes e vizinhos. O problema é que tantos convidados significam também mais opiniões, mais interferências e mais conflitos. Será possível manter a harmonia quando todos acreditam ter voz dentro da mesma casa?", "Um Sim decide criar uma rede de contatos tão extensa que nenhum problema da cidade aconteça sem que ele fique sabendo. Aos poucos, ele se torna a primeira pessoa procurada para pedidos, conselhos e informações. O prestígio cresce, mas também o peso das expectativas. Quando precisar escolher entre ajudar um amigo ou proteger outro, de que lado ficará?", "Uma aspirante a líder comunitária acredita que pequenos encontros podem transformar um bairro inteiro. Ela começa organizando reuniões simples, mas rapidamente reúne moradores com interesses, objetivos e personalidades completamente diferentes. Enquanto tenta manter todos unidos, antigas rivalidades começam a ressurgir. Conseguirá construir uma comunidade forte ou verá tudo desmoronar diante dos próprios olhos?", "Um grupo de vizinhos cria a tradição de realizar grandes encontros mensais para fortalecer os laços da comunidade. Cada evento traz novas histórias, amizades inesperadas e alguns conflitos inevitáveis. Com o passar do tempo, os encontros se tornam cada vez mais importantes para a identidade do bairro. Mas quando uma disputa ameaçar dividir os participantes, quem conseguirá restaurar a união?", "Uma influenciadora decide provar que consegue transformar qualquer pessoa comum em celebridade local. Para isso, escolhe diferentes moradores e passa a promovê-los nas redes sociais. Alguns adoram a atenção, outros preferem permanecer anônimos. Quando uma das escolhas gerar consequências inesperadas para toda a cidade, a experiência continuará parecendo tão divertida?", "Um Sim carismático sonha em ser lembrado como a pessoa que conhece todo mundo. Em busca desse objetivo, ele investe tempo em amizades, favores e conexões de todos os tipos. No entanto, quanto mais pessoas entram em sua vida, mais difícil se torna equilibrar expectativas conflitantes. Quando precisar decidir quem realmente importa, descobrirá que popularidade e amizade nem sempre são a mesma coisa.", "Uma família tradicional percebe que a cidade está se tornando cada vez mais distante e decide agir. Organizando almoços, festas sazonais e atividades comunitárias, eles tentam recuperar o espírito de vizinhança que parecia perdido. A iniciativa atrai apoio, mas também desperta resistência de quem prefere manter distância. Conseguirão unir moradores tão diferentes ou acabarão criando novas divisões sem perceber?", "Uma Sim decide recomeçar a vida em uma cidade nova depois de um término doloroso, prometendo ficar longe de relacionamentos por um bom tempo. Tudo muda quando ela conhece um vizinho gentil que parece aparecer nos momentos mais inesperados. Enquanto a amizade cresce naturalmente, os fantasmas do passado continuam interferindo em suas escolhas. Quando finalmente estiver pronta para amar novamente, será que ele ainda estará esperando?", "Dois colegas de trabalho passam anos trocando provocações, disputando promoções e transformando cada reunião em uma competição silenciosa. O que nenhum dos dois admite é que a rivalidade começou a se transformar em algo muito mais complicado. Quando uma viagem profissional os obriga a passar vários dias juntos, sentimentos escondidos começam a surgir. Mas será que o orgulho permitirá que algum deles dê o primeiro passo?", "Uma jovem encontra uma caixa cheia de cartas românticas antigas escondida em um brechó. Fascinada pela história inacabada, ela decide descobrir quem eram os apaixonados que nunca tiveram um final conhecido. Durante a investigação, acaba conhecendo alguém que compartilha da mesma curiosidade. Enquanto tentam desvendar o passado, uma nova história de amor começa a ser escrita. Mas o que acontecerá quando a verdade finalmente vier à tona?", "Um Sim acredita ter encontrado a pessoa perfeita em um aplicativo de relacionamentos. As conversas fluem, os interesses combinam e a conexão parece real. O problema é que ambos evitam se encontrar pessoalmente, cada um escondendo inseguranças que não consegue revelar. Quando finalmente marcarem o primeiro encontro, a realidade corresponderá às expectativas criadas durante meses de mensagens?", "Depois de anos focando apenas na carreira, uma Sim percebe que construiu sucesso profissional, mas negligenciou completamente sua vida amorosa. Determinada a mudar isso, ela começa a aceitar convites e conhecer pessoas novas. Entre encontros desastrosos e conexões inesperadas, alguém surge justamente quando ela menos espera. Mas será que existe espaço para o amor em uma rotina que nunca desacelera?", "Dois Sims se conhecem durante um curso comunitário e imediatamente desenvolvem uma amizade sincera. O problema é que ambos acreditam que o outro está interessado em outra pessoa, criando uma sequência interminável de mal-entendidos. Enquanto ajudam um ao outro a buscar relacionamentos inexistentes, sentimentos verdadeiros crescem silenciosamente. Quanto tempo levará até perceberem o que todos ao redor já enxergam?", "Uma Sim herda uma pequena pousada à beira-mar e decide restaurá-la para começar uma nova fase da vida. Entre hóspedes temporários e reformas constantes, ela conhece alguém que visita o local regularmente sem explicar o motivo. A proximidade desperta sentimentos inesperados, mas também muitas perguntas. O que realmente está trazendo aquela pessoa de volta semana após semana?", "Um casal apaixonado finalmente realiza o sonho de morar junto, acreditando que o mais difícil já ficou para trás. Porém, dividir contas, responsabilidades e hábitos diários revela diferenças que nunca haviam percebido antes. Entre pequenos conflitos e momentos de carinho, eles precisam descobrir se o amor é suficiente para sustentar a convivência. Conseguirão construir uma vida juntos ou perceberão que a realidade é diferente da fantasia?", "Uma jovem romântica decide escrever cartas anônimas para espalhar amor pela cidade. O plano funciona até que alguém começa a responder às mensagens sem saber quem é o remetente original. A troca de correspondências cria uma conexão profunda entre duas pessoas que nunca se viram. Mas quando chegar a hora da verdade, a realidade será tão encantadora quanto as palavras?", "Dois Sims se reencontram após muitos anos durante uma reunião de antigos colegas. O que antes era apenas uma amizade distante rapidamente desperta lembranças, emoções e perguntas sobre escolhas passadas. Ambos construíram vidas diferentes daquelas que imaginavam na juventude. Agora, diante de uma segunda chance inesperada, precisarão decidir se vale a pena revisitar um sentimento que nunca desapareceu completamente.", "Uma Sim aceita trabalhar em uma pequena floricultura para reorganizar a própria vida depois de uma grande decepção amorosa. Cercada por histórias românticas todos os dias, ela tenta convencer a si mesma de que não acredita mais em finais felizes. Tudo muda quando um cliente frequente começa a aparecer com motivos cada vez menos convincentes para comprar flores. O que realmente está florescendo entre eles?", "Um Sim reservado prefere evitar relacionamentos, acreditando que o amor sempre traz complicações. Sua rotina tranquila é interrompida quando uma pessoa extrovertida e otimista entra em sua vida sem pedir permissão. Aos poucos, barreiras emocionais começam a cair, mas velhos medos continuam presentes. Será possível abrir o coração depois de tanto tempo evitando qualquer risco?", "Dois melhores amigos compartilham praticamente tudo: sonhos, problemas e memórias. O único assunto que nunca discutiram são os sentimentos que começaram a surgir entre eles. Quando um deles inicia um novo relacionamento, a dinâmica da amizade muda completamente. Entre ciúmes, dúvidas e oportunidades perdidas, ambos precisarão decidir se vale a pena arriscar uma amizade por algo mais.", "Uma Sim se muda para um prédio movimentado e logo chama atenção por sua simpatia. Entre os diversos vizinhos, apenas uma pessoa parece evitar qualquer contato. Intrigada, ela tenta descobrir o motivo daquela distância constante. Conforme a convivência se torna inevitável, uma conexão inesperada começa a surgir. Mas quais segredos aquela pessoa está tentando esconder?", "Um casal que se conheceu muito jovem percebe que está entrando em uma nova fase da vida. Enquanto um sonha com estabilidade e família, o outro deseja explorar o mundo antes de se comprometer. O amor continua forte, mas os objetivos parecem cada vez mais diferentes. Será possível encontrar um caminho em comum sem abrir mão dos próprios sonhos?", "Durante a organização de um grande festival local, dois voluntários acabam responsáveis pelas mesmas tarefas. O que começa como cooperação forçada logo se transforma em longas conversas, risadas e momentos inesperados. Conforme o evento se aproxima, os dois percebem que o projeto está chegando ao fim rápido demais. O romance sobreviverá quando a rotina voltar ao normal?", "Uma Sim recebe por engano mensagens românticas destinadas a outra pessoa. Em vez de ignorar, ela decide avisar o remetente e acaba iniciando uma amizade improvável. Conversas ocasionais se tornam parte da rotina e a conexão cresce sem que percebam. Quando descobrirem o quanto passaram a significar um para o outro, terão coragem de transformar acaso em destino?", "Dois Sims apaixonados vivem um relacionamento feliz, mas a diferença entre suas famílias cria conflitos constantes. Enquanto um lado apoia a união, o outro faz questão de demonstrar desaprovação em cada encontro. Pressionados por opiniões externas, eles precisam decidir quanto estão dispostos a sacrificar pelo amor. Conseguirão permanecer unidos quando todos parecem torcer contra?", "Uma jovem decide passar alguns meses em uma cidade litorânea para encontrar inspiração e tranquilidade. Lá, conhece alguém que compartilha o mesmo amor pelo mar, pelas caminhadas e pelas conversas intermináveis ao entardecer. O problema é que sua estadia tem data para terminar. Quando o momento da despedida chegar, estarão preparados para dizer adeus?", "Um Sim sempre acreditou que o grande amor surgiria de forma extraordinária, mas acaba encontrando uma conexão especial na pessoa mais comum de sua rotina. Entre encontros simples, conversas sinceras e pequenos gestos cotidianos, sentimentos profundos começam a surgir. Agora ele precisa decidir se está pronto para abandonar fantasias idealizadas e apostar em algo real. Mas será que o outro sente o mesmo?", "Uma jovem organizadora de eventos chegou à cidade determinada a conhecer todo mundo e transformar cada encontro casual em uma oportunidade social. Em poucos dias, ela já estava presente em aniversários, festivais e reuniões de bairro, acumulando contatos em velocidade impressionante. O problema é que tantos círculos sociais começaram a se misturar, e segredos compartilhados em confiança passaram a circular pela cidade. Agora, enquanto tenta manter sua reputação impecável, ela percebe que uma única fofoca pode colocar tudo a perder. Mas quem foi o primeiro a espalhá-la?", "Um Sim carismático decidiu criar um clube comunitário para aproximar moradores que quase nunca se falavam. A ideia parecia simples: jogos, refeições e conversas amigáveis. Porém, conforme o grupo cresceu, rivalidades antigas, romances inesperados e disputas de ego começaram a surgir entre os participantes. Agora ele se vê preso entre o desejo de unir todos e a realidade de administrar um grupo cada vez mais caótico. Será que conseguirá manter a paz ou acabará criando ainda mais conflitos?", "Depois de anos vivendo de forma discreta, uma família decidiu abrir as portas de casa para a vizinhança e se tornar referência em hospitalidade. Jantares, encontros e celebrações passaram a acontecer quase toda semana. Mas enquanto os convidados veem apenas uma família perfeita, os moradores tentam esconder problemas financeiros que ameaçam seu estilo de vida. Quanto tempo conseguirão manter as aparências antes que alguém descubra a verdade?", "Uma adolescente cansada de ser ignorada resolveu mudar sua posição social antes do fim do ano letivo. Com muita observação, ela começou a formar alianças estratégicas entre colegas, aproximar grupos rivais e descobrir informações valiosas sobre todos ao seu redor. O plano parecia funcionar perfeitamente, até que alguém passou a manipular os acontecimentos nos bastidores com ainda mais habilidade do que ela. Quem é o novo jogador nessa disputa silenciosa?", "Um Sim extrovertido estabeleceu uma meta ambiciosa: tornar-se amigo de pelo menos uma pessoa de cada família da cidade. O desafio começou como diversão, mas rapidamente virou uma obsessão. Conforme sua agenda lotava de visitas, convites e compromissos, ele passou a ouvir versões conflitantes das mesmas histórias e se viu no centro de disputas familiares delicadas. Agora, cada amizade conquistada parece criar dois novos problemas. Será possível agradar todo mundo ao mesmo tempo?", "Uma influenciadora local percebeu que sua popularidade estava estagnada e decidiu lançar um reality improvisado envolvendo amigos, vizinhos e desconhecidos. As gravações começaram com brincadeiras leves, mas rapidamente revelaram ciúmes, rivalidades e alianças inesperadas. Enquanto os seguidores adoram o drama crescente, os participantes começam a questionar se estão sendo usados apenas como conteúdo. Até onde ela está disposta a ir para continuar relevante?", "Um casal apaixonado por vida social comprou uma casa enorme e prometeu transformá-la no principal ponto de encontro do bairro. Toda semana surgem novos eventos, convidados e histórias para contar. Porém, quanto mais pessoas frequentam o local, mais difícil se torna controlar os conflitos que surgem entre elas. Agora a casa virou palco de amizades improváveis, romances secretos e discussões memoráveis. A pergunta é: quem realmente está no controle da situação?", "Um Sim decidiu criar um jornal comunitário para registrar tudo o que acontece na cidade. O projeto começou inocente, mas logo os moradores passaram a procurá-lo para compartilhar rumores, denúncias e histórias curiosas. Quanto mais informações recebe, mais influência ele conquista sobre a opinião pública. Mas quando um segredo particularmente perigoso chega às suas mãos, ele precisa decidir entre publicar a verdade ou proteger alguém importante. O que escolherá?", "Uma jovem recém-chegada percebeu que ninguém parecia conhecer realmente seus próprios vizinhos. Determinada a mudar isso, ela começou a organizar encontros semanais em diferentes bairros. Aos poucos, amizades floresceram, romances surgiram e antigas rivalidades voltaram à tona. Agora, conforme sua influência cresce, moradores começam a depender dela para resolver conflitos e unir a comunidade. Mas será que alguém consegue agradar todos os lados por muito tempo?", "Um Sim sonha em ser lembrado como a pessoa mais simpática da cidade. Todos os dias ele distribui presentes, ajuda desconhecidos e participa de eventos comunitários. No entanto, sua necessidade constante de aprovação começa a deixá-lo exausto, e algumas pessoas passam a questionar se sua gentileza é realmente sincera. Quando surgem críticas inesperadas sobre sua imagem pública, ele precisa descobrir quem realmente é por trás da reputação construída.", "Uma adolescente criou uma conta anônima para comentar tudo o que acontecia na escola. O perfil rapidamente se tornou popular, e logo ninguém conseguia parar de acompanhar as publicações misteriosas. Porém, conforme os segredos compartilhados ficam mais pessoais, amizades começam a ruir e suspeitas surgem por todos os lados. Agora ela precisa esconder sua identidade enquanto lida com as consequências do próprio sucesso. Quanto tempo conseguirá permanecer invisível?", "Um grupo de amigos decidiu criar uma tradição: toda sexta-feira, um evento diferente aberto para qualquer morador interessado. O que começou como diversão rapidamente transformou os organizadores em figuras conhecidas da comunidade. Mas cada encontro gera novas histórias, novos conflitos e novos desafios. Conforme a fama do grupo cresce, eles percebem que algumas pessoas frequentam as reuniões por motivos muito menos inocentes do que aparentam.", "Uma socialite determinada acredita que a cidade precisa de mais exclusividade. Para isso, ela cria um clube extremamente seletivo, onde apenas convidados considerados especiais podem entrar. O problema é que todos querem fazer parte do grupo, e os critérios de admissão se tornam cada vez mais controversos. Entre bajulações, disputas e ressentimentos, a fundadora começa a perceber que controlar o status social dos outros pode ser mais complicado do que imaginava.", "Um Sim apaixonado por networking decidiu transformar cada conversa em uma oportunidade. Seja em festivais, cafeterias ou parques, ele está sempre conhecendo alguém novo. Aos poucos, sua rede de contatos cresce tanto que ele passa a influenciar decisões, eventos e relacionamentos por toda a cidade. Mas quando duas pessoas importantes lhe pedem favores incompatíveis, ele se vê diante de uma escolha capaz de mudar muitas vidas.", "Uma família conhecida pela discrição resolveu mudar completamente de estratégia e investir em sua imagem pública. Participações em eventos, visitas frequentes e festas elegantes passaram a fazer parte da rotina. No entanto, enquanto tentam conquistar respeito social, antigos conflitos familiares ameaçam vir à tona justamente quando a reputação deles está crescendo. Conseguirão preservar a imagem perfeita ou tudo desmoronará diante da vizinhança?", "Um jovem adulto decidiu que jamais recusaria um convite social durante um ano inteiro. Casamentos, aniversários, encontros casuais e festivais passaram a preencher cada minuto livre de sua agenda. O plano parecia divertido, até que compromissos começaram a se sobrepor e relacionamentos importantes passaram a exigir mais atenção do que ele podia oferecer. Agora precisa descobrir se é possível estar em todos os lugares sem decepcionar ninguém.", "Uma aspirante a líder comunitária acredita que pequenas reuniões podem transformar a cidade. Determinada, ela começa a reunir moradores para discutir melhorias, eventos e projetos coletivos. Mas nem todos compartilham os mesmos interesses, e disputas de poder logo surgem entre os participantes mais influentes. Enquanto tenta unir o grupo, ela percebe que algumas pessoas estão jogando um jogo muito maior do que aparentam.", "Um Sim curioso desenvolveu o hábito de mapear todas as amizades, rivalidades e romances da cidade apenas por diversão. Com o tempo, seu conhecimento sobre as conexões entre os moradores se tornou impressionante. Porém, quando descobre uma relação secreta que pode afetar várias famílias ao mesmo tempo, ele se vê diante de um dilema: revelar a informação ou guardar o segredo. Qual decisão causará menos problemas?", "Uma influenciadora especializada em estilo de vida resolveu transformar seus amigos em um círculo social perfeito para as redes. Viagens, encontros e celebrações são cuidadosamente planejados para parecerem impecáveis. Mas fora das câmeras, os participantes começam a demonstrar frustrações e ressentimentos cada vez maiores. Enquanto a audiência cresce, a amizade entre eles parece se desgastar. O que acontecerá quando a fachada finalmente rachar?", "Um Sim sonha em se tornar a pessoa mais conhecida da vizinhança antes do fim do ano. Para isso, participa de todos os eventos possíveis, ajuda em projetos comunitários e faz questão de conversar com qualquer novo morador. No entanto, sua rápida ascensão social desperta inveja em algumas figuras influentes da cidade. Agora, enquanto tenta consolidar sua reputação, ele percebe que nem todos estão felizes com seu sucesso. Quem será o primeiro a tentar derrubá-lo?", "Uma jovem confeiteira sempre acreditou em finais felizes, mas sua vida amorosa nunca acompanhou os romances que imaginava. Quando um novo cliente começa a frequentar sua loja diariamente sem nunca revelar o verdadeiro motivo, ela se vê intrigada por aquela presença constante. Enquanto tenta descobrir suas intenções, boatos e coincidências aproximam os dois cada vez mais. Mas será que aquele encontro aparentemente casual foi mesmo obra do destino?", "Dois Sims aceitam participar de um programa comunitário que os obriga a trabalhar juntos durante vários meses. Um é impulsivo e apaixonado, o outro racional e reservado. A convivência constante gera discussões, provocações e uma tensão impossível de ignorar. Nenhum dos dois pretende admitir os sentimentos que começam a surgir, mas a cidade inteira parece perceber antes deles. Quanto tempo conseguirão fingir que não está acontecendo nada?", "Após herdar uma pequena pousada à beira-mar, uma Sim decide recomeçar a vida longe das lembranças de um relacionamento fracassado. Tudo corre conforme o planejado até a chegada de um hóspede misterioso que insiste em prolongar sua estadia. Entre conversas ao entardecer e segredos não revelados, uma nova conexão começa a surgir. Mas por que ele parece esconder tanto sobre o próprio passado?", "Um Sim conhecido por trocar de relacionamento constantemente promete que desta vez vai levar o amor a sério. Determinado a mudar, ele conhece alguém que parece ser exatamente o que sempre procurou. O problema é que seus antigos romances continuam fazendo parte de sua vida e não pretendem desaparecer tão facilmente. Será possível construir algo novo sem enfrentar os fantasmas do passado?", "Uma jovem jornalista recebe a missão de entrevistar uma celebridade local conhecida por evitar qualquer assunto pessoal. O trabalho deveria durar apenas algumas semanas, mas a convivência aproxima os dois muito mais do que o esperado. Enquanto tenta manter a objetividade profissional, ela percebe que está cada vez mais envolvida emocionalmente. O que acontecerá quando a matéria finalmente precisar ser publicada?", "Dois Sims se conhecem durante um curso de culinária e logo descobrem que compartilham o mesmo sonho de abrir um restaurante. Conforme os planos avançam, a parceria profissional se transforma em algo mais complicado. O problema surge quando ambos recebem oportunidades diferentes que podem levá-los para cidades opostas. Eles escolherão o amor ou o futuro que sempre desejaram?", "Uma Sim apaixonada por romances históricos encontra uma coleção de cartas antigas escondidas em sua nova casa. Fascinada pela história inacabada entre dois desconhecidos, ela decide investigar o destino dos envolvidos. Durante a busca, acaba conhecendo alguém que compartilha o mesmo interesse e passa a acompanhá-la na jornada. Mas será que estão apenas seguindo uma história de amor antiga ou criando uma nova?", "Um fotógrafo de casamentos passa os dias registrando momentos românticos para outras pessoas, mas nunca conseguiu viver algo parecido. Tudo muda quando conhece uma organizadora de eventos tão apaixonada pelo amor quanto ele. Juntos, eles ajudam casais a realizar sonhos enquanto tentam ignorar a atração crescente entre si. Mas o que acontece quando ambos recebem propostas que podem separá-los para sempre?", "Uma Sim retorna à cidade natal após anos longe e encontra uma comunidade completamente diferente daquela que deixou para trás. Entre as mudanças está um antigo amigo de infância que se tornou alguém irreconhecível. A reaproximação desperta lembranças esquecidas e sentimentos inesperados. Porém, quanto mais tempo passam juntos, mais segredos sobre o passado começam a surgir. O que realmente aconteceu durante todos esses anos?", "Dois Sims são escolhidos para liderar projetos rivais de revitalização do mesmo bairro. Competitivos e determinados, eles transformam cada reunião em uma batalha de ideias. No entanto, por trás das discussões constantes existe uma conexão impossível de negar. Quando precisam decidir entre vencer a disputa ou seguir o coração, descobrem que algumas escolhas são mais difíceis do que imaginavam.", "Uma jovem veterinária dedica a maior parte do tempo aos animais e acredita não ter espaço para relacionamentos. Sua rotina tranquila muda quando um novo morador aparece frequentemente na clínica acompanhado de um pet particularmente problemático. Conforme os encontros se tornam mais frequentes, ela começa a questionar suas prioridades. Mas será que está pronta para abrir espaço para alguém em sua vida?", "Depois de uma série de encontros desastrosos, dois Sims fazem amizade ao perceberem que compartilham o mesmo azar no amor. O que começa como apoio mútuo rapidamente se transforma em uma das relações mais importantes de suas vidas. No entanto, ambos carregam medos e inseguranças que dificultam qualquer avanço romântico. Será que conseguirão enxergar o que está bem diante deles?", "Uma Sim aceita trabalhar temporariamente em uma vinícola familiar durante o verão. Lá ela conhece o herdeiro da propriedade, alguém que parece viver sob a constante pressão das expectativas da família. Enquanto os dois se aproximam, segredos sobre o futuro da vinícola ameaçam mudar completamente seus planos. O romance sobreviverá às decisões que estão por vir?", "Dois vizinhos desenvolvem uma amizade improvável após se encontrarem diariamente durante caminhadas matinais. Com o tempo, as conversas se tornam parte essencial da rotina de ambos. Mas quando um deles recebe a oportunidade de se mudar para muito longe, a amizade começa a ser vista sob uma nova perspectiva. Será que perceberão seus sentimentos antes que seja tarde demais?", "Uma jovem escritora sofre com bloqueio criativo e decide se mudar para uma pequena cidade em busca de inspiração. Lá ela conhece alguém cuja vida parece saída diretamente de um romance. Fascinada, começa a usar suas experiências como material para um novo livro. O problema é que, quanto mais escreve sobre ele, mais difícil se torna separar ficção e realidade. Como essa história irá terminar?", "Um Sim reservado herda uma floricultura tradicional e precisa aprender a administrá-la sozinho. Entre clientes frequentes está uma pessoa alegre e extrovertida que parece determinada a arrancá-lo de sua zona de conforto. Enquanto a amizade cresce, ambos descobrem que carregam feridas emocionais que ainda não cicatrizaram. Conseguirão encontrar coragem para começar algo novo?", "Uma cantora em ascensão tenta equilibrar a carreira promissora com um relacionamento que começou antes da fama. Conforme os compromissos aumentam, o casal passa a enfrentar desafios cada vez maiores. Entre viagens, eventos e oportunidades únicas, ambos precisam decidir se estão caminhando na mesma direção. O amor será suficiente para superar a distância emocional que surge entre eles?", "Dois Sims participam de um projeto de restauração de um antigo teatro local. Enquanto trabalham lado a lado para devolver vida ao prédio histórico, começam a construir uma conexão inesperada. Porém, quando descobrem que apenas um deles poderá assumir a administração do local após a reforma, a parceria se transforma em conflito. O que falará mais alto: o sonho ou o sentimento?", "Uma Sim recém-chegada à cidade faz amizade com um grupo unido de moradores e rapidamente encontra seu lugar na comunidade. Entre eles está alguém que parece compreendê-la melhor do que qualquer outra pessoa. Mas existe um problema: essa pessoa está prestes a assumir um compromisso importante com alguém do próprio grupo. Até onde ela está disposta a ir para descobrir o que realmente sente?", "Um casal que começou o relacionamento ainda muito jovem acreditava conhecer perfeitamente o futuro que desejava construir. Anos depois, ambos mudaram, cresceram e desenvolveram sonhos diferentes. Agora precisam decidir se continuam tentando encaixar suas vidas ou se aceitam que algumas histórias de amor também precisam se reinventar. Mas essa será uma despedida ou apenas o início de um novo capítulo?", "Uma jovem bibliotecária sempre acreditou que o amor verdadeiro existia apenas nos livros que organizava diariamente. Sua rotina tranquila muda quando um visitante misterioso começa a devolver romances antigos cheios de anotações nas margens. Intrigada, ela passa a responder às mensagens escondidas entre as páginas, sem saber quem está do outro lado. Enquanto a troca de pensamentos se torna cada vez mais pessoal, surge uma pergunta impossível de ignorar: o que acontecerá quando finalmente se encontrarem?", "Dois Sims se conhecem durante um curso noturno e rapidamente desenvolvem uma amizade baseada em conversas longas e sonhos compartilhados. O problema é que ambos acreditam que o outro está apaixonado por outra pessoa. Enquanto tentam apoiar relacionamentos que talvez nem existam, os sinais se acumulam e os sentimentos crescem em silêncio. Quanto tempo levará até alguém perceber a verdade?", "Após anos dedicando toda a energia à carreira, uma Sim percebe que construiu sucesso profissional, mas uma vida pessoal vazia. Determinada a mudar, ela começa a aceitar convites, participar de eventos e conhecer novas pessoas. Tudo parece simples até conhecer alguém que desafia todas as suas certezas sobre amor, rotina e futuro. Estará pronta para abrir mão do controle que sempre definiu sua vida?", "Um Sim herda uma charmosa pousada no interior e descobre que uma das hóspedes frequentes retorna ao local todos os anos na mesma data. Curioso, ele tenta entender o motivo daquela tradição e acaba se aproximando dela. Conforme a amizade cresce, histórias antigas e lembranças dolorosas começam a surgir. Mas será que ela está pronta para criar novas memórias naquele lugar?", "Dois amigos inseparáveis passam anos ouvindo todos dizerem que deveriam ficar juntos. Cansados dos comentários, prometem provar que são apenas amigos. No entanto, quando um deles inicia um relacionamento sério e se afasta naturalmente, o outro percebe que a amizade talvez significasse muito mais do que imaginava. Será que descobriu seus sentimentos tarde demais?", "Uma jovem artista se muda para um bairro criativo em busca de inspiração para sua próxima grande obra. Entre galerias, cafés e eventos culturais, ela conhece alguém que se torna sua maior fonte de motivação. Mas conforme o sucesso profissional se aproxima, uma oportunidade única ameaça levar um deles para muito longe. O amor conseguirá sobreviver à distância que está prestes a surgir?", "Um Sim conhecido por evitar relacionamentos encontra conforto inesperado na companhia de alguém tão independente quanto ele. Nenhum dos dois procura compromisso, e é justamente isso que torna a convivência tão fácil. Porém, quando os sentimentos começam a surgir, ambos precisam decidir se vale a pena arriscar algo que pode mudar completamente suas vidas. Quem dará o primeiro passo?", "Uma Sim retorna à universidade para concluir um sonho antigo e acredita que está focada apenas nos estudos. Tudo muda quando passa a trabalhar em um projeto acadêmico com alguém que parece compreender exatamente suas inseguranças e ambições. Enquanto o prazo final se aproxima, também cresce a conexão entre eles. Mas o que acontecerá quando o projeto terminar?", "Dois Sims se aproximam após participarem do mesmo grupo de voluntariado. Entre tardes ajudando desconhecidos e longas conversas sobre a vida, nasce uma relação baseada em admiração e confiança. O problema é que ambos carregam experiências amorosas difíceis e têm medo de repetir erros do passado. Será que conseguirão acreditar no amor novamente?", "Uma jovem dona de floricultura recebe pedidos anônimos de buquês destinados sempre à mesma pessoa. Intrigada pela história por trás das encomendas, ela decide descobrir quem está enviando as flores. Conforme investiga, acaba se envolvendo muito mais do que imaginava com os sentimentos de alguém que talvez esteja mais próximo do que parece. Quem realmente está por trás das mensagens?", "Um Sim recém-chegado à cidade encontra abrigo temporário na casa de uma amiga da família. O que deveria ser uma estadia breve se transforma em meses de convivência, refeições compartilhadas e conversas madrugada adentro. Aos poucos, os sentimentos surgem dos dois lados, mas existe uma regra clara: nenhum envolvimento romântico entre moradores da casa. Quanto tempo essa regra conseguirá resistir?", "Após uma decepção amorosa pública, uma influenciadora decide desaparecer das redes e recomeçar longe dos holofotes. Em sua nova cidade, conhece alguém que não faz ideia de quem ela era antes. Pela primeira vez em muito tempo, ela pode ser apenas ela mesma. Mas quando seu passado volta a chamar atenção, o relacionamento será forte o bastante para enfrentar a exposição?", "Dois Sims se reencontram por acaso durante uma reunião de ex-alunos. Na adolescência, quase viveram um romance que nunca aconteceu por falta de coragem. Anos depois, ambos mudaram, amadureceram e seguiram caminhos diferentes. Agora, com uma segunda chance diante deles, precisam descobrir se a conexão que sentiam ainda existe ou se pertence apenas às lembranças.", "Uma Sim apaixonada por viagens decide passar um ano conhecendo diferentes cidades antes de se estabelecer. Em uma de suas paradas, conhece alguém que a faz questionar seus planos pela primeira vez. Enquanto a data de partida se aproxima, ambos tentam aproveitar cada momento juntos. Mas será possível construir algo duradouro quando o tempo está acabando?", "Um casal aparentemente perfeito percebe que passou tanto tempo planejando o futuro que esqueceu de viver o presente. Entre trabalho, responsabilidades e metas ambiciosas, o romance que os uniu começa a desaparecer lentamente. Agora precisam decidir se ainda conseguem reencontrar a conexão que tinham ou se estão apenas se agarrando a uma versão antiga da relação. O que restará quando forem honestos um com o outro?", "Dois Sims começam a trocar mensagens após um engano envolvendo um número de telefone. O que deveria ter terminado na primeira conversa se transforma em semanas de confidências, piadas internas e expectativas crescentes. O detalhe é que nenhum dos dois sabe exatamente quem está do outro lado. O que acontecerá quando finalmente descobrirem suas verdadeiras identidades?", "Uma jovem chef sonha em abrir o próprio restaurante e encontra um investidor disposto a ajudá-la. Conforme trabalham juntos para transformar o projeto em realidade, nasce uma conexão inesperada entre eles. No entanto, diferenças de visão e prioridades começam a ameaçar tanto o negócio quanto o relacionamento que está surgindo. Conseguirão encontrar um equilíbrio antes que tudo desmorone?", "Um Sim decide voltar para a cidade onde cresceu para cuidar de assuntos familiares pendentes. Lá reencontra alguém que marcou profundamente sua juventude e que nunca foi completamente esquecido. Enquanto revisitam lugares, histórias e memórias antigas, sentimentos adormecidos voltam à superfície. Mas será que ambos ainda são as mesmas pessoas de antes?", "Duas pessoas completamente diferentes acabam compartilhando a mesma casa após uma sequência de erros burocráticos. Determinados a resolver a situação rapidamente, eles passam a conviver mais do que gostariam. Entre pequenas implicâncias, momentos inesperados e uma crescente familiaridade, a convivência começa a mudar tudo. O problema é que a solução para o erro está finalmente chegando. Eles realmente querem se separar?", "Uma Sim sempre acreditou que sua grande história de amor aconteceria de forma extraordinária. No entanto, o sentimento mais importante de sua vida começa a surgir justamente na pessoa que esteve ao seu lado durante anos, compartilhando alegrias, fracassos e momentos comuns. Agora ela precisa decidir se arrisca uma amizade preciosa por algo maior. Mas e se a outra pessoa sentir exatamente o mesmo?"]
         };
 
-        const LAB_KEYS = ["gênero", "idade", "sexualidade", "sim oculto", "mundos a morar", "simoleons a começar", "estações"];
-        const DEFAULT_ROULETTES = ["eventos diários", "metas", "relações românticas", "carreiras", "curso universitário", "gênero", "idade", "sexualidade", "sim oculto", "modo de morte", "mundos a morar", "simoleons a começar", "estações"];
+        const LAB_KEYS = ["gênero", "idade", "sexualidade", "sim oculto", "mundos a morar", "simoleons a começar", "estações", "regras"];
+        const DEFAULT_ROULETTES = ["eventos diários", "metas", "relações românticas", "carreiras", "curso universitário", "gênero", "idade", "sexualidade", "sim oculto", "modo de morte", "mundos a morar", "simoleons a começar", "estações", "regras"];
         const DEFAULT_CONFIG_WHEELS = {
             "eventos diários": ["Incêndio", "Promoção", "Gravidez Inesperada", "Gêmeos", "Traição", "Visita Inesperada", "Dilema Ético", "Inimigo Declarado", "Crise de Identidade", "Dia de Folga Forçado", "Investimento de Risco", "Multa Ambiental", "Bônus por Mérito", "Promoção", "Gravidez Inesperada", "Gêmeos", "Traição", "Visita Inesperada", "Dilema Ético", "Inimigo Declarado", "Crise de Identidade", "Dia de Folga Forçado", "Investimento de Risco", "Multa Ambiental", "Bônus por Mérito", "O Objeto Amaldiçoado", "Segredo de Família", "Tradição Esquecida", "Desejo Repentino", "Lei Seca de Eletrônicos", "Incêndio Culinário", "Fuga Espiritual", "Confissão Inesperada", "Pedido de Casamento Recusado", "Inveja do Vizinho", "Amizade com Alienígena", "Paparazzi no Quintal", "Fofoca na Vizinhança", "Reencontro com Ex", "Descoberta de Parentesco Distante", "Adoção de Pet Errante", "Convite para Festa Exclusiva", "Encontro às Cegas", "Briga por Ciúmes", "Presente de um Admirador Secreto", "Disputa por Herança", "Amor à Primeira Vista", "Demissão Injusta", "Acidente de Trabalho", "Oferta de Emprego Irrecusável", "Ganhou na Loteria (Cheat)", "Falha no Investimento", "Projeto de Carreira Concluído", "Dívida de Jogo", "Promoção do Rival", "Salário Atrasado", "Compra por impulso", "Obsessão por Pintura", "Vício em Jogos de Vídeo Game", "Mudança Radical de Visual", "Fase de Vegetarianismo", "Descoberta de Talento Oculto", "Limpeza Geral (Obsessão)", "Banho de Banheira Relaxante", "Dieta de Sucos Especiais", "Meditação Profunda", "Mudança de Aspiração", "Aula de Culinária Experimental", "Desejo de se Mudar", "Dia de Colecionador", "Encontro com um Fantasma", "Pânico de Aniversário", "Perdeu o Ônibus para o Trabalho", "Discussão Familiar no Café da Manhã", "Vizinho Fazendo Barulho", "Recebeu uma Carta Misteriosa", "Pane Elétrica em Casa", "Encontrou Dinheiro no Sofá", "Roupa Rasgou em Público", "Quebrou o Celular", "Dia de Má Sorte", "Dia de Sorte Extrema", "Teve um Sonho Estranho", "Mensagem Enviada para a Pessoa Errada", "Cozinha Invadida por Insetos", "Objeto Favorito Quebrou", "Mudança Repentina de Humor", "Recebeu Flores Anônimas", "Ficou Preso no Elevador", "Perdeu um Objeto Importante", "Recebeu um Convite Suspeito", "Encontrou um Diário Antigo", "Discussão com Melhor Amigo", "Convidado Não Vai Embora", "Festa Saiu do Controle", "Vazamento de Água", "Conta Bancária Zerada", "Compra Online Arrependimento", "Mentira Descoberta", "Crush Aparece Inesperadamente", "Mensagem do Além", "Recebeu um Presente Estranho", "Encontrou um Animal Ferido", "Adotou um Hábito Estranho", "Decidiu Virar Influencer", "Desafio Fitness Repentino", "Passou Vergonha em Público", "Acusado de Algo que Não Fez", "Reputação Arruinada Temporariamente", "Virou Meme na Cidade", "Recebeu um Boato Sobre Si", "Teve uma Crise Existencial", "Descobriu um Hobby Obsessivo", "Começou uma Reforma Impulsiva", "Ficou Sem Internet", "Teve um Ataque de Criatividade", "Mudança Súbita de Personalidade", "Vontade Repentina de Viajar", "Comprou Algo Caríssimo Sem Querer", "Perdeu o Controle na Festa", "Ficou Famoso da Noite para o Dia", "Recebeu uma Visita Paranormal", "Discussão no Grupo da Família", "Encontrou uma Caixa Misteriosa", "Entrou em Pânico Social", "Recebeu um Desafio Viral", "Tentativa de Reconciliação", "Descobriu um Segredo do Parceiro", "Recebeu uma Herança Pequena", "Seu Pet Fugiu", "Seu Pet Trouxe Algo Estranho para Casa", "Apareceu um Parente Desconhecido", "Mudança de Estilo Radical", "Quebrou um Objeto Caríssimo", "Dormiu Demais e Perdeu Compromisso", "Acidentalmente Flertou com Alguém", "Encontrou um Colecionável Raro", "Dia de Limpeza Extrema", "Recebeu uma Ligação Assustadora", "Decidiu Aprender Algo Novo", "Começou uma Rivalidade", "Vontade Súbita de Ter um Filho", "Passou Mal Depois de Comer Algo", "Participou de um Escândalo Local", "Recebeu um Favor Impossível", "Precisou Mentir para se Safar", "Foi Confundido com Outra Pessoa", "Mudou de Ideia Sobre a Vida", "Recebeu Críticas Cruéis", "Teve um Surto de Compras", "Ficou Obcecado por Organização", "Teve um Dia Extremamente Produtivo", "Teve um Dia Totalmente Improdutivo", "Recebeu uma Proposta Suspeita", "Começou uma Paixão Proibida", "Ficou Sem Energia em Casa", "Descobriu um Lugar Secreto", "Recebeu Notícias Chocantes", "Entrou em Discussão Online", "Passou Vergonha em Evento Social", "Decidiu Recomeçar do Zero", "Foi Desafiado por um Rival", "Recebeu uma Oportunidade de Mudança", "Encontro Desastroso", "Desastre na Cozinha", "Acidente Doméstico Bobo", "Mudança de Humor Extrema", "Tentou Impressionar Alguém e Falhou", "Virou Assunto da Vizinhança", "Recebeu um Pedido Inusitado", "Descobriu um Talento Vergonhoso", "Foi Ignorado por Todo Mundo", "Um Sim sonha em se tornar o centro das fofocas da cidade e quer conhecer literalmente todos os moradores.", "Uma aspirante a influencer cria um clube apenas para gravar desafios absurdos pela cidade.", "Um grupo de amigos transforma a própria casa em ponto oficial de festas clandestinas.", "Uma Sim decide organizar eventos comunitários em todos os bairros para unir os moradores.", "Um político ambicioso tenta conquistar popularidade enquanto esconde vários segredos.", "Uma família inteira vive apenas de networking, festas e contatos influentes.", "Um Sim extremamente carismático cria um culto estranho baseado em positivismo exagerado.", "Uma adolescente quer se tornar a pessoa mais popular da escola usando apenas manipulação social e fofocas.", "Acordou Inspirado para Mudar de Vida", "Recebeu uma Intimação Misteriosa", "Discussão com Vizinho por Barulho", "Quebrou o Chuveiro", "Esqueceu um Compromisso Importante", "Recebeu um Pacote Sem Remetente", "Encontrou Fotos Antigas Embaraçosas", "Descobriu um Rumor Sobre a Família", "Ficou Preso Fora de Casa", "Seu Sim Virou Assunto em Fórum Online", "Recebeu um Convite para Reality Show", "Acidentalmente Ofendeu Alguém Importante", "Começou um Diário Secreto", "Vizinho Pediu Dinheiro Emprestado", "Teve uma Crise de Vaidade", "Recebeu uma Proposta de Trabalho Estranha", "Passou a Noite em Claro", "Perdeu Dinheiro na Rua", "Encontrou um Bilhete Ameaçador", "Discussão Durante o Jantar", "Recebeu uma Visita do Proprietário", "Seu Sim Desenvolveu uma Obsessão Aleatória", "Foi Flagrado Espionando", "Recebeu um Convite para Culto Misterioso", "Esqueceu o Aniversário de Alguém", "Teve um Dia de Azar Amoroso", "A Geladeira Quebrou", "Recebeu uma Crítica Humilhante", "Entrou em Dívida Sem Perceber", "Descobriu um Esconderijo Secreto", "Ficou Obcecado por Teorias da Conspiração", "Perdeu a Chave de Casa", "Teve uma Discussão no Trabalho", "Recebeu um Álbum de Fotos Antigo", "Seu Sim Foi Bloqueado nas Redes Sociais", "Acidentalmente Iniciou um Boato", "Recebeu uma Proposta Romântica Estranha", "Começou uma Reforma Sem Dinheiro", "Seu Sim Desenvolveu Medo de Algo Aleatório", "Recebeu um Desafio Ridículo", "Encontrou uma Carteira Perdida", "Foi Acusado de Roubo", "Seu Sim Virou Fofoqueiro Oficial do Bairro", "Teve uma Crise de Ciúmes", "Recebeu uma Carta de Amor Antiga", "Dormiu no Trabalho", "Ficou Viciado em Café", "Seu Sim Resolveu Virar Minimalista", "Recebeu um Convite para Casamento", "Encontrou um Objeto Enterrado no Quintal", "Seu Sim Virou Obcecado por Jardinagem", "Teve uma Discussão em Público", "Recebeu uma Reclamação dos Vizinhos", "Seu Sim Decidiu Fazer Detox Digital", "Encontrou um Animal Exótico Perdido", "Passou Vergonha em Rede Social", "Seu Sim Começou a Falar Sozinho", "Recebeu uma Multa Injusta", "Foi Expulso de um Evento", "Seu Sim Resolveu Mudar de Estilo de Vida", "Entrou em Crise Financeira Repentina", "Recebeu uma Herança Inútil", "Seu Sim Virou Paranóico", "Teve uma Discussão com o Parceiro por Dinheiro", "Recebeu uma Proposta Tentadora", "Seu Sim Decidiu Virar Vegetariano Radical", "Descobriu um Quarto Trancado", "Ficou Sem Água em Casa", "Seu Sim Resolveu Sumir por um Dia", "Recebeu Notícias do Ex", "Entrou em Guerra com os Vizinhos", "Seu Sim Desenvolveu Obsessão por Limpeza", "Recebeu um Convite para Festa Suspeita", "Seu Sim Foi Esquecido em Evento Importante", "Passou Mal Durante um Evento Social", "Seu Sim Resolveu Mudar de Nome", "Recebeu Flores da Pessoa Errada", "Foi Vítima de Fake News Local", "Seu Sim Resolveu Cortar Relações com Todos", "Recebeu uma Oferta de Moradia Estranha", "Seu Sim Encontrou um Cofre Antigo", "Perdeu um Save Importante do Computador", "Seu Sim Resolveu Fazer Justiça com as Próprias Mãos", "Foi Desafiado para uma Competição", "Recebeu uma Proposta de Casamento Aleatória", "Seu Sim Descobriu um Seguidor Obsessivo", "Teve um Colapso Durante Festa", "Recebeu uma Mensagem Criptografada", "Seu Sim Virou Obcecado por Fama", "Encontrou uma Lista de Segredos da Cidade", "Seu Sim Resolveu Espionar os Vizinhos", "Foi Humilhado em Público", "Recebeu uma Visita da Polícia", "Seu Sim Resolveu Adotar um Estilo Gótico", "Entrou em Conflito com um Familiar", "Recebeu um Convite para Viagem Misteriosa", "Seu Sim Desenvolveu Obsessão por Astrologia", "Perdeu o Controle em Discussão Familiar", "Recebeu um Pedido de Ajuda Suspeito", "Seu Sim Resolveu Fugir da Cidade por Uns Dias", "Foi Flagrado Mentindo", "Recebeu um Objeto Estranho pelo Correio", "Seu Sim Virou Competitivo Demais", "Teve uma Crise de Nostalgia", "Recebeu um Convite para Morar com Alguém", "Seu Sim Resolveu Apagar as Redes Sociais", "Encontrou um Mapa Misterioso", "Seu Sim Foi Ignorado em Evento Importante", "Recebeu uma Ligação no Meio da Madrugada", "Seu Sim Desenvolveu Obsessão por Luxo", "Entrou em Discussão com Melhor Amigo por Besteira", "Recebeu um Convite para Negócio Arriscado", "Seu Sim Resolveu Fazer uma Grande Mudança na Casa"],
             "metas": ["Juntar 10k", "Topo da carreira", "Ter um herdeiro", "Comprar mansão", "Alcançar o topo da carreira atual", "Completar uma Aspiração de vida", "Ter um herdeiro com três traços positivos", "Juntar 20k", "Topo da carreira", "Ter um herdeiro", "Comprar mansão", "Alcançar o topo da carreira atual", "Completar uma Aspiração de vida", "Ter um herdeiro com três traços positivos", "Economizar 50.000 simoleons sem cheats", "Construir um porão ou sótão memorial", "Ter um retrato pintado de cada herdeiro", "Dominar completamente uma habilidade", "Fazer amizade com a Dona Morte", "Ter três filhos com o traço de recompensa de notas altas", "Viajar para todos os mundos disponíveis", "Possuir uma coleção completa de itens colecionáveis", "Organizar cinco festas padrão ouro", "Manter um jardim com plantas de qualidade perfeita", "Adotar e treinar um animal de estimação até o nível máximo", "Escrever uma biografia sobre o patriarca ou matriarca", "Realizar um casamento em um lote comunitário luxuoso", "Descobrir todos os segredos de um bairro específico", "Ter um Sim fantasma vivendo na casa da família", "Ganhar uma briga com um inimigo declarado", "Doar 1.000 simoleons para caridade via computador", "Ter uma família com 4 gerações vivas simultaneamente", "Alcançar a árvore genealógica com 10 membros vivos", "Casar um herdeiro com um Sim de outra espécie (Alien/Vampiro/etc)", "Ter um herdeiro que nunca saiu de casa", "Ter um filho que seguiu a mesma carreira dos pais", "Garantir que todos os membros da família saibam cozinhar", "Ter um herdeiro que viveu 100 dias sim sem nunca trabalhar", "Fazer uma festa de aniversário para cada fase da vida do herdeiro", "Ter um Sim da família que se tornou uma celebridade 5 estrelas", "Publicar 5 livros de sucesso sobre a história da família", "Dominar 3 habilidades diferentes com um único Sim", "Alcançar o nível 10 de uma habilidade secreta (ex: Fotografia)", "Ter um Sim que nunca teve uma emoção negativa por uma semana", "Construir um cômodo dedicado a cada habilidade do jogo", "Criar uma refeição de qualidade perfeita com ingredientes do próprio jardim", "Dominar a habilidade de arqueologia ou cultura de selva", "Fazer um Sim completar a aspiração 'Sim do Mundo'", "Ter um Sim com 5 traços de recompensa diferentes", "Transformar a casa em um lote de 'Ponto de Encontro' badalado", "Manter a casa sem nenhum incêndio por 3 gerações", "Ter um Sim que foi abduzido por alienígenas", "Viver com um Sim que possui o traço 'Insano'", "Alcançar o nível máximo de todas as carreiras de meio período", "Ter 3 Sims fantasmas de tipos diferentes na casa", "Construir um cemitério privativo no lote da família", "Ter um Sim que se aposentou com nível 10 de carreira", "Adotar 3 animais de estimação diferentes", "Tornar-se o inimigo número 1 de um Sim famoso", "Ter um Sim que passou um dia inteiro na prisão (se tiver Aos Trabalhos)", "Ganhar 10.000 simoleons apenas vendendo quadros ou livros", "Comprar um lote de férias e ir lá uma vez por geração", "Ter um Sim que conhece todos os Sims de um bairro", "Fazer um Sim atingir o peso máximo e depois o mínimo (ou vice-versa)", "Doar todos os bens da família e começar do zero na 3ª geração", "Construir uma casa do zero sem usar galeria", "Casar com um Sim extremamente rico", "Criar uma linhagem de artistas famosos", "Completar todas as coleções de jardinagem", "Ter uma família com apenas filhos únicos por 3 gerações", "Manter uma rivalidade familiar por gerações", "Criar um restaurante cinco estrelas", "Transformar um herdeiro em vilão da vizinhança", "Ter um Sim que dominou todas as emoções", "Completar todas as aspirações infantis", "Criar um legado de criminosos", "Ter um herdeiro milionário antes de virar adulto", "Sobreviver apenas vendendo itens coletados", "Viver fora da rede elétrica por uma geração inteira", "Ter uma família inteira vegetariana", "Completar a coleção de fósseis", "Ter um Sim que escreveu um best-seller mundial", "Criar um herdeiro com todos os traços negativos possíveis", "Fazer um Sim se divorciar e reconstruir a vida", "Manter um casamento feliz até a velhice", "Criar uma dinastia política ou influente", "Ter um Sim que nunca entrou em um emprego tradicional", "Construir uma mansão de 500k simoleons", "Dominar todas as receitas culinárias", "Ter um herdeiro que nunca mentiu para ninguém", "Fazer um Sim conquistar 20 almas gêmeas", "Completar todos os festivais de San Myshuno", "Ter uma família dona de vários negócios", "Transformar um Sim pobre em celebridade mundial", "Criar um legado de cientistas", "Construir uma casa temática para cada geração", "Ter um Sim que morreu e voltou à vida", "Criar um herdeiro obcecado por riqueza", "Ter uma geração inteira sem romances", "Fazer um Sim conhecer todos os mundos ocultos", "Completar a coleção de cristais e metais", "Ter um Sim mestre em travessuras", "Criar um orfanato improvisado com adoções", "Ter um Sim que nunca cozinhou uma refeição", "Construir uma fazenda totalmente funcional", "Ter um Sim que adotou todos os estilos de vida possíveis", "Fazer um herdeiro abandonar completamente a tradição familiar", "Criar uma família famosa por escândalos", "Ter uma casa sustentável e ecológica", "Dominar todas as habilidades criativas", "Ter um Sim que nunca brigou com ninguém", "Construir um império de pinturas e esculturas", "Criar um Sim arqueólogo renomado", "Ter uma família com apenas um filho por geração", "Transformar um bairro inteiro em amigos da família", "Ter um Sim que foi inimigo de todos os colegas de trabalho", "Completar a coleção de peixes raros", "Criar um legado baseado em culinária", "Ter um Sim que morou sozinho até a velhice", "Fazer um Sim completar todas as aspirações românticas", "Criar uma família de ocultistas", "Ter um herdeiro expulso de casa", "Construir uma biblioteca gigante na casa da família", "Ter um Sim que dominou todas as habilidades sociais", "Criar uma tradição familiar obrigatória", "Ter um Sim que nunca usou celular", "Construir uma casa em cada mundo", "Fazer um Sim sobreviver apenas de freelas", "Criar um legado de músicos famosos", "Ter um Sim que teve um filho com cada ocultista", "Dominar completamente a habilidade de atuação", "Ter uma família que odeia tecnologia", "Construir um bunker subterrâneo", "Ter um Sim que viveu apenas de agricultura", "Criar um herdeiro perfeccionista obcecado por sucesso", "Completar todos os objetivos de férias", "Ter um Sim que fugiu de casa na adolescência", "Transformar um Sim tímido em celebridade", "Criar uma geração inteira focada em fitness", "Ter um Sim dono de uma loja lendária", "Construir uma cobertura luxuosa em San Myshuno", "Fazer um Sim conquistar todos os vizinhos", "Ter uma família marcada por tragédias", "Completar todas as receitas experimentais", "Ter um Sim que nunca ficou sem dinheiro", "Criar um legado de escritores", "Ter um herdeiro rebelde que destruiu a reputação da família", "Construir uma casa assombrada lendária", "Ter um Sim que dominou todas as habilidades mentais", "Completar a coleção de cartões postais", "Criar uma família completamente caótica", "Ter um Sim que nunca trabalhou mas ficou rico", "Fazer um Sim atingir o máximo de fama e infâmia", "Criar uma geração focada apenas em romances", "Ter uma família dona do maior jardim da cidade", "Construir um museu familiar com memórias de gerações", "Ter um Sim que nunca perdeu uma amizade", "Criar um legado baseado em viagens", "Fazer um Sim abandonar tudo para viver no mato", "Ter um herdeiro que reconstruiu a reputação da família", "Criar uma linhagem de Sims gênios", "Ter um Sim que completou todas as habilidades infantis e adultas", "Construir uma casa minimalista perfeita", "Ter um Sim que passou por todos os tipos de morte possíveis", "Criar um legado focado em ocultismo e mistérios", "Ter uma família que nunca saiu do mesmo lote por gerações", "Fazer um Sim acumular inimigos em todos os mundos", "Criar uma família extremamente unida por 5 gerações", "Ter um Sim que largou tudo para seguir arte", "Construir um palácio familiar histórico", "Ter um herdeiro que foi rejeitado pela família e venceu na vida"],
@@ -2068,6 +2115,7 @@
             "estações": ["Primavera", "Verão", "Outono", "Inverno"],
 	    "carreiras": ["Nenhum", "Agente Secreto", "Artista ou Animador", "Astronauta", "Atleta", "Culinária", "Escritor", "Estilista ou Influenciador de Estilo", "Freelancer", "Guru da Tecnologia", "Negócios", "Pintor", "Conservacionista", "Crítico", "Designer Civil", "Direito ou Carreira Jurídica", "Educação", "Engenharia", "Jardineiro", "Militar", "Político", "Redes Sociais", "Ator ou Atriz", "Cientista", "Detetive", "Médico", "Empregos de Meio Período", "Escoteiro"],
 	    "curso universitário": [ "Nenhum", "Britechester - Biologia", "Britechester - Ciência da Computação", "Britechester - Economia", "Britechester - Física", "Britechester - Psicologia", "Britechester - Vilania", "Britechester - Com Distinção - História da Arte", "Britechester - Com Distinção - Artes Culinárias", "Britechester - Com Distinção - Teatro", "Britechester - Com Distinção - Belas-Artes", "Britechester - Com Distinção - História", "Britechester - Com Distinção - Letras e Literatura", "Britechester - Com Distinção - Comunicação", "Foxbury - História da Arte", "Foxbury - Artes Culinárias", "Foxbury - Teatro", "Foxbury - Belas-Artes", "Foxbury - História", "Foxbury - Letras e Literatura", "Foxbury - Comunicação", "Foxbury - Com Distinção - Biologia", "Foxbury - Com Distinção - Ciência da Computação", "Foxbury - Com Distinção - Economia", "Foxbury - Com Distinção - Física", "Foxbury - Com Distinção - Psicologia", "Foxbury - Com Distinção - Vilania"],
+            "regras": ["Proibido usar Motherlode até a 2ª geração", "Herdeiro deve seguir a primeira carreira sorteada", "Sem reviver Sims falecidos", "Casamentos somente após concluir a universidade", "Proibido pedir demissão de uma carreira (só ser demitido)", "Bebês não podem ser adotados na 1ª geração", "Cada Sim só pode dominar 3 habilidades no nível máximo", "Mudanças de mundo exigem o sorteio na Roleta de Mundos", "Cada geração precisa de pelo menos 2 filhos biológicos", "Sem usar cheats de aspiração ou habilidade", "O herdeiro é sempre o primeiro filho a chegar à adolescência", "Cônjuges devem ser conhecidos antes do casamento (mínimo 5 visitas)", "Proibido renovar móveis enquanto houver dívidas", "Mortes acidentais não podem ser desfeitas com salvamento anterior", "Cada geração deve concluir uma aspiração diferente", "Proibido casar com Sims da mesma carreira do herdeiro", "O herdeiro deve mudar de mundo ao atingir a fase Jovem Adulto", "Cada geração deve dominar pelo menos uma habilidade inédita na família", "Proibido usar recompensas de satisfação acima de 1.000 pontos", "Toda reforma acima de §10.000 exige contrair uma dívida narrativa", "Se um Sim for demitido, nenhum membro da família pode entrar na mesma carreira por uma geração", "Cada geração deve realizar pelo menos uma festa social de ouro", "O herdeiro não pode morar no mesmo lote dos pais após casar", "Proibido casar antes de atingir nível 5 em uma carreira", "Cada geração deve possuir pelo menos um rival declarado", "Mudanças de traço por poção são proibidas", "O herdeiro deve completar ao menos metade da aspiração antes de ter filhos", "Proibido vender coleções incompletas", "Cada geração deve visitar um mundo diferente antes da fase Adulta", "Se um Sim morrer, um objeto pessoal deve ser mantido pela família para sempre", "Toda geração deve manter pelo menos um animal de estimação", "Proibido contratar empregados domésticos até a 3ª geração", "Cada geração deve ter ao menos um relacionamento negativo duradouro", "O herdeiro deve manter uma fotografia com cada geração anterior", "Proibido usar a galeria para baixar lotes residenciais prontos", "Toda geração deve alcançar nível máximo em pelo menos uma habilidade", "O herdeiro deve possuir um traço diferente dos pais", "Nenhum Sim pode abandonar uma aspiração iniciada", "Cada geração deve produzir uma nova fonte de renda doméstica", "Proibido vender presentes recebidos em eventos sociais", "O herdeiro deve completar uma coleção iniciada por um ancestral", "Toda geração deve participar de pelo menos um festival", "Casamentos só podem acontecer após o casal atingir amizade alta", "Cada geração deve deixar uma herança mínima de §20.000 para o sucessor", "Proibido mudar a decoração completa de um cômodo herdado", "Todo filho deve aprender ao menos uma habilidade na infância", "Cada geração deve possuir uma lembrança herdada da anterior", "Proibido casar com o primeiro interesse romântico encontrado", "Uma vez por geração, uma decisão importante deve ser tomada por sorteio", "Toda geração deve concluir ao menos um objetivo de evento sazonal", "O herdeiro deve viver sozinho por pelo menos uma semana antes de casar", "Proibido vender pinturas, livros ou obras criadas por ancestrais", "Cada geração deve explorar uma carreira nunca utilizada pela família", "O lote principal nunca pode ser vendido", "Proibido usar férias para faltar ao trabalho", "Cada geração deve ter pelo menos um hobby principal diferente", "O herdeiro deve manter amizade máxima com pelo menos um familiar", "Nenhum Sim pode se casar antes de conhecer os pais do parceiro", "Toda geração deve concluir uma coleção parcial antes de envelhecer", "Proibido usar poções de juventude", "O herdeiro deve morar no lote inicial por pelo menos uma fase da vida", "Cada geração deve possuir um objeto de valor sentimental que nunca poderá ser vendido", "Proibido reformar a casa durante uma gravidez", "Todo Sim adolescente deve ter um melhor amigo", "Cada geração deve participar de pelo menos um evento comunitário", "Proibido trocar de aspiração após atingir 50% do progresso", "Toda geração deve registrar pelo menos uma fotografia familiar", "O herdeiro deve aprender uma habilidade ensinada pelos pais", "Proibido vender colheitas raras antes de guardar uma amostra", "Cada geração deve realizar uma viagem em família", "Nenhum Sim pode ter mais de uma casa", "Toda geração deve possuir uma tradição familiar exclusiva", "O herdeiro deve manter contato com pelo menos um irmão após sair de casa", "Proibido construir novos cômodos até quitar todas as contas acumuladas", "Cada geração deve completar um desejo de infância antes da fase Adulta", "Todo casal deve morar junto por pelo menos uma semana antes de casar", "O herdeiro deve herdar o quarto principal da geração anterior", "Proibido apagar memórias fotográficas da família", "Cada geração deve desenvolver uma habilidade criativa ou artística", "Nenhum Sim pode abandonar um animal de estimação", "Toda geração deve cultivar ao menos uma planta por conta própria", "O herdeiro deve alcançar nível 5 de uma habilidade antes de iniciar uma carreira", "Proibido mudar de lote mais de uma vez por geração", "Cada geração deve manter uma amizade iniciada na infância", "Todo Sim deve celebrar o próprio aniversário com um evento social", "O herdeiro deve concluir pelo menos uma meta de vida antes de envelhecer", "Proibido vender a urna ou lápide de familiares", "Cada geração deve conhecer pessoalmente todos os avós vivos", "Nenhum Sim pode faltar propositalmente ao trabalho ou à escola", "Toda geração deve realizar uma reforma significativa na casa da família", "O herdeiro deve guardar pelo menos um presente recebido durante a infância", "Proibido casar no mesmo local utilizado por outra geração", "Cada geração deve criar uma nova tradição sazonal", "Nenhum Sim pode envelhecer sem ter pelo menos um amigo próximo", "Toda geração deve deixar um diário, livro ou obra criativa para os descendentes", "O herdeiro deve atingir excelência em pelo menos uma atividade extracurricular", "Proibido vender recompensas recebidas em festivais", "Cada geração deve ter uma fotografia oficial em grupo", "Todo casal deve comemorar aniversários de casamento", "O herdeiro deve visitar o túmulo ou memorial dos ancestrais ao menos uma vez por fase da vida", "Proibido usar serviços de entrega durante uma semana por estação", "Cada geração deve aprender uma receita nova e passá-la adiante", "Nenhum Sim pode se tornar melhor amigo de mais de três Sims ao mesmo tempo", "Toda geração deve contribuir para uma coleção ou legado iniciado por seus antepassados", "O herdeiro deve manter pelo menos um objeto da casa original mesmo após grandes reformas", "Proibido substituir móveis quebrados sem antes tentar repará-los", "Cada geração deve possuir uma meta financeira própria além das contas da família", "Nenhum Sim pode casar sem antes atingir o nível 3 de carisma", "Toda geração deve ter uma reunião familiar anual obrigatória", "O herdeiro deve viver uma fase da vida com orçamento limitado", "Proibido vender presentes românticos recebidos de parceiros", "Cada geração deve conhecer um novo mundo antes da meia-idade", "Nenhum Sim pode ignorar convites de familiares próximos por mais de uma semana", "Cada geração deve possuir um inimigo declarado", "Proibido usar a opção de teletransporte", "O herdeiro deve completar uma aspiração sorteada aleatoriamente", "Nenhum Sim pode casar com o primeiro interesse romântico", "Toda geração deve passar por pelo menos uma crise financeira", "Proibido mudar traços usando recompensas ou cheats", "Cada geração deve deixar uma herança mínima de §50.000", "O herdeiro deve dominar uma habilidade considerada inútil para sua carreira", "Nenhum Sim pode morar sozinho durante a velhice", "Toda geração deve possuir uma tradição exclusiva de aniversário", "Proibido vender objetos encontrados em exploração até identificá-los ou utilizá-los", "Cada geração deve ter pelo menos um membro que viva até a velhice", "O herdeiro deve aprender uma habilidade iniciada por um ancestral", "Nenhum Sim pode abandonar uma amizade de infância sem motivo narrativo", "Toda geração deve visitar um lote comunitário diferente regularmente", "Proibido contratar babás durante a primeira geração", "Cada geração deve produzir uma fonte de renda alternativa além da carreira principal", "O herdeiro deve ter pelo menos um traço oposto ao do fundador", "Nenhum Sim pode usar poções emocionais", "Toda geração deve preservar um cômodo histórico da casa", "Proibido vender a casa da família enquanto houver descendentes vivos", "Cada geração deve completar pelo menos uma coleção parcialmente", "O herdeiro deve participar de um clube ou grupo social", "Nenhum Sim pode ignorar feriados oficiais", "Toda geração deve ter uma meta pessoal não relacionada a dinheiro", "Proibido acelerar relacionamentos românticos com recompensas", "Cada geração deve possuir uma fotografia com todos os membros da família vivos", "O herdeiro deve alcançar o nível máximo em uma habilidade diferente da geração anterior", "Nenhum Sim pode faltar ao aniversário de um familiar próximo", "Toda geração deve ter pelo menos um membro morando fora do lote principal", "Proibido reformar a fachada da casa mais de uma vez por geração", "Cada geração deve concluir uma aspiração antes da meia-idade", "O herdeiro deve manter contato frequente com parentes distantes", "Nenhum Sim pode trocar de carreira após atingir nível 7", "Toda geração deve deixar um objeto criado manualmente para os descendentes", "Proibido vender itens recebidos por herança", "Cada geração deve experimentar uma carreira nunca utilizada pela linhagem", "O herdeiro deve realizar uma viagem marcante antes de ter filhos", "Nenhum Sim pode ter mais de três melhores amigos", "Toda geração deve adotar pelo menos um hábito ou tradição nova", "Proibido mudar de mundo durante a infância dos filhos", "Cada geração deve ter uma meta de patrimônio diferente", "O herdeiro deve concluir uma coleção iniciada por outra geração", "Nenhum Sim pode ignorar convites para eventos familiares importantes", "Toda geração deve possuir um álbum de memórias atualizado", "Proibido vender obras-primas criadas pela família", "Cada geração deve ter pelo menos um relacionamento complicado ou rivalidade", "O herdeiro deve alcançar independência financeira antes de casar", "Nenhum Sim pode morar em mansão antes da 4ª geração", "Toda geração deve contribuir para a expansão física da casa", "Proibido usar recompensas de satisfação acima de 5.000 pontos", "Cada geração deve ensinar uma habilidade para um descendente", "O herdeiro deve ter uma amizade que dure da infância à vida adulta", "Nenhum Sim pode casar sem antes atingir o nível 5 em uma habilidade social", "Toda geração deve organizar uma grande reunião familiar", "Proibido vender colecionáveis raros antes de exibi-los em casa", "Cada geração deve deixar um legado financeiro, social ou criativo", "O herdeiro deve viver pelo menos uma fase da vida em um lote modesto", "Nenhum Sim pode ignorar completamente os desejos e caprichos por uma semana inteira", "Toda geração deve ser lembrada por uma conquista específica dentro da família", "Proibido usar computadores para entretenimento (apenas trabalho ou estudo)", "Herdeiro deve manter um melhor amigo fora da família por toda a vida", "Proibido preparar pratos gourmet até a 3ª geração", "Cada geração deve incluir pelo menos um Sim vegetariano ou com aversão à carne", "Proibido usar móveis de luxo até que o herdeiro atinja a vida adulta", "Todo Sim da família deve possuir pelo menos um traço 'negativo' (como Desastrado, Sombrio ou Odiador de Crianças)", "Proibido casar com Sims que tenham traços perfeitamente compatíveis", "O herdeiro deve adotar um Sim órfão antes de ter qualquer filho biológico", "Proibido usar escadas na casa principal (casa deve ser térrea)", "Cada geração deve falhar intencionalmente em uma promoção de trabalho", "Proibido utilizar celulares ou computadores após as 22h", "Cada geração deve ter um Sim que nunca sai do lote (eremita)", "O herdeiro deve viver em um lote de habitação minúscula por uma geração inteira", "Proibido utilizar a geladeira (apenas cozinhar em churrasqueiras ou fogueiras)", "Cada geração deve possuir um 'segredo' (um traço ou habilidade que nunca pode ser revelado aos outros)", "Proibido utilizar serviços de reparo (tudo deve ser consertado pelo Sim)", "Herdeiro deve trocar de carreira sempre que atingir o nível 5", "Todo membro da família deve ter um passatempo que não gere dinheiro", "Proibido utilizar o recurso de 'trocar de roupa' com frequência (manter a mesma roupa por 3 dias)", "Cada geração deve ter um Sim que se recusa a trabalhar (apenas fontes de renda passivas)", "O herdeiro deve se mudar para um lote com um desafio de terreno obrigatório", "Proibido utilizar o modo de construção durante feriados", "Cada geração deve ter um Sim que odeia o trabalho atual", "Herdeiro deve ser o único responsável pelo cuidado dos animais ou crianças da casa", "Proibido utilizar poções de felicidade em Sims com humor negativo", "Cada geração deve registrar uma falha catastrófica em um evento social", "Todo Sim deve possuir um diário e escrever nele uma vez por semana", "Proibido utilizar a opção de 'caminhada rápida' (somente caminhada normal)", "Cada geração deve ter um Sim que nunca se casou", "O herdeiro deve doar metade de suas economias pessoais para a caridade antes de se casar", "O herdeiro deve manter um segredo romântico que pode arruinar a reputação da família", "Proibido perdoar qualquer traição romântica", "O herdeiro deve se casar com alguém de um mundo diferente", "Todo Sim deve ter um inimigo de estimação na vizinhança", "Proibido expulsar fantasmas do lote; eles devem morar com a família", "Cada geração deve ter um Sim que busca a imortalidade por meios mágicos", "Proibido realizar casamentos em locais elegantes; apenas locais rústicos ou terrenos baldios", "Um membro da família deve ser sacrificado (em termos de carreira) para apoiar o sucesso do herdeiro", "Todo Sim da família deve ter um amor proibido que nunca pode casar", "O herdeiro deve passar uma semana inteira vivendo apenas de itens encontrados no lixo", "Proibido recusar pedidos de amizade, mesmo de inimigos", "Cada geração deve iniciar uma rixa pública com outra família da vizinhança", "O herdeiro deve carregar o sobrenome original sem nunca alterá-lo", "Todas as refeições principais devem ser feitas em conjunto, com a família completa na mesa", "Proibido casar sem a aprovação dos pais ou do Sim mais velho da casa", "Cada geração deve manter uma lápide de um antepassado na sala de estar como decoração", "Proibido usar itens mágicos para resolver problemas cotidianos (apenas magia de entretenimento)", "O herdeiro deve buscar um parceiro que tenha o traço de personalidade oposto ao seu", "Todo Sim deve ter pelo menos um traço de personalidade voltado ao místico ou sobrenatural", "Proibido vender objetos que pertençam a Sims falecidos da família", "O herdeiro deve manter um diário secreto de todas as suas aventuras românticas", "Cada geração deve adotar um Sim considerado excluído da sociedade", "Proibido usar moderação emocional; Sims devem agir impulsivamente de acordo com seus humores atuais", "O herdeiro deve tentar interagir com a Morte (Grim Reaper) sempre que possível", "Todo Sim deve ter uma tradição familiar que envolva oferendas a objetos ou entidades", "Proibido ter um emprego fixo se o Sim for um personagem oculto", "O herdeiro deve casar apenas após uma perda significativa, como a morte de um ente querido", "Todo Sim da família deve possuir uma coleção pessoal de objetos místicos ou assustadores", "Proibido reconciliar Sims que brigaram até que um pedido formal de desculpas seja feito", "O herdeiro deve construir um santuário ou altar dedicado aos antepassados da família", "Proibido utilizar o recurso de 'pausar' o jogo durante momentos de crise familiar", "O herdeiro deve ter um filho secreto que a família só descobre na fase adolescente", "Todo Sim deve possuir um traje de gala que deve ser usado obrigatoriamente aos domingos", "Proibido morar com o cônjuge antes de ter um filho", "O herdeiro deve tentar convencer um alienígena a se mudar para a casa", "Cada geração deve ter um Sim que dedica a vida a colecionar cristais ou pedras preciosas", "Proibido usar o telefone para fazer amigos; todos devem ser conhecidos pessoalmente", "O herdeiro deve se casar na mesma data do aniversário de um ancestral falecido", "Todo Sim deve ter uma 'paixão secreta' que não pode ser revelada", "Se um Sim sofrer um acidente grave, ele deve mudar completamente seu estilo de vida e carreira", "O herdeiro deve tentar realizar uma sessão espírita semanal", "Proibido ter mais de dois aparelhos eletrônicos na casa", "Todo Sim deve ter uma característica de personalidade baseada no seu signo (astrologia)", "O herdeiro deve encontrar o 'verdadeiro amor' apenas após passar por três términos", "Proibido vender móveis herdados, mesmo que estejam quebrados", "Cada geração deve realizar um casamento surpresa (sem avisar os convidados)", "O herdeiro deve tentar cultivar plantas raras e perigosas no quintal", "Todo Sim deve realizar uma 'limpeza de casa' (vender objetos) a cada mudança de estação", "Proibido contratar serviços (babás, empregados, reparos) durante a primeira semana de cada geração", "O herdeiro deve proteger um objeto amaldiçoado que deve passar de geração em geração", "Todo casal deve se casar em um local que tenha significado histórico para a família", "Proibido usar cheats de relacionamento para melhorar amizades", "O herdeiro deve ter um melhor amigo que seja um Sim oculto", "Cada geração deve organizar um funeral ou memorial para cada Sim falecido", "O herdeiro deve viver sem eletricidade por uma fase da vida (estilo off-the-grid)", "Todo Sim deve ter um 'inimigo de sangue' que não pode ser perdoado", "Proibido usar redes sociais para promover a própria carreira", "O herdeiro deve tentar transformar todos os membros da família em seres sobrenaturais", "Todo Sim deve ter um hobby obrigatório que exija sair de casa", "Proibido casar com Sims que tenham traços de esnobe ou materialista"]
         };
 
 
@@ -2138,6 +2186,7 @@
             if (!db.custom.aspiracoes) db.custom.aspiracoes = [];
             if (!db.custom.tags) db.custom.tags = [];
             if (!db.reactionAudio) db.reactionAudio = AUDIO_DEFAULTS;
+            if (!Array.isArray(db.regras_lista)) db.regras_lista = [];
 
             // Mescla config salvo com os defaults da versão atual
             // (adiciona roletas/itens novos sem perder customizações do usuário)
@@ -2478,7 +2527,7 @@ function salvarTudo() {
 
         function recarregarInterface() {
             document.getElementById('txt-laws').value = db.regras || "";
-            renderDash(); renderLab(); renderTree(); renderMetas(); renderConfig(); renderGenList(); renderIaSimList(); renderLivroComFiltro();
+            renderDash(); renderLab(); renderTree(); renderMetas(); renderConfig(); renderGenList(); renderIaSimList(); renderLivroComFiltro(); if (typeof renderRegrasLista === 'function') renderRegrasLista();
             aplicarTreeBg();
             renderTagsCustomConfig();
             renderFiltrosTagsCustom();
@@ -2651,7 +2700,7 @@ if (fase === 'recem_nascido') {
                     let match = item.texto.match(/^\[(.*?)\]\s*(\[.*?\])?\s*(.*)/);
                     let dataStr = match ? match[1] : ""; let tag = match && match[2] ? match[2] : ""; let texto = match ? match[3] : item.texto;
                     let corTag = "#555";
-                    if(tag.includes("NASCIMENTO")) corTag = "#e83e8c"; else if(tag.includes("MORTE")) corTag = "#343a40"; else if(tag.includes("CASAMENTO")) corTag = "#fd7e14"; else if(tag.includes("DRAMA") || tag.includes("SEPARAÇÃO")) corTag = "#dc3545"; else if(tag.includes("FASES")) corTag = "#17a2b8"; else if(tag.includes("CONQUISTA")) corTag = "#28a745";
+                    if(tag.includes("NASCIMENTO")) corTag = "#e83e8c"; else if(tag.includes("MORTE")) corTag = "#343a40"; else if(tag.includes("CASAMENTO")) corTag = "#fd7e14"; else if(tag.includes("DRAMA") || tag.includes("SEPARAÇÃO")) corTag = "#dc3545"; else if(tag.includes("FASES")) corTag = "#17a2b8"; else if(tag.includes("CONQUISTA")) corTag = "#28a745"; else if(tag.includes("META-DESISTIDA")) corTag = "#7f8c8d"; else if(tag.includes("META")) corTag = "#0079C1";
                     else if (db.custom && db.custom.tags && db.custom.tags.some(t => tag.includes(t))) corTag = "#9B59B6";
 
                     html += `
@@ -2696,9 +2745,170 @@ if (fase === 'recem_nascido') {
     showToast("✓ Narrativa registrada no Livro da Família!");
 }
         function addHistoriaManual() { const v = document.getElementById('nova-historia-manual').value; const tag = document.getElementById('sel-tag-historia').value; if(v) { let dataInput = document.getElementById('data-historia-manual').value; let dataStr = dataInput ? new Date(dataInput + 'T00:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR'); db.historia += `\n[${dataStr}] ${tag} ${v}`; document.getElementById('nova-historia-manual').value = ""; salvarTudo(); renderLivroComFiltro(); showToast("Evento anotado!"); } }
-        function addMeta() { const v = document.getElementById('nova-meta').value; if(v) { db.metas_pendentes.push(v); document.getElementById('nova-meta').value = ""; salvarTudo(); renderMetas(); } }
-        function concluirMeta(i) { const m = db.metas_pendentes[i]; db.metas_pendentes.splice(i, 1); db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [CONQUISTA] Meta Concluída: ${m}`; salvarTudo(); renderMetas(); renderLivroComFiltro(); showToast("Meta registrada!"); }
-        function renderMetas() { document.getElementById('lista-metas').innerHTML = db.metas_pendentes.map((m, i) => `<div style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--ts4-blue); margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;"><span>${m}</span><button class="btn-main" style="width:auto; margin:0; padding:5px 10px; background:var(--ts4-green)" onclick="concluirMeta(${i})">✓ Concluir</button></div>`).join(''); }
+        // ---------- Metas: helpers ----------
+        function normalizarMeta(m) {
+            if (typeof m === 'string') return { texto: m, criadaEm: null, simId: null };
+            return m || { texto: '', criadaEm: null, simId: null };
+        }
+        function _haQuantosDias(ts) {
+            if (!ts) return '';
+            const d = Math.floor((Date.now() - ts) / 86400000);
+            if (d <= 0) return 'hoje';
+            if (d === 1) return 'há 1 dia';
+            return 'há ' + d + ' dias';
+        }
+        function _escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function _nomeSimPorId(id){ if(!id) return ''; const s=(db.sims||[]).find(x => String(x.id)===String(id)); return s ? s.nome : ''; }
+        function popularSelectSimsMeta() {
+            const sel = document.getElementById('nova-meta-sim'); if (!sel) return;
+            const atual = sel.value;
+            sel.innerHTML = '<option value="">— Sem Sim vinculado —</option>' +
+                (db.sims||[]).map(s => `<option value="${s.id}">${_escapeHtml(s.nome)}</option>`).join('');
+            sel.value = atual || '';
+        }
+
+        function addMeta() {
+            const v = document.getElementById('nova-meta').value.trim();
+            if (!v) return;
+            const simSel = document.getElementById('nova-meta-sim');
+            const simId = simSel ? simSel.value : '';
+            db.metas_pendentes.push({ texto: v, criadaEm: Date.now(), simId: simId || null });
+            const sufixo = simId ? ` (vinculada a ${_nomeSimPorId(simId)})` : '';
+            db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [META] Nova meta definida: ${v}${sufixo}`;
+            document.getElementById('nova-meta').value = "";
+            if (simSel) simSel.value = '';
+            salvarTudo();
+            renderMetas();
+            if (typeof renderLivroComFiltro === 'function') renderLivroComFiltro();
+            showToast('🎯 Meta adicionada e registrada no Livro!');
+        }
+
+        function concluirMeta(i) {
+            const m = normalizarMeta(db.metas_pendentes[i]); if (!m) return;
+            if (!confirm(`Marcar a meta "${m.texto}" como concluída?`)) return;
+            db.metas_pendentes.splice(i, 1);
+            const sufixo = m.simId ? ` (${_nomeSimPorId(m.simId)})` : '';
+            db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [CONQUISTA] Meta Concluída: ${m.texto}${sufixo}`;
+            salvarTudo(); renderMetas(); renderLivroComFiltro();
+            showToast("🏆 Meta concluída e registrada!");
+        }
+
+        function desistirMeta(i) {
+            const m = normalizarMeta(db.metas_pendentes[i]); if (!m) return;
+            if (!confirm(`Desistir da meta "${m.texto}"? Será registrado no Livro do Legado.`)) return;
+            db.metas_pendentes.splice(i, 1);
+            const sufixo = m.simId ? ` (${_nomeSimPorId(m.simId)})` : '';
+            db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [META-DESISTIDA] Meta abandonada: ${m.texto}${sufixo}`;
+            salvarTudo(); renderMetas(); renderLivroComFiltro();
+            showToast('🏳️ Meta abandonada e registrada no Livro.');
+        }
+
+        function priorizarMeta(i) {
+            if (i <= 0 || i >= db.metas_pendentes.length) return;
+            const [m] = db.metas_pendentes.splice(i, 1);
+            db.metas_pendentes.unshift(m);
+            salvarTudo(); renderMetas();
+        }
+
+        function editarMeta(i) {
+            const span = document.getElementById('meta-txt-' + i); if (!span) return;
+            const m = normalizarMeta(db.metas_pendentes[i]);
+            const inp = document.createElement('input');
+            inp.type = 'text'; inp.value = m.texto; inp.style.cssText = 'flex:1; padding:4px 8px; font-size:14px;';
+            span.replaceWith(inp); inp.focus(); inp.select();
+            let salvou = false;
+            const salvar = () => {
+                if (salvou) return; salvou = true;
+                const novo = inp.value.trim();
+                if (novo && novo !== m.texto) {
+                    if (typeof db.metas_pendentes[i] === 'string') db.metas_pendentes[i] = { ...m, texto: novo };
+                    else db.metas_pendentes[i].texto = novo;
+                    salvarTudo();
+                }
+                renderMetas();
+            };
+            inp.addEventListener('blur', salvar);
+            inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); else if (e.key === 'Escape') { salvou = true; renderMetas(); } });
+        }
+
+        function renderMetas() {
+            popularSelectSimsMeta();
+            const c = document.getElementById('lista-metas'); if (!c) return;
+            if (!db.metas_pendentes || db.metas_pendentes.length === 0) {
+                c.innerHTML = `<p style="color:#888; font-style:italic; text-align:center; padding:10px;">Nenhuma meta pendente. Adicione uma acima ou sorteie no Laboratório.</p>`;
+                return;
+            }
+            c.innerHTML = db.metas_pendentes.map((raw, i) => {
+                const m = normalizarMeta(raw);
+                const tempo = _haQuantosDias(m.criadaEm);
+                const simNome = m.simId ? _nomeSimPorId(m.simId) : '';
+                const meta = [tempo, simNome ? '👤 ' + _escapeHtml(simNome) : ''].filter(Boolean).join(' • ');
+                return `<div style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--ts4-blue); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:2px;">
+                        <span id="meta-txt-${i}" style="font-size:14px;">${_escapeHtml(m.texto)}</span>
+                        ${meta ? `<small style="color:#888; font-size:11px;">${meta}</small>` : ''}
+                    </div>
+                    <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                        ${i > 0 ? `<button class="btn-main" title="Priorizar (mover para o topo)" style="width:auto; margin:0; padding:5px 9px; background:#f1c40f; color:#fff;" onclick="priorizarMeta(${i})">⭐</button>` : ''}
+                        <button class="btn-main" title="Editar" style="width:auto; margin:0; padding:5px 9px; background:#3498db; color:#fff;" onclick="editarMeta(${i})">✏️</button>
+                        <button class="btn-main" title="Concluir" style="width:auto; margin:0; padding:5px 10px; background:var(--ts4-green);" onclick="concluirMeta(${i})">✓ Concluir</button>
+                        <button class="btn-main" title="Desistir" style="width:auto; margin:0; padding:5px 10px; background:#c0392b; color:#fff;" onclick="desistirMeta(${i})">🏳️ Desistir</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ---------- Livro de Regras: CRUD ----------
+        function addRegra() {
+            const inp = document.getElementById('nova-regra'); if (!inp) return;
+            const v = inp.value.trim(); if (!v) return;
+            db.regras_lista = db.regras_lista || [];
+            db.regras_lista.push({ id: Date.now() + Math.random(), texto: v, origem: 'manual', criadaEm: Date.now() });
+            inp.value = ''; salvarTudo(); renderRegrasLista();
+            showToast('📜 Regra adicionada!');
+        }
+
+        function excluirRegra(id) {
+            if (!confirm('Remover esta regra do Livro de Regras?')) return;
+            db.regras_lista = (db.regras_lista || []).filter(r => String(r.id) !== String(id));
+            salvarTudo(); renderRegrasLista();
+            showToast('🗑️ Regra removida.');
+        }
+
+        function editarRegra(id) {
+            const span = document.getElementById('regra-txt-' + id); if (!span) return;
+            const r = (db.regras_lista || []).find(x => String(x.id) === String(id)); if (!r) return;
+            const inp = document.createElement('input');
+            inp.type = 'text'; inp.value = r.texto; inp.style.cssText = 'flex:1; padding:4px 8px; font-size:14px;';
+            span.replaceWith(inp); inp.focus(); inp.select();
+            let salvou = false;
+            const salvar = () => {
+                if (salvou) return; salvou = true;
+                const novo = inp.value.trim();
+                if (novo && novo !== r.texto) { r.texto = novo; salvarTudo(); }
+                renderRegrasLista();
+            };
+            inp.addEventListener('blur', salvar);
+            inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); else if (e.key === 'Escape') { salvou = true; renderRegrasLista(); } });
+        }
+
+        function renderRegrasLista() {
+            const c = document.getElementById('lista-regras'); if (!c) return;
+            const lista = db.regras_lista || [];
+            if (lista.length === 0) {
+                c.innerHTML = `<p style="color:#888; font-style:italic; padding:10px;">Nenhuma regra registrada ainda. Sorteie na Roleta de Regras (Laboratório 🧪) ou adicione manualmente acima.</p>`;
+                return;
+            }
+            c.innerHTML = lista.map(r => `
+                <div style="background:#fffaf0; padding:10px 12px; border-radius:8px; border-left:4px solid #f1c40f; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span id="regra-txt-${r.id}" style="flex:1; min-width:200px; font-size:14px;">${_escapeHtml(r.texto)} ${r.origem === 'roleta' ? '<small style="color:#888; font-size:11px;" title="Sorteada na Roleta de Regras">🎲</small>' : ''}</span>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn-main" title="Editar" style="width:auto; margin:0; padding:5px 10px; background:#3498db; color:#fff;" onclick="editarRegra(${r.id})">✏️</button>
+                        <button class="btn-main" title="Excluir" style="width:auto; margin:0; padding:5px 10px; background:#c0392b; color:#fff;" onclick="excluirRegra('${r.id}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
 
         function lerArquivoMCCC(e) {
             const file = e.target.files[0];
@@ -2787,13 +2997,15 @@ if (fase === 'recem_nascido') {
 
         function renderDash() { renderWheels('dash-cards', Object.keys(db.config).filter(key => !LAB_KEYS.includes(key) && key !== 'treeBgMode' && key !== 'treeBgCustom')); }
         function renderLab() { renderWheels('lab-cards', LAB_KEYS); }
+        const WHEEL_TITLES = { 'regras': 'Regras' };
         function renderWheels(containerId, keys) {
             const container = document.getElementById(containerId);
             container.innerHTML = keys.map(key => {
                 const lista = db.config[key]; if(!lista || lista.length === 0) return '';
                 const degSize = 360 / lista.length; const colors = ["#0079C1", "#7CD700", "#FFC83D", "#FF6B6B", "#9B59B6", "#1ABC9C", "#E67E22"];
                 const stops = lista.map((_, i) => `${colors[i % colors.length]} ${i * (100/lista.length)}% ${(i+1) * (100/lista.length)}%`).join(', ');
-                return `<div class="panel"><h3 style="text-transform:capitalize">${key}</h3><div class="wheel-wrapper"><div class="wheel-pointer"></div><div class="roulette-display" id="rol-${key}" style="background: conic-gradient(${stops})">${lista.map((txt, i) => `<div class="roulette-label" style="transform: rotate(${i * degSize + (degSize/2) - 90}deg)">${txt}</div>`).join('')}</div></div><div class="suggestion-box" id="sug-${key}">Role para decidir...</div><div id="ctrl-${key}" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-main" style="margin:0;" onclick="girar('${key}')">GIRAR</button></div></div>`;
+                const titulo = WHEEL_TITLES[key] || key;
+                return `<div class="panel"><h3 style="text-transform:capitalize">${titulo}</h3><div class="wheel-wrapper"><div class="wheel-pointer"></div><div class="roulette-display" id="rol-${key}" style="background: conic-gradient(${stops})">${lista.map((txt, i) => `<div class="roulette-label" style="transform: rotate(${i * degSize + (degSize/2) - 90}deg)">${txt}</div>`).join('')}</div></div><div class="suggestion-box" id="sug-${key}">Role para decidir...</div><div id="ctrl-${key}" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-main" style="margin:0;" onclick="girar('${key}')">GIRAR</button></div></div>`;
             }).join('');
             keys.forEach(k => { const e = document.getElementById('rol-'+k); if(e && lastRotation[k]) e.style.transform = `rotate(${lastRotation[k]}deg)`; });
         }
@@ -2810,7 +3022,19 @@ if (fase === 'recem_nascido') {
             }, 4000);
         }
         function aceitarEvento(val, key) {
-            if (key === 'metas') { db.metas_pendentes.push(val); db.historia += `\n[${new Date().toLocaleDateString()}] [CONQUISTA] Meta Alcançada: ${val}`; renderMetas(); }
+            if (key === 'regras') {
+                db.regras_lista = db.regras_lista || [];
+                db.regras_lista.push({ id: Date.now() + Math.random(), texto: val, origem: 'roleta', criadaEm: Date.now() });
+                salvarTudo();
+                if (typeof renderRegrasLista === 'function') renderRegrasLista();
+                showToast('📜 Regra registrada no Livro de Regras!');
+                return;
+            }
+            if (key === 'metas') {
+                db.metas_pendentes.push({ texto: val, criadaEm: Date.now(), simId: null });
+                db.historia += `\n[${new Date().toLocaleDateString()}] [META] Meta sorteada: ${val}`;
+                renderMetas();
+            }
             else { db.historia += `\n[${new Date().toLocaleDateString()}] [GERAL] ${key.toUpperCase()}: ${val}`; }
             salvarTudo(); renderLivroComFiltro(); showToast("Registrado!");
         }
@@ -3242,6 +3466,48 @@ if (fase === 'recem_nascido') {
             showToast('✅ NPC atualizado!');
         }
 
+        function excluirModalNpc() {
+            if (!_npcEditCtx) return;
+            if (!confirm('Remover este Progenitor NPC da árvore?\n\nO Sim filho continuará existindo — apenas ficará sem este progenitor cadastrado.')) return;
+            _npcEditCtx.refs.forEach(r => {
+                const sim = db.sims.find(x => String(x.id) === String(r.simId));
+                if (!sim) return;
+                sim[r.slot + 'NpcNome'] = '';
+                sim[r.slot + 'NpcFoto'] = '';
+                sim[r.slot] = '';
+            });
+            salvarTudo();
+            fecharModalNpc();
+            renderTree();
+            showToast('🗑️ NPC removido.');
+        }
+
+        function transformarNpcEmSim() {
+            if (!_npcEditCtx) return;
+            const nome = (document.getElementById('npc-edit-nome').value || '').trim();
+            const foto = _npcEditCtx.foto || '';
+            if (!nome) { alert('Defina um nome para o NPC antes de transformá-lo em Sim jogável.'); return; }
+            const refsSalvas = _npcEditCtx.refs.slice();
+            fecharModalNpc();
+            abrirNovoSim();
+            // Pré-preencher nome
+            const elNome = document.getElementById('e-nome');
+            if (elNome) elNome.value = nome;
+            // Pré-preencher foto na fase jovem-adulto (padrão)
+            try {
+                const faseSel = document.getElementById('e-foto-fase-select');
+                if (faseSel) faseSel.value = 'jovem-adulto';
+                if (typeof tempFotosFases !== 'undefined') {
+                    tempFotosFases = { "recem_nascido":"", "bebe-colo":"", "bebe":"", "crianca":"", "adolescente":"", "jovem-adulto": foto, "adulto":"", "idoso":"" };
+                }
+                const elImg = document.getElementById('e-img');
+                if (elImg) elImg.value = foto;
+            } catch(e) { console.warn('Pré-preenchimento de foto falhou', e); }
+            // Guardar contexto para vincular após salvar
+            window._npcConvertPending = refsSalvas;
+            showToast('✏️ Complete os dados e salve para concluir a conversão.');
+        }
+
         function confirmarRecorte() {
             if (!cropperInstance) return;
             // Pegar o canvas já cortado na medida ideal
@@ -3394,6 +3660,19 @@ function salvarSim() {
                     }
                 });
                 db.sims.push(s);
+
+                // Converte NPC em Sim jogável (vincula filhos que apontavam para o NPC)
+                if (window._npcConvertPending) {
+                    window._npcConvertPending.forEach(r => {
+                        const filho = db.sims.find(x => String(x.id) === String(r.simId));
+                        if (!filho) return;
+                        filho[r.slot] = String(s.id);
+                        filho[r.slot + 'NpcNome'] = '';
+                        filho[r.slot + 'NpcFoto'] = '';
+                    });
+                    window._npcConvertPending = null;
+                    showToast('🎮 NPC convertido em Sim jogável!');
+                }
 
                 // Registra adoção no Livro somente agora que o Sim foi salvo de verdade
                 if (window._pendingAdocao) {
@@ -4319,7 +4598,8 @@ let edgesArray = [];
                         if (sim) abrirModalNpc([{ simId, slot }], sim[slot+'NpcNome'] || '', sim[slot+'NpcFoto'] || '');
                         return;
                     }
-                    abrirPerfil(nid);
+                    const simIdLimpo = nid.startsWith('sim_') ? nid.slice(4) : nid;
+                    if (db.sims.find(x => String(x.id) === String(simIdLimpo))) abrirPerfil(simIdLimpo);
                 }
             });
         }
