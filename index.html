@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE 52 - 22 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE - 52 - 27 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -893,6 +893,14 @@
                         <div style="font-size: 36px; margin-bottom: 15px;">💖</div>
                         <strong style="font-size: 18px; color: var(--ts4-green); display: block; margin-bottom: 8px;">Apoie o Projeto</strong>
                         <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Ajude a manter o SimStoria vivo e em evolução. Cada contribuição faz diferença no legado!</span>
+                    </div>
+
+                    <div style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); border-bottom: 4px solid var(--cozy-accent); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                        <div style="font-size: 36px; margin-bottom: 15px;">📜</div>
+                        <strong style="font-size: 18px; color: var(--cozy-accent); display: block; margin-bottom: 8px;">Termos & Privacidade</strong>
+                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">
+                            Ao continuar, você concorda com nossos <a href="privacidade.html" style="color: var(--cozy-accent); text-decoration: none; font-weight: 700; border-bottom: 1px solid var(--cozy-accent);">Termos de Uso e Política de Privacidade</a>.
+                        </span>
                     </div>
 
                 </div>
@@ -1798,6 +1806,49 @@
                 </form>            
             </div>
         </div>
+
+        <!-- Rodapé com o link para a Política de Privacidade e redes sociais -->
+        <footer style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 20px 30px; margin-top: 40px; font-family: 'Quicksand', sans-serif; color: var(--cozy-ink); border-top: 1px solid rgba(74,59,42,0.12);">
+
+            <!-- Esquerda: copyright + privacidade -->
+            <div>
+                <p style="margin: 0 0 5px 0;">© 2026 SimStoria - Todos os direitos reservados.</p>
+                <p style="margin: 0;">
+                    <a href="privacidade.html" style="color: var(--cozy-accent); text-decoration: none; font-weight: 600;">
+                        Política de Privacidade
+                    </a>
+                </p>
+            </div>
+
+            <!-- Direita: redes sociais -->
+            <div style="display: flex; gap: 18px; align-items: center;">
+
+                <!-- Instagram -->
+                <a href="https://instagram.com/simstoria_app" target="_blank" rel="noopener"
+                   style="display: flex; align-items: center; gap: 7px; color: var(--cozy-ink); text-decoration: none; font-weight: 600; font-size: 14px;"
+                   onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/>
+                    </svg>
+                    Instagram
+                </a>
+
+                <!-- YouTube -->
+                <a href="https://youtube.com/simstoria_app" target="_blank" rel="noopener"
+                   style="display: flex; align-items: center; gap: 7px; color: var(--cozy-ink); text-decoration: none; font-weight: 600; font-size: 14px;"
+                   onmouseover="this.style.opacity='0.65'" onmouseout="this.style.opacity='1'">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.5 6.5C22.2 5.3 21.3 4.4 20.1 4.1C18.2 3.6 12 3.6 12 3.6C12 3.6 5.8 3.6 3.9 4.1C2.7 4.4 1.8 5.3 1.5 6.5C1 8.4 1 12 1 12C1 12 1 15.6 1.5 17.5C1.8 18.7 2.7 19.6 3.9 19.9C5.8 20.4 12 20.4 12 20.4C12 20.4 18.2 20.4 20.1 19.9C21.3 19.6 22.2 18.7 22.5 17.5C23 15.6 23 12 23 12C23 12 23 8.4 22.5 6.5Z" fill="#FF0000"/>
+                        <path d="M9.8 15.2L15.6 12L9.8 8.8V15.2Z" fill="white"/>
+                    </svg>
+                    YouTube
+                </a>
+
+            </div>
+        </footer>
+
     </div> 
 
     <div class="modal-overlay" id="modal-welcome">
@@ -1934,10 +1985,17 @@
                     </div>
                     <div>
                         <label style="font-weight:bold; font-size:13px;">Status Vital:</label>
-                        <select id="e-status" style="font-size:12px; padding:6px;">
+                        <select id="e-status" style="font-size:12px; padding:6px;" onchange="toggleFantasmaJogavel()">
                             <option value="Vivo">🟢 Vivo</option>
                             <option value="Ancestral (Morto)">💀 Ancestral (Morto)</option>
                         </select>
+                        <div id="div-fantasma-jogavel" style="display:none; margin-top:8px; padding:8px; background:#e8f0fe; border-radius:8px; border:1px solid #aab;">
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px; font-weight:bold; color:#444;">
+                                <input type="checkbox" id="e-fantasmaJogavel" style="width:16px; height:16px; cursor:pointer;">
+                                👻 Fantasma Jogável
+                                <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Se marcado, o sim aparece como opção na geração de histórias da I.A.">❓</span>
+                            </label>
+                        </div>
                         
                         <label style="margin-top: 10px; display:block; font-weight:bold; font-size:13px;">Fase de Vida Atual:</label>
                         <select id="e-fase" style="font-size:12px; padding:6px;">
@@ -3253,7 +3311,16 @@ if (fase === 'recem_nascido') {
         function getSimByIdCodex(id) { return db.sims.find(s => String(s.id) === String(id)); }
         function getNomeSimCodex(id) { let s = getSimByIdCodex(id); return s ? s.nome : "Nenhum"; }
         function getTracoFocoCodex(sim) { let tracos = sim && sim.tracos ? sim.tracos.split(",").map(t => t.trim()).filter(Boolean) : []; return tracos.length ? tracos[Math.floor(Math.random() * tracos.length)] : "temperamento instável"; }
-        function renderIaSimList() { let sel = document.getElementById("sel-sim-narrativa"); if(!sel) return; sel.innerHTML = "<option value=\"\">Sortear entre Sims vivos</option>" + db.sims.map(s => `<option value="${s.id}">${s.nome}</option>`).join(""); }
+        function renderIaSimList() {
+            let sel = document.getElementById("sel-sim-narrativa");
+            if(!sel) return;
+            const simsVisiveis = db.sims.filter(s => s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true);
+            sel.innerHTML = "<option value=\"\">Sortear entre Sims vivos</option>" +
+                simsVisiveis.map(s => {
+                    const icone = (s.status === 'Ancestral (Morto)' && s.fantasmaJogavel) ? '👻 ' : '';
+                    return `<option value="${s.id}">${icone}${s.nome}</option>`;
+                }).join("");
+        }
 
         function gerarTextoNarrativoCodexEstatico(protagonista, tom, formato, modoSim) {
             var tracoFoco = getTracoFocoCodex(protagonista);
@@ -3382,15 +3449,22 @@ if (fase === 'recem_nascido') {
         function gerarSinopseDinamica() { 
             if(db.sims.length === 0) return alert("Crie Sims na Árvore Genealógica primeiro!"); 
             let selSimId = document.getElementById("sel-sim-narrativa").value; 
-            let sim = selSimId ? getSimByIdCodex(selSimId) : db.sims[Math.floor(Math.random() * db.sims.length)];
-            let tom = document.getElementById("sel-tom-sinopse").value; let formato = document.getElementById("sel-tipo-sinopse").value; 
-            chamarIA_Anthropic(sim, tom, formato, false); 
+            let sim = selSimId ? getSimByIdCodex(selSimId) : (() => {
+                const pool = db.sims.filter(s => s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true);
+                return pool.length ? pool[Math.floor(Math.random() * pool.length)] : db.sims[0];
+            })();
+            let tom = document.getElementById("sel-tom-sinopse").value;
+            let formato = document.getElementById("sel-tipo-sinopse").value;
+            chamarIA_Anthropic(sim, tom, formato, false);
         }
 
         function gerarHistoriaSimSelecionado() {
             if(db.sims.length === 0) return alert("Crie Sims na Árvore Genealógica primeiro!");
             let selSimId = document.getElementById("sel-sim-narrativa").value;
-            let sim = selSimId ? getSimByIdCodex(selSimId) : db.sims[Math.floor(Math.random() * db.sims.length)];
+            let sim = selSimId ? getSimByIdCodex(selSimId) : (() => {
+                const pool = db.sims.filter(s => s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true);
+                return pool.length ? pool[Math.floor(Math.random() * pool.length)] : db.sims[0];
+            })();
             let tom = document.getElementById("sel-tom-sinopse").value;
             let formato = document.getElementById("sel-tipo-sinopse").value;
             chamarIA_HistoriaSimProfunda(sim, tom, formato);
@@ -3423,6 +3497,16 @@ if (fase === 'recem_nascido') {
             inp.style.display = isNpc ? '' : 'none';
             if (isNpc) sel.value = '';
             else inp.value = '';
+        }
+
+        function toggleFantasmaJogavel() {
+            const statusEl = document.getElementById('e-status');
+            const div = document.getElementById('div-fantasma-jogavel');
+            const chk = document.getElementById('e-fantasmaJogavel');
+            if (!statusEl || !div) return;
+            const isMorto = statusEl.value === 'Ancestral (Morto)';
+            div.style.display = isMorto ? 'block' : 'none';
+            if (!isMorto && chk) chk.checked = false;
         }
 
         function cancelarEdicaoSim() {
@@ -3472,6 +3556,10 @@ if (fase === 'recem_nascido') {
                 document.getElementById('e-' + slot + '-npc-nome').value = npcNome;
                 toggleNpcField(slot);
             });
+            // Campo fantasma jogável
+            const chkFJ = document.getElementById('e-fantasmaJogavel');
+            if (chkFJ) chkFJ.checked = s.fantasmaJogavel || false;
+            toggleFantasmaJogavel();
         }
 
         function carregarImagemNoInputDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; document.getElementById('e-img').value = tempFotosFases[faseSel] || ""; }
@@ -3707,6 +3795,9 @@ function salvarSim() {
                 tracos: document.getElementById('e-tracos').value, 
                 aspiracao: (document.getElementById('e-aspiracao')?.value || '').trim(),
                 oculto: document.getElementById('e-oculto')?.value || 'humano',
+                fantasmaJogavel: (document.getElementById('e-status').value === 'Ancestral (Morto)')
+                    ? (document.getElementById('e-fantasmaJogavel')?.checked || false)
+                    : false,
                 extra: document.getElementById('e-extra').value, 
                 fase: faseNova,
                 historico_relacionamentos: historicoAtual,
