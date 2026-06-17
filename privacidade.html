@@ -3,66 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Termos de Uso, Privacidade e Aviso Legal - SimStoria</title>
+    <!-- A tag abaixo ajuda o Google a entender e exibir sua página nos resultados de busca -->
+    <meta name="description" content="Termos de uso, política de privacidade e avisos legais do SimStoria, o companion narrativo para The Sims 4.">
+    <title>Termos de Uso e Privacidade - SimStoria</title>
+
+    <!-- Importando as mesmas fontes do seu projeto principal -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Nunito:wght@400;600;700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Estilos adaptados do seu tema principal -->
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; }
-        h1 { color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
-        h2 { color: #202124; margin-top: 30px; border-bottom: 1px solid #dadce0; padding-bottom: 5px; }
-        h3 { color: #5f6368; margin-top: 20px; }
+        :root {
+            --cozy-bg: #f6ecd6;
+            --cozy-bg-2: #fbe4ec;
+            --cozy-accent: #7fb069;
+            --cozy-accent-2: #9bc7e4;
+            --cozy-gold: #d4af37;
+            --cozy-gold-soft: #f0d97a;
+            --cozy-pink: #f4b8c7;
+            --cozy-ink: #4a3b2a;
+        }
+
+        body {
+            /* Fundo com as mesmas cores e texturas do app */
+            background:
+                radial-gradient(circle at 12% 18%, rgba(244,184,199,0.35) 0, transparent 42%),
+                radial-gradient(circle at 88% 12%, rgba(155,199,228,0.40) 0, transparent 45%),
+                radial-gradient(circle at 50% 95%, rgba(127,176,105,0.25) 0, transparent 50%),
+                linear-gradient(180deg, #fbf3df 0%, #f6ecd6 60%, #f1e3c5 100%);
+            font-family: 'Nunito', 'Quicksand', sans-serif;
+            color: var(--cozy-ink);
+            margin: 0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        /* Caixa onde o texto vai ficar (estilo pergaminho/card) */
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: linear-gradient(180deg,#fffdf5,#fff8e7);
+            border: 2px double var(--cozy-gold);
+            border-radius: 18px;
+            padding: 40px;
+            box-shadow: 0 6px 18px rgba(120,90,40,0.12);
+        }
+
+        h1, h2, h3 {
+            font-family: 'Fredoka', 'Quicksand', sans-serif;
+            letter-spacing: 0.3px;
+        }
+
+        h1 { color: var(--cozy-ink); border-bottom: 2px solid var(--cozy-gold); padding-bottom: 10px; margin-top: 0;}
+        h2 { margin-top: 30px; border-bottom: 1px solid var(--cozy-gold-soft); padding-bottom: 5px; }
+        
         ul { padding-left: 20px; }
-        .alert-box { background-color: #f8f9fa; border-left: 4px solid #f4b400; padding: 15px; margin: 20px 0; font-size: 0.95em; }
+        strong { color: #5c4a35; }
+
+        /* Aviso da EA adaptado para as cores do tema */
+        .alert-box { 
+            background-color: var(--cozy-bg-2); 
+            border-left: 5px solid var(--cozy-pink); 
+            padding: 15px 20px; 
+            margin: 20px 0; 
+            font-size: 0.95em; 
+            border-radius: 0 12px 12px 0;
+        }
+
+        /* Responsividade para celulares */
+        @media (max-width: 600px) {
+            .legal-container { padding: 20px; }
+        }
     </style>
 </head>
 <body>
 
-    <h1>Termos, Privacidade e Avisos Legais</h1>
-    <p><strong>Última atualização:</strong> Junho de 2026</p>
+    <!-- Todo o conteúdo agora fica dentro desta caixa centralizada -->
+    <div class="legal-container">
 
-    <div class="alert-box">
-        <strong>Aviso de Isenção de Responsabilidade (Electronic Arts):</strong><br>
-        O SimStoria é um aplicativo de suporte (Companion App) criado por fã para fãs, com o objetivo de enriquecer a experiência narrativa do jogo. Este projeto <strong>NÃO é afiliado, endossado, patrocinado ou aprovado pela Electronic Arts Inc. (EA)</strong>. "The Sims", "The Sims 4", "Simoleons" e elementos relacionados são marcas registradas da Electronic Arts Inc. O uso de terminologias e referências ao jogo segue as diretrizes de Política de Conteúdo de Fãs da EA, possuindo caráter estritamente não comercial.
+        <h1>Termos, Privacidade e Avisos Legais</h1>
+        <p><strong>Última atualização:</strong> Junho de 2026</p>
+
+        <div class="alert-box">
+            <strong>Aviso de Isenção de Responsabilidade (Electronic Arts):</strong><br><br>
+            O SimStoria é um aplicativo de suporte (Companion App) criado por fã para fãs, com o objetivo de enriquecer a experiência narrativa do jogo. Este projeto <strong>NÃO é afiliado, endossado, patrocinado ou aprovado pela Electronic Arts Inc. (EA)</strong>. "The Sims", "The Sims 4", "Simoleons" e elementos relacionados são marcas registradas da Electronic Arts Inc. O uso de terminologias e referências ao jogo segue as diretrizes de Política de Conteúdo de Fãs da EA, possuindo caráter estritamente não comercial.
+        </div>
+
+        <!-- SEÇÃO 1: TERMOS DE USO -->
+        <h2>1. Termos de Uso</h2>
+        
+        <h3>1.1. Natureza do Serviço</h3>
+        <p>O SimStoria é oferecido gratuitamente, no estado em que se encontra. Por ser um projeto em constante desenvolvimento, não há garantias de que a plataforma estará permanentemente livre de erros, instabilidades ou interrupções técnicas.</p>
+
+        <h3>1.2. Responsabilidade sobre Dados e Progresso</h3>
+        <p>O usuário é inteiramente responsável pela gestão e segurança de suas informações na plataforma:</p>
+        <ul>
+            <li><strong>Armazenamento Local:</strong> Caso opte por não conectar uma conta em nuvem, os dados da sua jogabilidade ficam salvos apenas no navegador do seu dispositivo. Limpezas de cache ou formatações apagarão o progresso de forma irreversível.</li>
+            <li><strong>Cópias de Segurança:</strong> Recomenda-se que o usuário faça o download manual de seus dados (backups) periodicamente através das ferramentas disponibilizadas na interface do sistema.</li>
+        </ul>
+
+        <h3>1.3. Integração com Chaves de API de Inteligência Artificial</h3>
+        <p>O SimStoria permite o uso opcional de recursos de Inteligência Artificial através do fornecimento de chaves de API próprias do usuário (como OpenAI, Anthropic ou similares). O SimStoria não se responsabiliza por quaisquer custos, cobranças, limites estourados ou bloqueios gerados nas contas externas do usuário junto a esses provedores.</p>
+
+        <h3>1.4. Doações e Apoio ao Projeto</h3>
+        <p>Contribuições financeiras realizadas voluntariamente por meio de PIX ou plataformas de apoio servem exclusivamente para ajudar nos custos de manutenção técnica da plataforma e incentivo à desenvolvedora. Elas não configuram a compra de produtos, assinatura de serviços com obrigações contratuais ou garantia de recursos exclusivos, não sendo passíveis de reembolso.</p>
+
+
+        <!-- SEÇÃO 2: POLÍTICA DE PRIVACIDADE -->
+        <h2>2. Política de Privacidade</h2>
+
+        <h3>2.1. Filosofia de Armazenamento "Client-Side"</h3>
+        <p>O SimStoria preza pela soberania dos seus dados. Nós <strong>não possuímos servidores de banco de dados centralizados</strong> para guardar suas histórias, árvores genealógicas ou perfis. Tudo permanece sob o seu controle direto no seu dispositivo ou na sua conta de nuvem privada.</p>
+
+        <h3>2.2. Integração e Uso de Dados do Google Drive</h3>
+        <p>Ao ativar voluntariamente a sincronização com o Google Drive, o aplicativo solicitará permissões específicas de acesso (como a criação de arquivos próprios e manipulação da pasta de dados do app - <code>appDataFolder</code>):</p>
+        <ul>
+            <li>O SimStoria acessará <strong>apenas e exclusivamente</strong> os arquivos criados pelo próprio aplicativo para fins de salvar o progresso do usuário (gerar backups e carregar dados de famílias).</li>
+            <li>O aplicativo <strong>NÃO possui autorização, não lê, não coleta e não modifica</strong> nenhum outro documento, foto ou arquivo pessoal existente no Google Drive do usuário.</li>
+            <li>O tráfego de dados de autenticação ocorre de forma direta e segura entre o navegador do usuário e os servidores do Google.</li>
+            <li>O uso e a transferência de informações recebidas das APIs do Google para qualquer outro aplicativo pelo SimStoria aderem à Política de Dados de Usuário de Serviços de API do Google, incluindo os requisitos de Uso Limitado.</li>
+        </ul>
+
+        <h3>2.3. Tratamento de Chaves de API e Dados de IA</h3>
+        <p>As chaves de API inseridas no sistema são armazenadas localmente de forma criptografada ou direta no armazenamento do seu navegador (LocalStorage). Elas nunca são enviadas para servidores do SimStoria. Os dados de texto enviados para geração de histórias trafegam diretamente para os servidores das empresas de IA escolhidas pelo usuário.</p>
+
+        <h3>2.4. Formulários de Feedback</h3>
+        <p>Informações inseridas voluntariamente em campos de contato ou feedback (como nome/apelido e e-mail) serão utilizadas unicamente para comunicação de suporte técnico e melhorias no sistema, jamais sendo comercializadas ou compartilhadas com terceiros.</p>
+
     </div>
-
-    <!-- SEÇÃO 1: TERMOS DE USO -->
-    <h2>1. Termos de Uso</h2>
-    
-    <h3>1.1. Natureza do Serviço</h3>
-    <p>O SimStoria é oferecido gratuitamente, no estado em que se encontra. Por ser um projeto em constante desenvolvimento, não há garantias de que a plataforma estará permanentemente livre de erros, instabilidades ou interrupções técnicas.</p>
-
-    <h3>1.2. Responsabilidade sobre Dados e Progresso</h3>
-    <p>O usuário é inteiramente responsável pela gestão e segurança de suas informações na plataforma:</p>
-    <ul>
-        <li><strong>Armazenamento Local:</strong> Caso opte por não conectar uma conta em nuvem, os dados da sua jogabilidade ficam salvos apenas no navegador do seu dispositivo. Limpezas de cache ou formatações apagarão o progresso de forma irreversível.</li>
-        <li><strong>Cópias de Segurança:</strong> Recomenda-se que o usuário faça o download manual de seus dados (backups) periodicamente através das ferramentas disponibilizadas na interface do sistema.</li>
-    </ul>
-
-    <h3>1.3. Integração com Chaves de API de Inteligência Artificial</h3>
-    <p>O SimStoria permite o uso opcional de recursos de Inteligência Artificial através do fornecimento de chaves de API próprias do usuário (como OpenAI, Anthropic ou similares). O SimStoria não se responsabiliza por quaisquer custos, cobranças, limites estourados ou bloqueios gerados nas contas externas do usuário junto a esses provedores.</p>
-
-    <h3>1.4. Doações e Apoio ao Projeto</h3>
-    <p>Contribuições financeiras realizadas voluntariamente por meio de PIX ou plataformas de apoio servem exclusivamente para ajudar nos custos de manutenção técnica da plataforma e incentivo à desenvolvedora. Elas não configuram a compra de produtos, assinatura de serviços com obrigações contratuais ou garantia de recursos exclusivos, não sendo passíveis de reembolso.</p>
-
-
-    <!-- SEÇÃO 2: POLÍTICA DE PRIVACIDADE -->
-    <h2>2. Política de Privacidade</h2>
-
-    <h3>2.1. Filosofia de Armazenamento "Client-Side"</h3>
-    <p>O SimStoria preza pela soberania dos seus dados. Nós <strong>não possuímos servidores de banco de dados centralizados</strong> para guardar suas histórias, árvores genealógicas ou perfis. Tudo permanece sob o seu controle direto no seu dispositivo ou na sua conta de nuvem privada.</p>
-
-    <h3>2.2. Integração e Uso de Dados do Google Drive</h3>
-    <p>Ao ativar voluntariamente a sincronização com o Google Drive, o aplicativo solicitará permissões específicas de acesso (como a criação de arquivos próprios e manipulação da pasta de dados do app - <code>appDataFolder</code>):</p>
-    <ul>
-        <li>O SimStoria acessará <strong>apenas e exclusivamente</strong> os arquivos criados pelo próprio aplicativo para fins de salvar o progresso do usuário (gerar backups e carregar dados de famílias).</li>
-        <li>O aplicativo <strong>NÃO possui autorização, não lê, não coleta e não modifica</strong> nenhum outro documento, foto ou arquivo pessoal existente no Google Drive do usuário.</li>
-        <li>O tráfego de dados de autenticação ocorre de forma direta e segura entre o navegador do usuário e os servidores do Google.</li>
-        <li>O uso e a transferência de informações recebidas das APIs do Google para qualquer outro aplicativo pelo SimStoria aderem à Política de Dados de Usuário de Serviços de API do Google, incluindo os requisitos de Uso Limitado.</li>
-    </ul>
-
-    <h3>2.3. Tratamento de Chaves de API e Dados de IA</h3>
-    <p>As chaves de API inseridas no sistema são armazenadas localmente de forma criptografada ou direta no armazenamento do seu navegador (LocalStorage). Elas nunca são enviadas para servidores do SimStoria. Os dados de texto enviados para geração de histórias trafegam diretamente para os servidores das empresas de IA escolhidas pelo usuário.</p>
-
-    <h3>2.4. Formulários de Feedback</h3>
-    <p>Informações inseridas voluntariamente em campos de contato ou feedback (como nome/apelido e e-mail) serão utilizadas unicamente para comunicação de suporte técnico e melhorias no sistema, jamais sendo comercializadas ou compartilhadas com terceiros.</p>
-
 </body>
 </html>
