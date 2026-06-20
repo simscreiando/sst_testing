@@ -2,8 +2,9 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE - 52 - 31 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE - 53_1 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -760,6 +761,11 @@
 </head>
 <body>
 
+<div id="banner-drive-expirado" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:#fff3cd; border-bottom:1px solid #ffc107; padding:10px 16px; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <span style="font-size:13px; font-weight:700; color:#856404;">⚠️ Sua sessão do Google Drive expirou ou está prestes a expirar. Reconecte para não perder seus uploads.</span>
+    <button class="btn-main" style="width:auto; margin:0; background:#4285F4; padding:7px 14px; font-size:12px;" onclick="autenticarGoogle()">Reconectar conta do Google</button>
+</div>
+
 <div class="sidebar">
         <div class="lang-selector-container">
             <select class="lang-selector" onchange="alterarIdiomaVisual()">
@@ -1157,11 +1163,6 @@
         </div>
 <div id="tab-galeria" class="tab-pane">
 
-    <div id="banner-drive-expirado" style="display:none; background:#fff3cd; border:1px solid #ffc107; border-radius:12px; padding:12px 16px; margin-bottom:15px; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-        <span style="font-size:13px; font-weight:700; color:#856404;">⚠️ Sua sessão do Google Drive está expirando. Reconecte para não perder seus uploads.</span>
-        <button class="btn-main" style="width:auto; margin:0; background:#4285F4; padding:7px 14px; font-size:12px;" onclick="autenticarGoogle()">Reconectar Drive</button>
-    </div>
-
     <div class="panel" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <h2 style="margin:0;">📸 Galeria de Recordações Legado</h2>
         <div style="display: flex; gap: 10px;">
@@ -1196,6 +1197,32 @@
         <label style="margin-top:10px; display:block;">Descrição ou Meta do Álbum:</label>
         <textarea id="album-desc" placeholder="O que este álbum representa?"></textarea>
         <button class="btn-main" onclick="salvarNovoAlbum()">Criar Álbum</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="modal-editar-album" onclick="if(event.target.id==='modal-editar-album')fecharModalEditarAlbum()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <h2>✏️ Editar Álbum</h2>
+        <label>Nome do Álbum:</label>
+        <input type="text" id="editar-album-nome" placeholder="Digite o nome...">
+        <label style="margin-top:10px; display:block;">Descrição ou Meta do Álbum:</label>
+        <textarea id="editar-album-desc" placeholder="O que este álbum representa?"></textarea>
+
+        <div id="editar-album-capa-section" style="margin-top:14px;">
+            <label style="display:block; margin-bottom:6px;">Foto de Capa — arraste para reposicionar e use o controle para dar zoom:</label>
+            <div id="editar-album-capa-wrap" style="position:relative; width:100%; height:160px; border-radius:10px; overflow:hidden; border:1px solid #ddd; background:#eef3fa; cursor:grab; touch-action:none;"
+                 onmousedown="iniciarArrastoCapaAlbum(event)" onmousemove="moverArrastoCapaAlbum(event)" onmouseup="finalizarArrastoCapaAlbum()" onmouseleave="finalizarArrastoCapaAlbum()"
+                 ontouchstart="iniciarArrastoCapaAlbum(event)" ontouchmove="moverArrastoCapaAlbum(event)" ontouchend="finalizarArrastoCapaAlbum()">
+                <img id="editar-album-capa-preview" src="" draggable="false" style="width:100%; height:100%; object-fit:cover; object-position:50% 50%; transform:scale(1); pointer-events:none;">
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+                <span style="font-size:11px; color:#666;">🔍 Zoom</span>
+                <input type="range" id="editar-album-capa-zoom" min="1" max="3" step="0.05" value="1" style="flex:1;" oninput="ajustarZoomCapaAlbum(this.value)">
+            </div>
+        </div>
+
+        <button class="btn-main" style="margin-top:14px;" onclick="salvarEdicaoAlbum()">💾 Salvar Alterações</button>
+        <button class="btn-main btn-sec" onclick="fecharModalEditarAlbum()">❌ Cancelar</button>
     </div>
 </div>
 
@@ -2737,21 +2764,112 @@ function salvarTudo() {
 function editarAlbumAtual() {
     let album = db.galeria.albuns.find(a => a.id === idAlbumAtual);
     if(!album) return;
-    
-    let novoNome = prompt("Novo nome do álbum:", album.nome);
-    if(novoNome === null) return; 
-    if(novoNome.trim() === "") return alert("O nome não pode ser vazio.");
-    
-    let novaDesc = prompt("Nova descrição do álbum:", album.desc);
-    if(novaDesc === null) novaDesc = album.desc;
-    
-    album.nome = novoNome.trim();
-    album.desc = novaDesc.trim();
-    
+
+    document.getElementById('editar-album-nome').value = album.nome;
+    document.getElementById('editar-album-desc').value = album.desc || '';
+
+    _editAlbumCapaState = {
+        posX: (album.capaPosX !== undefined) ? album.capaPosX : 50,
+        posY: (album.capaPosY !== undefined) ? album.capaPosY : 50,
+        zoom: (album.capaZoom !== undefined) ? album.capaZoom : 1,
+        dragging: false
+    };
+
+    const secaoCapa = document.getElementById('editar-album-capa-section');
+    const zoomSlider = document.getElementById('editar-album-capa-zoom');
+    const previewImg = document.getElementById('editar-album-capa-preview');
+
+    if (album.capa) {
+        secaoCapa.style.display = 'block';
+        zoomSlider.value = _editAlbumCapaState.zoom;
+        previewImg.src = '';
+        aplicarTransformCapaPreview();
+
+        let fotoCapaDados = db.galeria.fotos.find(f => f.id === album.capa);
+        if (fotoCapaDados && fotoCapaDados.driveFileId) {
+            buscarImagemDoDrive(fotoCapaDados.driveFileId).then(src => { if (src) previewImg.src = src; });
+        } else {
+            previewImg.src = localStorage.getItem('ts4_galeria_midia_' + album.capa) || '';
+        }
+    } else {
+        // Sem foto de capa definida ainda — não há o que redimensionar
+        secaoCapa.style.display = 'none';
+    }
+
+    document.getElementById('modal-editar-album').style.display = 'flex';
+}
+
+function aplicarTransformCapaPreview() {
+    const previewImg = document.getElementById('editar-album-capa-preview');
+    if (!previewImg || !_editAlbumCapaState) return;
+    previewImg.style.objectPosition = `${_editAlbumCapaState.posX}% ${_editAlbumCapaState.posY}%`;
+    previewImg.style.transform = `scale(${_editAlbumCapaState.zoom})`;
+}
+
+function ajustarZoomCapaAlbum(valor) {
+    if (!_editAlbumCapaState) return;
+    _editAlbumCapaState.zoom = parseFloat(valor) || 1;
+    aplicarTransformCapaPreview();
+}
+
+function iniciarArrastoCapaAlbum(ev) {
+    if (!_editAlbumCapaState) return;
+    const ponto = ev.touches ? ev.touches[0] : ev;
+    _editAlbumCapaState.dragging = true;
+    _editAlbumCapaState.startClientX = ponto.clientX;
+    _editAlbumCapaState.startClientY = ponto.clientY;
+    _editAlbumCapaState.startPosX = _editAlbumCapaState.posX;
+    _editAlbumCapaState.startPosY = _editAlbumCapaState.posY;
+}
+
+function moverArrastoCapaAlbum(ev) {
+    if (!_editAlbumCapaState || !_editAlbumCapaState.dragging) return;
+    if (ev.cancelable) ev.preventDefault();
+    const ponto = ev.touches ? ev.touches[0] : ev;
+    const wrap = document.getElementById('editar-album-capa-wrap');
+    const rect = wrap.getBoundingClientRect();
+    const dx = (ponto.clientX - _editAlbumCapaState.startClientX) / rect.width * 100;
+    const dy = (ponto.clientY - _editAlbumCapaState.startClientY) / rect.height * 100;
+    // Arrastar para a direita revela mais a esquerda da imagem, então o object-position diminui
+    let novoX = _editAlbumCapaState.startPosX - dx;
+    let novoY = _editAlbumCapaState.startPosY - dy;
+    _editAlbumCapaState.posX = Math.max(0, Math.min(100, novoX));
+    _editAlbumCapaState.posY = Math.max(0, Math.min(100, novoY));
+    aplicarTransformCapaPreview();
+}
+
+function finalizarArrastoCapaAlbum() {
+    if (_editAlbumCapaState) _editAlbumCapaState.dragging = false;
+}
+
+function salvarEdicaoAlbum() {
+    let album = db.galeria.albuns.find(a => a.id === idAlbumAtual);
+    if(!album) return;
+
+    let novoNome = document.getElementById('editar-album-nome').value.trim();
+    if (novoNome === "") return alert("O nome não pode ser vazio.");
+    let novaDesc = document.getElementById('editar-album-desc').value.trim();
+
+    album.nome = novoNome;
+    album.desc = novaDesc;
+
+    if (album.capa && _editAlbumCapaState) {
+        album.capaPosX = _editAlbumCapaState.posX;
+        album.capaPosY = _editAlbumCapaState.posY;
+        album.capaZoom = _editAlbumCapaState.zoom;
+    }
+
     salvarTudo();
-    abrirAlbum(idAlbumAtual); 
+    fecharModalEditarAlbum();
+    abrirAlbum(idAlbumAtual);
     showToast("Álbum atualizado!");
 }
+
+function fecharModalEditarAlbum() {
+    document.getElementById('modal-editar-album').style.display = 'none';
+    _editAlbumCapaState = null;
+}
+
 
 async function excluirAlbumAtual() {
     let album = db.galeria.albuns.find(a => a.id === idAlbumAtual);
@@ -3593,6 +3711,9 @@ if (fase === 'recem_nascido') {
         function fecharModalCrop() {
             document.getElementById('modal-crop').style.display = 'none';
             document.getElementById('e-img-file').value = ""; 
+            const npcFotoInput = document.getElementById('npc-edit-foto');
+            if (npcFotoInput) npcFotoInput.value = "";
+            _npcCropMode = false;
             if (cropperInstance) {
                 cropperInstance.destroy();
                 cropperInstance = null;
@@ -3601,6 +3722,7 @@ if (fase === 'recem_nascido') {
 
         // ===== Edição rápida de NPC (apenas foto + nome) =====
         let _npcEditCtx = null; // { refs: [{simId, slot}], foto: dataUrl }
+        let _npcCropMode = false; // true enquanto o modal de recorte está sendo usado para uma foto de NPC
         function abrirModalNpc(refs, nome, foto) {
             if (!refs || !refs.length) return;
             _npcEditCtx = { refs: refs.slice(), foto: foto || '' };
@@ -3621,24 +3743,29 @@ if (fase === 'recem_nascido') {
             if (!f || !_npcEditCtx) return;
             const reader = new FileReader();
             reader.onload = e => {
-                // compressão leve via canvas (máx 220x220)
-                const img = new Image();
-                img.onload = () => {
-                    const SZ = 220;
-                    const canvas = document.createElement('canvas');
-                    canvas.width = SZ; canvas.height = SZ;
-                    const ctx = canvas.getContext('2d');
-                    // cover
-                    const scale = Math.max(SZ / img.width, SZ / img.height);
-                    const dw = img.width * scale, dh = img.height * scale;
-                    ctx.drawImage(img, (SZ - dw)/2, (SZ - dh)/2, dw, dh);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                    _npcEditCtx.foto = dataUrl;
-                    const preview = document.getElementById('npc-edit-preview');
-                    const ph = document.getElementById('npc-edit-placeholder');
-                    preview.src = dataUrl; preview.style.display = 'block'; ph.style.display = 'none';
-                };
-                img.src = e.target.result;
+                const tempImageDataURL = e.target.result;
+                const imgEl = document.getElementById('crop-preview-img');
+                imgEl.src = tempImageDataURL;
+                _npcCropMode = true;
+                document.getElementById('modal-crop').style.display = 'flex';
+
+                // Mesmo recorte circular com zoom/arraste usado na foto de perfil normal
+                if (cropperInstance) {
+                    cropperInstance.destroy();
+                }
+                cropperInstance = new Cropper(imgEl, {
+                    aspectRatio: 1,
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: false,
+                    cropBoxResizable: false,
+                    toggleDragModeOnDblclick: false,
+                });
             };
             reader.readAsDataURL(f);
         }
@@ -3712,6 +3839,22 @@ if (fase === 'recem_nascido') {
             });
             
             const dataUrl = canvas.toDataURL('image/webp', 0.78);
+
+            // Fluxo específico: recorte de foto de um Progenitor NPC
+            if (_npcCropMode) {
+                if (_npcEditCtx) {
+                    _npcEditCtx.foto = dataUrl;
+                    const preview = document.getElementById('npc-edit-preview');
+                    const ph = document.getElementById('npc-edit-placeholder');
+                    if (preview) { preview.src = dataUrl; preview.style.display = 'block'; }
+                    if (ph) ph.style.display = 'none';
+                }
+                fecharModalCrop();
+                showToast("📸 Foto do NPC ajustada!");
+                return;
+            }
+
+            // Fluxo normal: foto de perfil de um Sim
             document.getElementById('e-img').value = dataUrl; 
             salvarImagemNaMemoriaDaFase();
             fecharModalCrop();
@@ -3747,6 +3890,10 @@ function salvarSim() {
 
             let historicoAtual = [...tempHistoricoRelacionamentos];
 
+            // Recupera o Sim como ele estava ANTES de salvar (se for uma edição), para não perdermos
+            // dados que não têm campo próprio no formulário — como a foto do progenitor NPC.
+            let oldSimAtual = currentSimId ? db.sims.find(x => String(x.id) === String(currentSimId)) : null;
+
             const s = {
                 id: currentSimId ? String(currentSimId) : String(Date.now()), 
                 nome: nomeSim, 
@@ -3769,11 +3916,16 @@ function salvarSim() {
                 fase: faseNova,
                 historico_relacionamentos: historicoAtual,
                 p1NpcNome: document.getElementById('e-p1-npc').checked ? (document.getElementById('e-p1-npc-nome').value.trim()) : '',
-                p2NpcNome: document.getElementById('e-p2-npc').checked ? (document.getElementById('e-p2-npc-nome').value.trim()) : ''
+                p2NpcNome: document.getElementById('e-p2-npc').checked ? (document.getElementById('e-p2-npc-nome').value.trim()) : '',
+                // A foto do progenitor NPC não tem campo próprio neste formulário (ela só é alterada
+                // pelo modal de NPC, clicando no card dele na árvore). Por isso, preservamos aqui a
+                // foto que já existia, desde que o NPC continue marcado — senão ela some a cada edição.
+                p1NpcFoto: document.getElementById('e-p1-npc').checked ? ((oldSimAtual && oldSimAtual.p1NpcFoto) || '') : '',
+                p2NpcFoto: document.getElementById('e-p2-npc').checked ? ((oldSimAtual && oldSimAtual.p2NpcFoto) || '') : ''
             };
 
             if(currentSimId) {
-                let oldSim = db.sims.find(x => String(x.id) === String(currentSimId));
+                let oldSim = oldSimAtual;
                 
                 // --- TRATAMENTO DO CÔNJUGE ANTERIOR ---
                 if(oldSim.spouse && String(oldSim.spouse) !== String(s.spouse)) {
@@ -5640,6 +5792,9 @@ function atualizarBotaoGaleria() {
 function verificarSessaoDrive() {
     let banner = document.getElementById('banner-drive-expirado');
     if (!banner) return;
+    // Só faz sentido avisar quem já usou a Nuvem alguma vez (tem uma família vinculada ao Drive).
+    // Sem isso, todo mundo veria o aviso de "reconectar" mesmo nunca tendo conectado.
+    if (!currentCloudFileId) { banner.style.display = 'none'; return; }
     const expirandoEm10min = tokenExpiryTime && (Date.now() > tokenExpiryTime - 10 * 60 * 1000);
     if (!accessToken || expirandoEm10min) {
         banner.style.display = 'flex';
@@ -5735,6 +5890,7 @@ async function deletarImagemDoDrive(fileId) {
 // -- Fim das funções auxiliares de Drive --
 let idAlbumAtual = null;
 let idFotoSendoEditada = null;
+let _editAlbumCapaState = null; // { posX, posY, zoom, dragging } usado no editor de capa do álbum
 
 function abrirModalNovoAlbum() {
     document.getElementById('album-nome').value = '';
@@ -5789,18 +5945,22 @@ function renderizarAbasGaleria() {
         if (album.capa) {
             let fotoCapaDados = db.galeria.fotos.find(f => f.id === album.capa);
             let capaContainer = document.getElementById('capa-album-' + album.id);
+            let posX = (album.capaPosX !== undefined) ? album.capaPosX : 50;
+            let posY = (album.capaPosY !== undefined) ? album.capaPosY : 50;
+            let zoom = (album.capaZoom !== undefined) ? album.capaZoom : 1;
+            let estiloCapa = `width:100%; height:130px; object-fit:cover; object-position:${posX}% ${posY}%; transform:scale(${zoom}); border-radius:10px; margin-bottom:12px; border:1px solid #eee;`;
             if (fotoCapaDados && fotoCapaDados.driveFileId) {
                 // Capa no Drive
                 buscarImagemDoDrive(fotoCapaDados.driveFileId).then(src => {
                     if (src && capaContainer) {
-                        capaContainer.outerHTML = `<img src="${src}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:12px; border:1px solid #eee;">`;
+                        capaContainer.outerHTML = `<div style="width:100%; height:130px; border-radius:10px; margin-bottom:12px; overflow:hidden;"><img src="${src}" style="${estiloCapa}"></div>`;
                     }
                 });
             } else {
                 // Fallback: capa salva em localStorage (fotos antigas)
                 let capaSrc = localStorage.getItem('ts4_galeria_midia_' + album.capa);
                 if (capaSrc && capaContainer) {
-                    capaContainer.outerHTML = `<img src="${capaSrc}" style="width:100%; height:130px; object-fit:cover; border-radius:10px; margin-bottom:12px; border:1px solid #eee;">`;
+                    capaContainer.outerHTML = `<div style="width:100%; height:130px; border-radius:10px; margin-bottom:12px; overflow:hidden;"><img src="${capaSrc}" style="${estiloCapa}"></div>`;
                 }
             }
         }
@@ -5974,6 +6134,10 @@ function definirCapaAlbum(idFoto) {
     let album = db.galeria.albuns.find(a => a.id === idAlbumAtual);
     if(!album) return;
     album.capa = idFoto;
+    // Reseta o enquadramento, já que ele pertencia à foto de capa anterior
+    delete album.capaPosX;
+    delete album.capaPosY;
+    delete album.capaZoom;
     salvarTudo();
     showToast("⭐ Foto definida como capa do álbum!");
 }
@@ -5983,6 +6147,9 @@ function removerCapaAlbum(idAlbum) {
     if (!album || !album.capa) return;
     if (!confirm('Remover a capa deste álbum?')) return;
     delete album.capa;
+    delete album.capaPosX;
+    delete album.capaPosY;
+    delete album.capaZoom;
     salvarTudo();
     renderizarAbasGaleria();
     showToast('Capa removida.');
@@ -6071,7 +6238,7 @@ async function deletarFotoPrincipal(idFoto) {
     db.galeria.fotos = db.galeria.fotos.filter(f => f.id !== idFoto);
 
     // Limpa capa órfã (qualquer álbum que apontasse para esta foto)
-    (db.galeria.albuns || []).forEach(a => { if (a.capa === idFoto) delete a.capa; });
+    (db.galeria.albuns || []).forEach(a => { if (a.capa === idFoto) { delete a.capa; delete a.capaPosX; delete a.capaPosY; delete a.capaZoom; } });
 
     salvarTudo();
     renderizarFotosDoAlbum();
@@ -6643,11 +6810,10 @@ window.onload = function() {
         if (e.key === 'Escape') fecharLightbox();
     });
 
-    // Verifica expiração da sessão do Drive a cada 2 minutos (só quando na galeria)
+    // Verifica logo ao carregar a página, e depois a cada 2 minutos — sempre, não só na Galeria
+    verificarSessaoDrive();
     setInterval(() => {
-        if (document.getElementById('tab-galeria').classList.contains('active')) {
-            verificarSessaoDrive();
-        }
+        verificarSessaoDrive();
     }, 120000);
 };
 
