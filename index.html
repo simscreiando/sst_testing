@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE - 53_1 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE 53_2 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2097,6 +2097,8 @@
                                 <input type="text" id="e-rel-passada-nome" placeholder="Nome do ex..." style="flex:2; min-width:110px; font-size:11px; padding:6px;">
                                 <select id="e-rel-passada-status" style="flex:1; min-width:100px; font-size:11px; padding:6px;">
                                     <option value="casado">💍 Casado(a)</option>
+                                    <option value="namorado">💕 Namorado(a)</option>
+                                    <option value="amante">🔥 Amante</option>
                                     <option value="separado">💔 Separado</option>
                                     <option value="viuvo">🥀 Viúvo(a)</option>
                                 </select>
@@ -4109,6 +4111,8 @@ function salvarSim() {
                 document.getElementById('v-historico-rel').innerHTML = historico.map(h => {
                     let lbl = h.statusFinal === 'viuvo' ? '🥀 Viúvo(a) de' 
                             : h.statusFinal === 'separado' ? '💔 Sep. de' 
+                            : h.statusFinal === 'namorado' ? '💕 Namorou c/'
+                            : h.statusFinal === 'amante' ? '🔥 Amante de'
                             : '💍 Ex-parceiro(a):';
                     let dateStr = h.data ? ` <span style="font-size:10px; color:#888; font-weight:normal;">(Em: ${h.data})</span>` : '';
                     return `<div style="margin-bottom:4px;">${lbl} <strong style="color:#555;">${h.simNome}</strong>${dateStr}</div>`;
@@ -4220,6 +4224,10 @@ function adotarFilhoPerfil() {
                         timeline.push({ txt: `🥀 Viúvo(a) de ${h.simNome}`, class: "dead" });
                     } else if (h.statusFinal === 'separado') {
                         timeline.push({ txt: `💔 Separação de ${h.simNome}`, class: "bad" });
+                    } else if (h.statusFinal === 'namorado') {
+                        timeline.push({ txt: `💕 Namoro c/ ${h.simNome}`, class: "" });
+                    } else if (h.statusFinal === 'amante') {
+                        timeline.push({ txt: `🔥 Amante de ${h.simNome}`, class: "" });
                     } else {
                         timeline.push({ txt: `💍 Casado(a) c/ ${h.simNome}`, class: "" });
                     }
@@ -5578,7 +5586,11 @@ let edgesArray = [];
                 return;
             }
             lista.innerHTML = tempHistoricoRelacionamentos.map((h, i) => {
-                let lbl = h.statusFinal === 'viuvo' ? '🥀 Viúvo(a) de' : h.statusFinal === 'separado' ? '💔 Sep. de' : '💍 Casado(a) c/';
+                let lbl = h.statusFinal === 'viuvo' ? '🥀 Viúvo(a) de'
+                        : h.statusFinal === 'separado' ? '💔 Sep. de'
+                        : h.statusFinal === 'namorado' ? '💕 Namorou c/'
+                        : h.statusFinal === 'amante' ? '🔥 Amante de'
+                        : '💍 Casado(a) c/';
                 return `<div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:7px 10px; border-radius:8px; border:1px solid #e0d0f0; margin-bottom:5px; font-size:12px;">
                     <span>${lbl} <strong>${h.simNome}</strong>${h.data ? ' <span style="color:#aaa;font-size:10px;">(${h.data})</span>' : ''}</span>
                     <button onclick="removeRelPassadaEdit(${i})" style="background:#fff0f0; border:1px solid #ff8888; border-radius:5px; color:#cc0000; cursor:pointer; padding:2px 8px; font-size:11px;">✕</button>
