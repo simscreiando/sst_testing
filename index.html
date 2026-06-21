@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE - 53_3 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE - 53_4 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -762,8 +762,8 @@
 <body>
 
 <div id="banner-drive-expirado" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:#fff3cd; border-bottom:1px solid #ffc107; padding:10px 16px; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-    <span style="font-size:13px; font-weight:700; color:#856404;">⚠️ Sua sessão do Google Drive expirou ou está prestes a expirar. Reconecte para não perder seus uploads.</span>
-    <button class="btn-main" style="width:auto; margin:0; background:#4285F4; padding:7px 14px; font-size:12px;" onclick="autenticarGoogle()">Reconectar conta do Google</button>
+    <span id="banner-drive-texto" style="font-size:13px; font-weight:700; color:#856404;">⚠️ Sua sessão do Google Drive expirou ou está prestes a expirar. Reconecte para não perder seus uploads.</span>
+    <button id="banner-drive-btn" class="btn-main" style="width:auto; margin:0; background:#4285F4; padding:7px 14px; font-size:12px;" onclick="autenticarGoogle()">Reconectar conta do Google</button>
 </div>
 
 <div class="sidebar">
@@ -1255,7 +1255,7 @@
         <label style="margin-top:10px; display:block;">Título do Momento:</label>
         <input type="text" id="foto-titulo" placeholder="Ex: Primeiro beijo de Bella e Mortimer">
 
-        <label style="margin-top:10px; display:block;">Época / Fase da Vida:</label>
+        <label id="label-foto-data" style="margin-top:10px; display:block;">Época / Fase da Vida:</label>
         <input type="text" id="foto-data" placeholder="Ex: Jovem Adulto - Dia 3 de Primavera">
 
         <label style="margin-top:10px; display:block;">Quem estava presente? (Marque os Sims):</label>
@@ -1955,6 +1955,12 @@
                 
                 <label style="font-weight:bold; font-size:13px;">Nome Completo:</label>
                 <input type="text" id="e-nome" placeholder="Nome do personagem...">
+
+                <label style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:bold; color:#555; margin-top:8px; cursor:pointer;">
+                    <input type="checkbox" id="e-isNpc" style="width:16px; height:16px; cursor:pointer;">
+                    👤 Este Sim é NPC (não jogável)
+                    <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="O sistema entenderá que este não é um Sim ativo. Ele será ignorado pelas roletas e geração de histórias, mantendo sua árvore genealógica completa sem poluir sua jogabilidade. Pode marcar ou desmarcar a qualquer momento, mesmo em um Sim já cadastrado na árvore.">❓</span>
+                </label>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
                     <div>
@@ -2202,7 +2208,11 @@
         <input type="file" id="npc-edit-foto" accept="image/*" style="width: 100%; font-size: 12px; margin-bottom: 12px;" onchange="onNpcFotoChange(event)">
 
         <label style="display:block; font-size:12px; font-weight:bold; text-align:left; margin-bottom:4px;">Nome:</label>
-        <input type="text" id="npc-edit-nome" placeholder="Nome do NPC..." style="width: 100%; font-size: 13px; padding: 8px; box-sizing: border-box; margin-bottom: 16px;">
+        <input type="text" id="npc-edit-nome" placeholder="Nome do NPC..." style="width: 100%; font-size: 13px; padding: 8px; box-sizing: border-box; margin-bottom: 12px;">
+
+        <label style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:bold; text-align:left; margin-bottom:14px; cursor:pointer;">
+            <input type="checkbox" id="npc-edit-falecido" style="width:auto; margin:0;"> 🪦 Falecido(a)
+        </label>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
             <button class="btn-main" style="background: var(--ts4-green); margin:0;" onclick="salvarModalNpc()">✅ Salvar</button>
@@ -3421,7 +3431,7 @@ if (fase === 'recem_nascido') {
         function renderIaSimList() {
             let sel = document.getElementById("sel-sim-narrativa");
             if(!sel) return;
-            const simsVisiveis = db.sims.filter(s => s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true);
+            const simsVisiveis = db.sims.filter(s => (s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true) && !s.isNpc);
             sel.innerHTML = "<option value=\"\">Sortear entre Sims vivos</option>" +
                 simsVisiveis.map(s => {
                     const icone = (s.status === 'Ancestral (Morto)' && s.fantasmaJogavel) ? '👻 ' : '';
@@ -3557,7 +3567,7 @@ if (fase === 'recem_nascido') {
             if(db.sims.length === 0) return alert("Crie Sims na Árvore Genealógica primeiro!"); 
             let selSimId = document.getElementById("sel-sim-narrativa").value; 
             let sim = selSimId ? getSimByIdCodex(selSimId) : (() => {
-                const pool = db.sims.filter(s => s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true);
+                const pool = db.sims.filter(s => (s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true) && !s.isNpc);
                 return pool.length ? pool[Math.floor(Math.random() * pool.length)] : db.sims[0];
             })();
             let tom = document.getElementById("sel-tom-sinopse").value;
@@ -3569,7 +3579,7 @@ if (fase === 'recem_nascido') {
             if(db.sims.length === 0) return alert("Crie Sims na Árvore Genealógica primeiro!");
             let selSimId = document.getElementById("sel-sim-narrativa").value;
             let sim = selSimId ? getSimByIdCodex(selSimId) : (() => {
-                const pool = db.sims.filter(s => s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true);
+                const pool = db.sims.filter(s => (s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true) && !s.isNpc);
                 return pool.length ? pool[Math.floor(Math.random() * pool.length)] : db.sims[0];
             })();
             let tom = document.getElementById("sel-tom-sinopse").value;
@@ -3654,6 +3664,7 @@ if (fase === 'recem_nascido') {
             popularListaIrmaos(s.irmaos || []);
             document.getElementById('e-rel').value = s.relStatus || "solteiro";
             document.getElementById('e-traicao').checked = s.traicao || false;
+            if (document.getElementById('e-isNpc')) document.getElementById('e-isNpc').checked = s.isNpc || false;
             if(document.getElementById('e-fase')) document.getElementById('e-fase').value = s.fase || "jovem-adulto";
             // Campos NPC
             ['p1', 'p2'].forEach(slot => {
@@ -3742,10 +3753,10 @@ if (fase === 'recem_nascido') {
             }
         }
 
-        // ===== Edição rápida de NPC (apenas foto + nome) =====
+        // ===== Edição rápida de NPC (foto + nome + falecido) =====
         let _npcEditCtx = null; // { refs: [{simId, slot}], foto: dataUrl }
         let _npcCropMode = false; // true enquanto o modal de recorte está sendo usado para uma foto de NPC
-        function abrirModalNpc(refs, nome, foto) {
+        function abrirModalNpc(refs, nome, foto, falecido) {
             if (!refs || !refs.length) return;
             _npcEditCtx = { refs: refs.slice(), foto: foto || '' };
             const img = document.getElementById('npc-edit-preview');
@@ -3754,12 +3765,15 @@ if (fase === 'recem_nascido') {
             else { img.src = ''; img.style.display = 'none'; ph.style.display = 'block'; }
             document.getElementById('npc-edit-nome').value = nome || '';
             document.getElementById('npc-edit-foto').value = '';
+            const chkFalecido = document.getElementById('npc-edit-falecido');
+            if (chkFalecido) chkFalecido.checked = !!falecido;
             document.getElementById('modal-npc-edit').style.display = 'flex';
         }
         function fecharModalNpc() {
             document.getElementById('modal-npc-edit').style.display = 'none';
             _npcEditCtx = null;
         }
+
         function onNpcFotoChange(ev) {
             const f = ev.target.files && ev.target.files[0];
             if (!f || !_npcEditCtx) return;
@@ -3796,11 +3810,13 @@ if (fase === 'recem_nascido') {
             const nome = document.getElementById('npc-edit-nome').value.trim();
             if (!nome) { alert('O nome do NPC não pode ficar vazio.'); return; }
             const foto = _npcEditCtx.foto || '';
+            const falecido = !!document.getElementById('npc-edit-falecido')?.checked;
             _npcEditCtx.refs.forEach(r => {
                 const sim = db.sims.find(x => String(x.id) === String(r.simId));
                 if (!sim) return;
                 sim[r.slot + 'NpcNome'] = nome;
                 sim[r.slot + 'NpcFoto'] = foto;
+                sim[r.slot + 'NpcStatus'] = falecido ? 'falecido' : 'vivo';
             });
             salvarTudo();
             fecharModalNpc();
@@ -3816,6 +3832,7 @@ if (fase === 'recem_nascido') {
                 if (!sim) return;
                 sim[r.slot + 'NpcNome'] = '';
                 sim[r.slot + 'NpcFoto'] = '';
+                sim[r.slot + 'NpcStatus'] = '';
                 sim[r.slot] = '';
             });
             salvarTudo();
@@ -3828,6 +3845,7 @@ if (fase === 'recem_nascido') {
             if (!_npcEditCtx) return;
             const nome = (document.getElementById('npc-edit-nome').value || '').trim();
             const foto = _npcEditCtx.foto || '';
+            const falecido = !!document.getElementById('npc-edit-falecido')?.checked;
             if (!nome) { alert('Defina um nome para o NPC antes de transformá-lo em Sim jogável.'); return; }
             const refsSalvas = _npcEditCtx.refs.slice();
             fecharModalNpc();
@@ -3835,6 +3853,9 @@ if (fase === 'recem_nascido') {
             // Pré-preencher nome
             const elNome = document.getElementById('e-nome');
             if (elNome) elNome.value = nome;
+            // Pré-preencher status de vida, de acordo com o que estava marcado no NPC
+            const elStatus = document.getElementById('e-status');
+            if (elStatus) elStatus.value = falecido ? 'Ancestral (Morto)' : 'Vivo';
             // Pré-preencher foto na fase jovem-adulto (padrão)
             try {
                 const faseSel = document.getElementById('e-foto-fase-select');
@@ -3927,6 +3948,7 @@ function salvarSim() {
                 irmaos: Array.from(document.querySelectorAll('.chk-irmao:checked')).map(cb => cb.value),
                 relStatus: relStatusNovo, 
                 traicao: document.getElementById('e-traicao').checked, 
+                isNpc: document.getElementById('e-isNpc')?.checked || false,
                 crush: document.getElementById('e-crush').value, 
                 tracos: document.getElementById('e-tracos').value, 
                 aspiracao: (document.getElementById('e-aspiracao')?.value || '').trim(),
@@ -3943,7 +3965,9 @@ function salvarSim() {
                 // pelo modal de NPC, clicando no card dele na árvore). Por isso, preservamos aqui a
                 // foto que já existia, desde que o NPC continue marcado — senão ela some a cada edição.
                 p1NpcFoto: document.getElementById('e-p1-npc').checked ? ((oldSimAtual && oldSimAtual.p1NpcFoto) || '') : '',
-                p2NpcFoto: document.getElementById('e-p2-npc').checked ? ((oldSimAtual && oldSimAtual.p2NpcFoto) || '') : ''
+                p2NpcFoto: document.getElementById('e-p2-npc').checked ? ((oldSimAtual && oldSimAtual.p2NpcFoto) || '') : '',
+                p1NpcStatus: document.getElementById('e-p1-npc').checked ? ((oldSimAtual && oldSimAtual.p1NpcStatus) || 'vivo') : '',
+                p2NpcStatus: document.getElementById('e-p2-npc').checked ? ((oldSimAtual && oldSimAtual.p2NpcStatus) || 'vivo') : ''
             };
 
             if(currentSimId) {
@@ -4041,9 +4065,28 @@ function salvarSim() {
                         filho[r.slot] = String(s.id);
                         filho[r.slot + 'NpcNome'] = '';
                         filho[r.slot + 'NpcFoto'] = '';
+                        filho[r.slot + 'NpcStatus'] = '';
                     });
                     window._npcConvertPending = null;
                     showToast('🎮 NPC convertido em Sim jogável!');
+                }
+
+                // Registra nascimento no Livro da Família (Sims novos cadastrados como Recém-Nascido).
+                // Adoções já têm seu próprio registro logo abaixo, então ficam de fora daqui.
+                if (faseNova === 'recem_nascido' && !window._pendingAdocao) {
+                    let paisNomes = [];
+                    if (s.p1) { let p = db.sims.find(x => String(x.id) === String(s.p1)); if (p) paisNomes.push(p.nome); }
+                    else if (s.p1NpcNome) paisNomes.push(s.p1NpcNome);
+                    if (s.p2) { let p = db.sims.find(x => String(x.id) === String(s.p2)); if (p) paisNomes.push(p.nome); }
+                    else if (s.p2NpcNome) paisNomes.push(s.p2NpcNome);
+
+                    let msgNascimento = paisNomes.length
+                        ? `\n[${new Date().toLocaleDateString('pt-BR')}] [NASCIMENTO] ${s.nome} nasceu! Filho(a) de ${paisNomes.join(' e ')}.`
+                        : `\n[${new Date().toLocaleDateString('pt-BR')}] [NASCIMENTO] ${s.nome} nasceu e passou a fazer parte da família!`;
+
+                    db.historia += msgNascimento;
+                    renderLivroComFiltro();
+                    showToast("👶 Nascimento registrado no Livro da Família!");
                 }
 
                 // Registra adoção no Livro somente agora que o Sim foi salvo de verdade
@@ -4100,8 +4143,8 @@ function salvarSim() {
             const faseLabel = FASES_LABELS[s.fase] || s.fase || "—";
             document.getElementById('v-fase').innerText = faseLabel;
             
-            document.getElementById('v-p1').innerText = s.p1 ? getNome(s.p1) : (s.p1NpcNome ? '👤 ' + s.p1NpcNome + ' (NPC)' : 'Nenhum');
-            document.getElementById('v-p2').innerText = s.p2 ? getNome(s.p2) : (s.p2NpcNome ? '👤 ' + s.p2NpcNome + ' (NPC)' : 'Nenhum');
+            document.getElementById('v-p1').innerText = s.p1 ? getNome(s.p1) : (s.p1NpcNome ? (s.p1NpcStatus === 'falecido' ? '🪦 ' : '👤 ') + s.p1NpcNome + ' (NPC)' : 'Nenhum');
+            document.getElementById('v-p2').innerText = s.p2 ? getNome(s.p2) : (s.p2NpcNome ? (s.p2NpcStatus === 'falecido' ? '🪦 ' : '👤 ') + s.p2NpcNome + ' (NPC)' : 'Nenhum');
             
             let strRel = s.relStatus || 'solteiro';
             if (strRel === 'solteiro') { 
@@ -4652,12 +4695,14 @@ function importarArquivo(event) {
                 
                 <text x="110" y="262" font-family="Arial, sans-serif" font-size="16" fill="#2B2B2B" text-anchor="middle">${iconStr}</text>
                 ${exTextElement}
+                ${sim.isNpc ? `<rect x="55" y="6" width="110" height="26" rx="13" ry="13" fill="#888899" filter="url(#shadow)"/>
+                <text x="110" y="24" font-family="'Nunito', Arial, sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">👤 NPC</text>` : ''}
             </svg>
             `;
             return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
         }
 
-        function generateNpcCardSVG(nome, foto) {
+        function generateNpcCardSVG(nome, foto, falecido) {
             const xmlEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
             const MAX_LINE = 12;
             let nameLine1 = '', nameLine2 = '';
@@ -4682,12 +4727,18 @@ function importarArquivo(event) {
                    <circle cx="110" cy="105" r="74" fill="none" stroke="#aaaacc" stroke-width="3"/>`
                 : `<circle cx="110" cy="105" r="74" fill="#d5d5e4" stroke="#aaaacc" stroke-width="3"/>
                    <text x="110" y="122" font-family="Arial,sans-serif" font-size="60" fill="#b8b8cc" text-anchor="middle">?</text>`;
+            // Falecido usa tons mais escuros (mesma linguagem visual usada nos Sims Ancestrais)
+            const corStop1 = falecido ? '#cfd4dc' : '#eeeef5';
+            const corStop2 = falecido ? '#9aa3ad' : '#d8d8e8';
+            const corBadge = falecido ? '#4a5560' : '#888899';
+            const badgeTexto = falecido ? '🪦 NPC' : '👤 NPC';
+            const subtitulo = falecido ? 'Falecido(a) • Não jogável' : 'Não jogável';
             const svg = `
             <svg xmlns="http://www.w3.org/2000/svg" width="220" height="300">
                 <defs>
                     <linearGradient id="npcBg" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#eeeef5"/>
-                        <stop offset="100%" stop-color="#d8d8e8"/>
+                        <stop offset="0%" stop-color="${corStop1}"/>
+                        <stop offset="100%" stop-color="${corStop2}"/>
                     </linearGradient>
                     <filter id="npcShadow" x="-10%" y="-10%" width="130%" height="130%">
                         <feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.10"/>
@@ -4698,9 +4749,9 @@ function importarArquivo(event) {
                 ${avatar}
                 <text x="110" y="210" font-family="'Nunito',Arial,sans-serif" font-size="26" font-weight="bold" fill="#6a6a7a" text-anchor="middle">${nameL1}</text>
                 ${nameL2 ? `<text x="110" y="238" font-family="'Nunito',Arial,sans-serif" font-size="26" font-weight="bold" fill="#6a6a7a" text-anchor="middle">${nameL2}</text>` : ''}
-                <text x="110" y="268" font-family="'Nunito',Arial,sans-serif" font-size="11" fill="#aaa" text-anchor="middle">Não jogável</text>
-                <rect x="60" y="6" width="100" height="26" rx="13" ry="13" fill="#888899" filter="url(#npcShadow)"/>
-                <text x="110" y="24" font-family="'Nunito',Arial,sans-serif" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">👤 NPC</text>
+                <text x="110" y="268" font-family="'Nunito',Arial,sans-serif" font-size="11" fill="#aaa" text-anchor="middle">${subtitulo}</text>
+                <rect x="60" y="6" width="100" height="26" rx="13" ry="13" fill="${corBadge}" filter="url(#npcShadow)"/>
+                <text x="110" y="24" font-family="'Nunito',Arial,sans-serif" font-size="13" font-weight="bold" fill="#fff" text-anchor="middle">${badgeTexto}</text>
             </svg>`;
             return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
         }
@@ -4767,11 +4818,11 @@ function importarArquivo(event) {
             // Nós NPC (progenitores fora da família)
             baseSims.forEach(s => {
                 if (s.p1NpcNome && !s.p1) {
-                    nodesArray.push({ id: 'npc_p1_' + s.id, shape: 'image', image: generateNpcCardSVG(s.p1NpcNome, s.p1NpcFoto),
+                    nodesArray.push({ id: 'npc_p1_' + s.id, shape: 'image', image: generateNpcCardSVG(s.p1NpcNome, s.p1NpcFoto, s.p1NpcStatus === 'falecido'),
                         size: 82, level: (geracoes[s.id] || 1) - 1, opacity: 1, chosen: false });
                 }
                 if (s.p2NpcNome && !s.p2) {
-                    nodesArray.push({ id: 'npc_p2_' + s.id, shape: 'image', image: generateNpcCardSVG(s.p2NpcNome, s.p2NpcFoto),
+                    nodesArray.push({ id: 'npc_p2_' + s.id, shape: 'image', image: generateNpcCardSVG(s.p2NpcNome, s.p2NpcFoto, s.p2NpcStatus === 'falecido'),
                         size: 82, level: (geracoes[s.id] || 1) - 1, opacity: 1, chosen: false });
                 }
             });
@@ -4984,7 +5035,7 @@ let edgesArray = [];
                     if (m) {
                         const slot = m[1], simId = m[2];
                         const sim = db.sims.find(x => String(x.id) === simId);
-                        if (sim) abrirModalNpc([{ simId, slot }], sim[slot+'NpcNome'] || '', sim[slot+'NpcFoto'] || '');
+                        if (sim) abrirModalNpc([{ simId, slot }], sim[slot+'NpcNome'] || '', sim[slot+'NpcFoto'] || '', sim[slot+'NpcStatus'] === 'falecido');
                         return;
                     }
                     const simIdLimpo = nid.startsWith('sim_') ? nid.slice(4) : nid;
@@ -5443,7 +5494,7 @@ let edgesArray = [];
                             if (!entry.foto && s[slot + 'NpcFoto']) {
                                 entry.foto = s[slot + 'NpcFoto'];
                                 const node = elements.find(e => e.data && e.data.id === entry.npcId);
-                                if (node) node.data.img = generateNpcCardSVG(npcNome, entry.foto);
+                                if (node) node.data.img = generateNpcCardSVG(npcNome, entry.foto, entry.npcStatus === 'falecido');
                             }
                             return;
                         }
@@ -5464,10 +5515,11 @@ let edgesArray = [];
 
                         placedRects.push({ x: pos.x, y: pos.y, w: NODE_W, h: NODE_H });
                         const foto = s[slot + 'NpcFoto'] || '';
+                        const npcStatus = s[slot + 'NpcStatus'] || '';
                         const refs = [{ simId: String(s.id), slot }];
-                        sharedNpc[shareKey] = { npcId, refs, foto };
+                        sharedNpc[shareKey] = { npcId, refs, foto, npcStatus };
 
-                        elements.push({ data: { id: npcId, img: generateNpcCardSVG(npcNome, foto), kind: 'npc', refs, npcNome, npcFoto: foto }, position: pos });
+                        elements.push({ data: { id: npcId, img: generateNpcCardSVG(npcNome, foto, npcStatus === 'falecido'), kind: 'npc', refs, npcNome, npcFoto: foto, npcStatus }, position: pos });
                         elements.push({ data: { id: 'e_npc_' + npcId + '_to_' + childKey, source: npcId, target: childKey, kind: 'npc_parent' } });
                     });
                 });
@@ -5577,7 +5629,7 @@ let edgesArray = [];
             });
             window.cyTree.on('tap', 'node[kind = "npc"]', evt => {
                 const d = evt.target.data();
-                abrirModalNpc(d.refs || [], d.npcNome || '', d.npcFoto || '');
+                abrirModalNpc(d.refs || [], d.npcNome || '', d.npcFoto || '', d.npcStatus === 'falecido');
             });
             setTimeout(() => {
                 try {
@@ -5827,8 +5879,20 @@ function verificarSessaoDrive() {
     // Só faz sentido avisar quem já usou a Nuvem alguma vez (tem uma família vinculada ao Drive).
     // Sem isso, todo mundo veria o aviso de "reconectar" mesmo nunca tendo conectado.
     if (!currentCloudFileId) { banner.style.display = 'none'; return; }
+
+    const textoEl = document.getElementById('banner-drive-texto');
+    const btnEl = document.getElementById('banner-drive-btn');
     const expirandoEm10min = tokenExpiryTime && (Date.now() > tokenExpiryTime - 10 * 60 * 1000);
-    if (!accessToken || expirandoEm10min) {
+
+    if (!accessToken) {
+        // Ainda não conectou nesta sessão/aba — não é um erro, é só o primeiro passo de cada visita.
+        if (textoEl) textoEl.innerHTML = '🔗 Conecte sua conta do Google para sincronizar esta família com a Nuvem.';
+        if (btnEl) btnEl.innerText = 'Conectar conta do Google';
+        banner.style.display = 'flex';
+    } else if (expirandoEm10min) {
+        // Esteve conectado nesta sessão, mas o token está prestes a expirar — aviso mais urgente.
+        if (textoEl) textoEl.innerHTML = '⚠️ Sua sessão do Google Drive está expirando. Reconecte para não perder seus uploads.';
+        if (btnEl) btnEl.innerText = 'Reconectar conta do Google';
         banner.style.display = 'flex';
     } else {
         banner.style.display = 'none';
@@ -6070,6 +6134,7 @@ function abrirModalNovaFoto() {
     document.getElementById('foto-titulo').value = '';
     document.getElementById('foto-data').value = '';
     document.getElementById('foto-comentario').value = '';
+    ajustarRotuloFotoData();
     
     // Preenche dinamicamente os checkboxes com os Sims cadastrados no seu sistema
     let containerSims = document.getElementById('lista-sims-checkbox');
@@ -6080,6 +6145,22 @@ function abrirModalNovaFoto() {
     `).join('') || '<span style="color:#888; font-size:12px;">Nenhum Sim cadastrado na árvore ainda.</span>';
 
     document.getElementById('modal-foto').style.display = 'flex';
+}
+
+// O campo "Época / Fase da Vida" só faz sentido no álbum de salvamento automático
+// (onde as fotos são retratos de Sims por fase de vida). Nos demais álbuns — criados
+// livremente pelo usuário — o rótulo passa a ser mais genérico, sobre data/contexto.
+function ajustarRotuloFotoData() {
+    const lbl = document.getElementById('label-foto-data');
+    const inp = document.getElementById('foto-data');
+    if (!lbl || !inp) return;
+    if (idAlbumAtual === 'album-geral') {
+        lbl.innerText = 'Época / Fase da Vida:';
+        inp.placeholder = 'Ex: Jovem Adulto - Dia 3 de Primavera';
+    } else {
+        lbl.innerText = 'Data ou Contexto:';
+        inp.placeholder = 'Ex: Verão de 2024, Aniversário de 10 anos...';
+    }
 }
 
 async function executarAcaoFotoPrincipal() {
@@ -6150,6 +6231,7 @@ function editarFoto(idFoto) {
     document.getElementById('foto-titulo').value = foto.titulo;
     document.getElementById('foto-data').value = foto.data;
     document.getElementById('foto-comentario').value = foto.comentario || '';
+    ajustarRotuloFotoData();
 
     // Preenche checkboxes marcando os Sims que já estavam na foto
     let containerSims = document.getElementById('lista-sims-checkbox');
