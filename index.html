@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE - 53_4 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE - 53_5 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -835,6 +835,10 @@
 
         <div style="margin-top: 15px; border-top: 2px solid var(--ts4-sidebar-border); padding-top: 15px;">
             <h3 style="font-size: 12px; color: var(--ts4-blue); text-transform: uppercase; margin-bottom: 10px;">📂 Minhas Famílias</h3>
+            <div id="familia-ativa-indicator" style="display:none; background: var(--ts4-secondary-bg); border: 1.5px solid var(--ts4-blue); border-radius: 10px; padding: 6px 10px; margin-bottom: 10px; font-size: 10px;">
+                <span style="color: var(--ts4-subtle-text); font-weight: 600;">Família ativa:</span><br>
+                <span id="familia-ativa-nome" style="color: var(--ts4-blue); font-weight: 800; font-size: 12px;">—</span>
+            </div>
             <button class="btn-main btn-sec" style="margin-top: 0; margin-bottom: 10px; font-size: 11px; padding: 8px;" onclick="criarNovaFamilia()">✨ Criar Nova Família</button>
             <button class="btn-main btn-sec" style="margin-top: 0; margin-bottom: 10px; font-size: 11px; padding: 8px; display:none; border-color:var(--ts4-blue); color:var(--ts4-blue);" onclick="salvarNaNuvem()" id="btn-save-cloud">⬆️ Salvar na Nuvem</button>
             
@@ -2179,6 +2183,20 @@
         <div id="lightbox-caption" style="color:rgba(255,255,255,0.9); font-size:13px; font-weight:800; margin-top:16px; text-transform:uppercase; letter-spacing:1.5px; font-family:'Nunito',sans-serif; background:rgba(255,255,255,0.08); padding:6px 18px; border-radius:20px;"></div>
     </div>
 
+<div class="modal-overlay" id="modal-historico-versoes" onclick="document.getElementById('modal-historico-versoes').style.display='none'" style="z-index: 280;">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 500px;">
+        <h3 style="color: var(--ts4-blue); margin-top: 0; display:flex; align-items:center; gap:8px;">🕐 Histórico de Versões</h3>
+        <p id="historico-familia-nome" style="font-size: 12px; color: var(--ts4-subtle-text); margin: 0 0 14px; font-weight: 700;"></p>
+        <p style="font-size: 11px; color: #888; margin: 0 0 14px; line-height:1.5;">
+            Cada vez que você salva na nuvem, o Google Drive guarda a versão anterior. Clique em <strong>Restaurar</strong> para voltar a qualquer versão abaixo. Atenção: restaurar substitui o estado atual.
+        </p>
+        <div id="lista-versoes" style="display:flex; flex-direction:column; gap:6px; max-height:320px; overflow-y:auto; padding-right:4px;">
+            <span style="font-size:11px; color:#aaa;">Carregando versões...</span>
+        </div>
+        <button class="btn-main btn-sec" style="margin-top:18px;" onclick="document.getElementById('modal-historico-versoes').style.display='none'">✕ Fechar</button>
+    </div>
+</div>
+
 <div class="modal-overlay" id="modal-crop" onclick="fecharModalCrop()" style="z-index: 300;">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 400px; text-align: center;">
         <h3 style="color: var(--ts4-blue); margin-top: 0;">Ajustar Enquadramento</h3>
@@ -2508,6 +2526,7 @@ function atualizarIndicadorMemoria() {
                             iniciarAutoSave();
                             atualizarBotaoGaleria();
                             ocultarBannerExpirado();
+                            atualizarIndicadorFamiliaAtiva();
                             hasUnsavedChanges = false;
                             showToast("Autenticado!");
                         }
@@ -2539,12 +2558,32 @@ function atualizarIndicadorMemoria() {
             if (arquivos.length === 0) { listaDiv.innerHTML = "<span style='font-size:11px'>Nenhuma família encontrada.</span>"; return; }
             listaDiv.innerHTML = arquivos.map(f => {
                 let nome = f.name.replace('.json', '');
+                let isAtiva = f.id === currentCloudFileId;
                 return `<div style="display:flex; gap:3px; align-items:center; margin-bottom:4px;">
-                    <button class="nav-btn" style="flex:1; font-size: 11px; padding: 6px; border: 1px solid #ccc; background: ${f.id === currentCloudFileId ? 'var(--ts4-blue)' : '#f9f9f9'}; color: ${f.id === currentCloudFileId ? 'white' : '#333'}; margin:0;" onclick="carregarArquivoDaNuvem('${f.id}', '${f.name}')">⬇️ ${nome}</button>
+                    <button class="nav-btn" style="flex:1; font-size: 11px; padding: 6px; border: 1px solid #ccc; background: ${isAtiva ? 'var(--ts4-blue)' : '#f9f9f9'}; color: ${isAtiva ? 'white' : '#333'}; margin:0;" onclick="carregarArquivoDaNuvem('${f.id}', '${f.name}')">⬇️ ${nome}</button>
+                    <button class="nav-btn" style="width:auto; padding: 6px; margin:0; background:#eef4ff; color:var(--ts4-blue);" title="Histórico de versões" onclick="verHistoricoVersoes('${f.id}', '${nome}')">🕐</button>
                     <button class="nav-btn" style="width:auto; padding: 6px; margin:0; background:#f0f4f8;" title="Renomear" onclick="renomearArquivoNuvem('${f.id}', '${nome}')">✏️</button>
                     <button class="nav-btn" style="width:auto; padding: 6px; margin:0; background:#fff0f0; color:#ff4d4d;" title="Excluir" onclick="deletarArquivoNuvem('${f.id}', '${nome}')">🗑️</button>
                 </div>`;
             }).join('');
+            // Atualiza o indicador de família ativa
+            atualizarIndicadorFamiliaAtiva();
+        }
+
+        function atualizarIndicadorFamiliaAtiva() {
+            let indicator = document.getElementById('familia-ativa-indicator');
+            let nomeEl = document.getElementById('familia-ativa-nome');
+            if (indicator && nomeEl) {
+                if (currentCloudFileId && currentFamilyName && currentFamilyName !== 'Família Padrão') {
+                    nomeEl.textContent = currentFamilyName;
+                    indicator.style.display = 'block';
+                } else if (currentFamilyName && currentFamilyName !== 'Família Padrão') {
+                    nomeEl.textContent = currentFamilyName + ' (local)';
+                    indicator.style.display = 'block';
+                } else {
+                    indicator.style.display = 'none';
+                }
+            }
         }
 
         async function renomearArquivoNuvem(id, nomeAtual) {
@@ -2605,7 +2644,7 @@ function atualizarIndicadorMemoria() {
                         currentCloudFileId = id; currentFamilyName = nome.replace('.json', '');
                         localStorage.setItem('ts4_current_family_id', id); localStorage.setItem('ts4_current_family_name', currentFamilyName);
                         hasUnsavedChanges = false;
-                        salvarTudo(); recarregarInterface(); showToast("✅ Família Carregada!");
+                        salvarTudo(); recarregarInterface(); atualizarIndicadorFamiliaAtiva(); showToast("✅ Família Carregada!");
                     }
                 } else alert("Falha ao baixar do Google Drive.");
             } catch(e) { console.error(e); alert("Erro ao carregar a família. Verifique a conexão."); }
@@ -2613,14 +2652,29 @@ function atualizarIndicadorMemoria() {
 
         async function salvarNaNuvem(silencioso = false) {
             if(!accessToken) return !silencioso ? alert("Faça login no Google primeiro!") : null;
-            if(!silencioso) showToast("Salvando...");
             try {
-                let fileId = currentCloudFileId; 
+                let fileId = currentCloudFileId;
+
+                // PROTEÇÃO: se não for silencioso e houver um arquivo ativo, confirma antes de sobrescrever
+                if (!silencioso && fileId && currentFamilyName && currentFamilyName !== 'Família Padrão') {
+                    let escolha = confirm(
+                        `⚠️ Atenção!\n\nVocê está prestes a SOBRESCREVER a família "${currentFamilyName}" na nuvem.\n\nClique em OK para sobrescrever.\nClique em Cancelar para salvar como NOVA família.`
+                    );
+                    if (!escolha) {
+                        // Usuário quer salvar como nova família
+                        let n = prompt("Como deseja chamar a nova família?");
+                        if (!n) return;
+                        currentFamilyName = n;
+                        fileId = null; // força criação de novo arquivo
+                    }
+                }
+
                 if (!fileId && (!currentFamilyName || currentFamilyName === "Família Padrão")) {
                     if(silencioso) return; 
                     let n = prompt("Como deseja chamar esse save?");
                     if(!n) return; currentFamilyName = n;
                 }
+                if(!silencioso) showToast("Salvando...");
                 const fileContent = JSON.stringify(db);
                 const boundary = '-------314159265358979323846';
                 const delimiter = "\r\n--" + boundary + "\r\n";
@@ -2640,11 +2694,78 @@ function atualizarIndicadorMemoria() {
             } catch(e) { console.error(e); }
         }
 
+        async function verHistoricoVersoes(fileId, nome) {
+            if (!accessToken) return alert("Conecte ao Google Drive primeiro.");
+            document.getElementById('historico-familia-nome').textContent = '📁 ' + nome;
+            document.getElementById('lista-versoes').innerHTML = "<span style='font-size:11px; color:#aaa;'>Carregando versões...</span>";
+            document.getElementById('modal-historico-versoes').style.display = 'flex';
+            try {
+                let res = await fetch(
+                    `https://www.googleapis.com/drive/v3/revisions?fileId=${fileId}&fields=revisions(id,modifiedTime,keepForever)`,
+                    { headers: { 'Authorization': 'Bearer ' + accessToken } }
+                );
+                let data = await res.json();
+                let revisoes = data.revisions || [];
+                if (revisoes.length === 0) {
+                    document.getElementById('lista-versoes').innerHTML = "<span style='font-size:11px; color:#aaa;'>Nenhuma versão anterior encontrada. O Google Drive pode não ter guardado revisões para este arquivo ainda.</span>";
+                    return;
+                }
+                // Mostra do mais recente para o mais antigo
+                revisoes = revisoes.reverse();
+                document.getElementById('lista-versoes').innerHTML = revisoes.map((rev, i) => {
+                    let data = new Date(rev.modifiedTime);
+                    let dataStr = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+                    let label = i === 0 ? ' <span style="background:var(--ts4-blue);color:white;font-size:9px;padding:2px 6px;border-radius:8px;margin-left:4px;">atual</span>' : '';
+                    return `<div style="display:flex; align-items:center; gap:6px; background:var(--ts4-secondary-bg); border:1px solid var(--ts4-border); border-radius:10px; padding:8px 10px;">
+                        <div style="flex:1;">
+                            <div style="font-size:12px; font-weight:700; color:var(--ts4-text);">🕐 ${dataStr}${label}</div>
+                            <div style="font-size:10px; color:var(--ts4-subtle-text);">ID: ${rev.id.slice(0,12)}...</div>
+                        </div>
+                        ${i !== 0 ? `<button class="nav-btn" style="width:auto; padding:6px 10px; margin:0; background:var(--ts4-green); color:white; font-size:11px; font-weight:700;" onclick="restaurarVersao('${fileId}', '${rev.id}', '${nome}')">⏪ Restaurar</button>` : '<span style="font-size:10px; color:#aaa;">versão atual</span>'}
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                document.getElementById('lista-versoes').innerHTML = "<span style='font-size:11px; color:#e74c3c;'>Erro ao carregar versões. Verifique sua conexão.</span>";
+                console.error(e);
+            }
+        }
+
+        async function restaurarVersao(fileId, revisionId, nome) {
+            if (!confirm(`⏪ Restaurar esta versão de "${nome}"?\n\nO estado atual será substituído pela versão selecionada. Considere salvar um backup antes de continuar.`)) return;
+            showToast("Restaurando versão...");
+            try {
+                let res = await fetch(
+                    `https://www.googleapis.com/drive/v3/revisions/${revisionId}?fileId=${fileId}&alt=media`,
+                    { headers: { 'Authorization': 'Bearer ' + accessToken } }
+                );
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                let cloudDb = await res.json();
+                if (cloudDb) {
+                    db = cloudDb;
+                    sincronizarBanco();
+                    currentCloudFileId = fileId;
+                    currentFamilyName = nome;
+                    localStorage.setItem('ts4_current_family_id', fileId);
+                    localStorage.setItem('ts4_current_family_name', nome);
+                    hasUnsavedChanges = false;
+                    salvarTudo();
+                    recarregarInterface();
+                    document.getElementById('modal-historico-versoes').style.display = 'none';
+                    showToast("✅ Versão restaurada com sucesso!");
+                    // Salva automaticamente na nuvem para que a versão restaurada se torne a atual
+                    await salvarNaNuvem(true);
+                }
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao restaurar versão. O Google Drive pode não permitir download de revisões antigas para este tipo de arquivo, ou a sessão expirou.");
+            }
+        }
+
         function criarNovaFamilia() {
             if(!confirm("Criar nova família substituirá o progresso não salvo na nuvem. Continuar?")) return;
             db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS, galeria: { albuns: [{ id: "album-geral", nome: "Álbum de Capturas", desc: "Cards e prints gerados automaticamente" }], fotos: [] } };
             currentCloudFileId = null; currentFamilyName = "Família Padrão";
-            salvarTudo(); recarregarInterface(); showToast("✨ Novo tabuleiro criado!");
+            salvarTudo(); recarregarInterface(); atualizarIndicadorFamiliaAtiva(); showToast("✨ Novo tabuleiro criado!");
         }
 
 function salvarTudo() { 
