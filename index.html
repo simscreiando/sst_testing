@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE - 53_5 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE - 53_6 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2700,33 +2700,42 @@ function atualizarIndicadorMemoria() {
             document.getElementById('lista-versoes').innerHTML = "<span style='font-size:11px; color:#aaa;'>Carregando versões...</span>";
             document.getElementById('modal-historico-versoes').style.display = 'flex';
             try {
+                // Endpoint correto: /files/{fileId}/revisions
                 let res = await fetch(
-                    `https://www.googleapis.com/drive/v3/revisions?fileId=${fileId}&fields=revisions(id,modifiedTime,keepForever)`,
+                    `https://www.googleapis.com/drive/v3/files/${fileId}/revisions?fields=revisions(id,modifiedTime,keepForever)`,
                     { headers: { 'Authorization': 'Bearer ' + accessToken } }
                 );
                 let data = await res.json();
+
+                if (!res.ok) {
+                    let msg = (data.error && data.error.message) ? data.error.message : `HTTP ${res.status}`;
+                    document.getElementById('lista-versoes').innerHTML = `<span style='font-size:11px; color:#e74c3c;'>❌ O Drive respondeu com erro: <strong>${msg}</strong><br><br>Isso pode significar que este tipo de arquivo (appDataFolder) não suporta histórico de revisões visível via API. Veja o painel de diagnóstico abaixo.</span>
+                    <div style='margin-top:10px; background:#f9f9f9; border:1px solid #ddd; border-radius:8px; padding:10px; font-size:10px; color:#555; font-family:monospace; word-break:break-all;'>${JSON.stringify(data, null, 2)}</div>`;
+                    return;
+                }
+
                 let revisoes = data.revisions || [];
                 if (revisoes.length === 0) {
-                    document.getElementById('lista-versoes').innerHTML = "<span style='font-size:11px; color:#aaa;'>Nenhuma versão anterior encontrada. O Google Drive pode não ter guardado revisões para este arquivo ainda.</span>";
+                    document.getElementById('lista-versoes').innerHTML = "<span style='font-size:11px; color:#aaa;'>Nenhuma versão anterior encontrada. O Drive ainda não criou revisões para este arquivo — isso acontece quando ele foi salvo apenas uma vez, ou se o Drive não suportar revisões para a pasta appDataFolder.</span>";
                     return;
                 }
                 // Mostra do mais recente para o mais antigo
-                revisoes = revisoes.reverse();
+                revisoes = [...revisoes].reverse();
                 document.getElementById('lista-versoes').innerHTML = revisoes.map((rev, i) => {
-                    let data = new Date(rev.modifiedTime);
-                    let dataStr = data.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+                    let dt = new Date(rev.modifiedTime);
+                    let dataStr = dt.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
                     let label = i === 0 ? ' <span style="background:var(--ts4-blue);color:white;font-size:9px;padding:2px 6px;border-radius:8px;margin-left:4px;">atual</span>' : '';
                     return `<div style="display:flex; align-items:center; gap:6px; background:var(--ts4-secondary-bg); border:1px solid var(--ts4-border); border-radius:10px; padding:8px 10px;">
                         <div style="flex:1;">
                             <div style="font-size:12px; font-weight:700; color:var(--ts4-text);">🕐 ${dataStr}${label}</div>
-                            <div style="font-size:10px; color:var(--ts4-subtle-text);">ID: ${rev.id.slice(0,12)}...</div>
+                            <div style="font-size:10px; color:var(--ts4-subtle-text);">ID da revisão: ${rev.id}</div>
                         </div>
                         ${i !== 0 ? `<button class="nav-btn" style="width:auto; padding:6px 10px; margin:0; background:var(--ts4-green); color:white; font-size:11px; font-weight:700;" onclick="restaurarVersao('${fileId}', '${rev.id}', '${nome}')">⏪ Restaurar</button>` : '<span style="font-size:10px; color:#aaa;">versão atual</span>'}
                     </div>`;
                 }).join('');
             } catch(e) {
-                document.getElementById('lista-versoes').innerHTML = "<span style='font-size:11px; color:#e74c3c;'>Erro ao carregar versões. Verifique sua conexão.</span>";
-                console.error(e);
+                document.getElementById('lista-versoes').innerHTML = `<span style='font-size:11px; color:#e74c3c;'>❌ Erro inesperado: ${e.message}</span>`;
+                console.error('verHistoricoVersoes error:', e);
             }
         }
 
@@ -2734,11 +2743,16 @@ function atualizarIndicadorMemoria() {
             if (!confirm(`⏪ Restaurar esta versão de "${nome}"?\n\nO estado atual será substituído pela versão selecionada. Considere salvar um backup antes de continuar.`)) return;
             showToast("Restaurando versão...");
             try {
+                // Endpoint correto: /files/{fileId}/revisions/{revisionId}?alt=media
                 let res = await fetch(
-                    `https://www.googleapis.com/drive/v3/revisions/${revisionId}?fileId=${fileId}&alt=media`,
+                    `https://www.googleapis.com/drive/v3/files/${fileId}/revisions/${revisionId}?alt=media`,
                     { headers: { 'Authorization': 'Bearer ' + accessToken } }
                 );
-                if (!res.ok) throw new Error('HTTP ' + res.status);
+                if (!res.ok) {
+                    let errData = await res.json().catch(() => ({}));
+                    let msg = (errData.error && errData.error.message) ? errData.error.message : `HTTP ${res.status}`;
+                    throw new Error(msg);
+                }
                 let cloudDb = await res.json();
                 if (cloudDb) {
                     db = cloudDb;
@@ -2752,12 +2766,12 @@ function atualizarIndicadorMemoria() {
                     recarregarInterface();
                     document.getElementById('modal-historico-versoes').style.display = 'none';
                     showToast("✅ Versão restaurada com sucesso!");
-                    // Salva automaticamente na nuvem para que a versão restaurada se torne a atual
+                    // Salva na nuvem para que a versão restaurada se torne a revisão mais recente
                     await salvarNaNuvem(true);
                 }
             } catch(e) {
-                console.error(e);
-                alert("Erro ao restaurar versão. O Google Drive pode não permitir download de revisões antigas para este tipo de arquivo, ou a sessão expirou.");
+                console.error('restaurarVersao error:', e);
+                alert(`Erro ao restaurar versão: ${e.message}`);
             }
         }
 
