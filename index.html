@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE - 53_6 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE - 53_7 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1263,8 +1263,9 @@
         <input type="text" id="foto-data" placeholder="Ex: Jovem Adulto - Dia 3 de Primavera">
 
         <label style="margin-top:10px; display:block;">Quem estava presente? (Marque os Sims):</label>
-        <div id="lista-sims-checkbox" style="max-height: 120px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 12px; margin-top:5px;">
-            </div>
+        <input type="text" id="busca-sims-foto" placeholder="🔍 Buscar Sim pelo nome..." oninput="filtrarSimsCheckbox('busca-sims-foto', 'lista-sims-checkbox')" style="width:100%; margin-top:5px; margin-bottom:4px; font-size:12px; padding:6px 10px; border-radius:10px;">
+        <div id="lista-sims-checkbox" style="max-height: 120px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 12px;">
+        </div>
 
         <label style="margin-top:10px; display:block;">História por trás da foto (Comentário do Narrador):</label>
         <textarea id="foto-comentario" placeholder="Escreva os detalhes desse drama ou conquista..."></textarea>
@@ -2053,7 +2054,8 @@
                         Irmão(s)/Irmã(s) Fundador(a) (Sem pais):
                         <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Use para conectar irmãos fundadores (Geração 1) sem pais na árvore. Selecione múltiplos Sims se quiser um grupo de irmãos fundadores.">❓</span>
                     </label>
-                    <div id="lista-sims-irmaos" style="max-height: 130px; overflow-y: auto; border: 1px solid #FF8C00; padding: 8px 10px; border-radius: 12px; margin-top:5px; background: #fffdf5;">
+                    <input type="text" id="busca-sims-irmaos" placeholder="🔍 Buscar Sim pelo nome..." oninput="filtrarSimsCheckbox('busca-sims-irmaos', 'lista-sims-irmaos')" style="width:100%; margin-top:5px; margin-bottom:4px; font-size:12px; padding:6px 10px; border-radius:10px; border:1.5px solid #FF8C00;">
+                    <div id="lista-sims-irmaos" style="max-height: 130px; overflow-y: auto; border: 1px solid #FF8C00; padding: 8px 10px; border-radius: 12px; background: #fffdf5;">
                         <em style="font-size:11px; color:#aaa;">Nenhum outro Sim criado ainda.</em>
                     </div>
                 </div>
@@ -3820,6 +3822,8 @@ if (fase === 'recem_nascido') {
         function popularListaIrmaos(irmaosIds) {
             const container = document.getElementById('lista-sims-irmaos');
             if (!container) return;
+            const buscaIrmaos = document.getElementById('busca-sims-irmaos');
+            if (buscaIrmaos) buscaIrmaos.value = '';
             const selecionados = (irmaosIds || []).map(String);
             const outrosSims = db.sims.filter(x => String(x.id) !== String(currentSimId));
             if (outrosSims.length === 0) {
@@ -3835,6 +3839,30 @@ if (fase === 'recem_nascido') {
                 </label>`;
             }).join('');
         }
+        // Filtra labels de checkbox dentro de um container conforme o usuário digita
+        function filtrarSimsCheckbox(inputId, containerId) {
+            const termo = document.getElementById(inputId).value.toLowerCase().trim();
+            const labels = document.querySelectorAll('#' + containerId + ' label');
+            let visiveis = 0;
+            labels.forEach(label => {
+                const nome = label.textContent.toLowerCase();
+                const mostrar = !termo || nome.includes(termo);
+                label.style.display = mostrar ? '' : 'none';
+                if (mostrar) visiveis++;
+            });
+            // Mostra mensagem se nenhum resultado
+            let semResultado = document.getElementById(containerId + '-sem-resultado');
+            if (!semResultado) {
+                semResultado = document.createElement('span');
+                semResultado.id = containerId + '-sem-resultado';
+                semResultado.style.cssText = 'font-size:11px; color:#aaa; display:none;';
+                semResultado.textContent = 'Nenhum Sim encontrado para "' + termo + '".';
+                document.getElementById(containerId).appendChild(semResultado);
+            }
+            semResultado.textContent = 'Nenhum Sim encontrado para "' + termo + '".';
+            semResultado.style.display = (visiveis === 0 && labels.length > 0) ? 'block' : 'none';
+        }
+
         function salvarImagemNaMemoriaDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; tempFotosFases[faseSel] = document.getElementById('e-img').value; }
         
         function removerImagemDaFase() {
@@ -6272,6 +6300,8 @@ function abrirModalNovaFoto() {
     ajustarRotuloFotoData();
     
     // Preenche dinamicamente os checkboxes com os Sims cadastrados no seu sistema
+    const buscaFoto = document.getElementById('busca-sims-foto');
+    if (buscaFoto) buscaFoto.value = '';
     let containerSims = document.getElementById('lista-sims-checkbox');
     containerSims.innerHTML = db.sims.map(sim => `
         <label style="display:block; font-size:13px; margin-bottom:4px; cursor:pointer;">
@@ -6369,6 +6399,8 @@ function editarFoto(idFoto) {
     ajustarRotuloFotoData();
 
     // Preenche checkboxes marcando os Sims que já estavam na foto
+    const buscaFotoEdit = document.getElementById('busca-sims-foto');
+    if (buscaFotoEdit) buscaFotoEdit.value = '';
     let containerSims = document.getElementById('lista-sims-checkbox');
     containerSims.innerHTML = db.sims.map(sim => `
         <label style="display:block; font-size:13px; margin-bottom:4px; cursor:pointer;">
