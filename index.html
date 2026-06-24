@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-53_15_2-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-53_16-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -4323,6 +4323,15 @@ Status de relacionamento: ${relStatus}`;
                 'Romântico':    'FOCO: romance, flerte, relacionamentos amorosos, ciúmes, declarações, reconciliações, barraco de casal e drama sentimental. O oba-oba e as conexões afetivas são o centro de tudo — cada decisão gira em torno do coração.'
             };
 
+            // ── Descrições de Estilo de Narrativa ───────────────────────────
+            const formatoDescricoes = {
+                'historia_vizinhanca': `Escreva como uma fofoca circulando no bairro — voz de quem está contando para uma vizinha ao telefone ou no portão. Tom informal, curioso, bisbilhoteiro e levemente exagerado. Comece como se alguém tivesse acabado de receber a notícia. Exemplo de abertura: "Você não vai acreditar no que eu ouvi sobre [Nome]..." Use linguagem coloquial e pausas dramáticas.`,
+                'lore_save':          `Escreva como um registro narrativo de gameplay — a voz de um jogador documentando os acontecimentos do save. Tom de crônica, direto e descritivo, como uma entrada de um diário de legado. Pode incluir referências ao jogo (moodlets, carreiras, Simoleons, lotes). Sem ser coloquial demais — é documentação viva de uma história.`,
+                'notificacao_jogo':   `Escreva exatamente como um pop-up de notificação do The Sims 4 — texto curto, impactante, com máximo de 4 linhas. Tom oficial e levemente irônico do jogo. Use caixa alta para palavras-chave se necessário. Simule o quadro de notificações do jogo: conciso, pontual, com aquela pitada de humor seco que o TS4 tem. Não ultrapasse 80 palavras.`,
+                'diario_sim':         `Escreva como se fosse o diário pessoal do próprio Sim — primeira pessoa, desabafos, pensamentos íntimos, emoções contraditórias. Tom introspectivo, às vezes dramático, às vezes ingênuo. O Sim fala de si mesmo, dos outros e do que aconteceu no dia. Comece com uma data fictícia ou apenas com um "Hoje..." ou "Não sei nem por onde começar...".`,
+                'dona_morte':         `Escreva como uma mensagem do Tablet da Dona Morte — voz sombria, enigmática e levemente poética da Ceifeira observando o Sim de cima. Tom ominoso, com frases curtas e misteriosas. A Morte sabe de tudo e fala sobre o destino do Sim com uma frieza irônica. Pode incluir referências à ampulheta, ao destino e ao inevitável. Comece com algo como "[Registro Ceifeiro]" ou "O destino anotou...".`
+            };
+
             // ── Restrições por fase de vida ──────────────────────────────────
             const idadeRestricoes = {
                 'recem_nascido': 'RESTRIÇÃO ABSOLUTA — Sim recém-nascido: narrar APENAS do ponto de vista dos cuidadores/família. PROIBIDO: fala, decisões autônomas, romance, carreira ou qualquer ação do bebê. O bebê é o contexto, não o agente.',
@@ -4337,6 +4346,7 @@ Status de relacionamento: ${relStatus}`;
 
             const restricaoIdade = idadeRestricoes[protagonista.fase] || '';
             const tomInstrucao = tomDescricoes[tom] || tomDescricoes['Aleatório'];
+            const formatoInstrucao = formatoDescricoes[formato] || formatoDescricoes['lore_save'];
 
             // ── Montagem do prompt ───────────────────────────────────────────
             const promptText =
@@ -4348,9 +4358,13 @@ ${simInfo}
 ═══ EVENTOS RECENTES DO LIVRO DA FAMÍLIA (plano de fundo narrativo) ═══
 ${_resumoH || 'Nenhum evento registrado recentemente.'}
 
-═══ NÍVEL DE CAOS / FOCO SELECIONADO PELO JOGADOR: ${tom.toUpperCase()} ═══
+═══ ESTILO DE NARRATIVA SELECIONADO ═══
+${formatoInstrucao}
+⚠️ OBRIGATÓRIO: toda a história deve ser escrita NESSE formato e voz. É a forma de apresentação do texto.
+
+═══ NÍVEL DE CAOS / FOCO SELECIONADO: ${tom.toUpperCase()} ═══
 ${tomInstrucao}
-⚠️ OBRIGATÓRIO: A história DEVE seguir esse foco temático com prioridade máxima. É a diretriz central — ignore temas não relacionados.
+⚠️ OBRIGATÓRIO: o conteúdo e os eventos da história DEVEM seguir esse foco temático. É a diretriz central do enredo.
 
 ═══ RESTRIÇÃO DE FASE DE VIDA ═══
 ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
@@ -4358,9 +4372,9 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
 ═══ REGRAS DE ESCRITA ═══
 - NUNCA mencione traços ou aspiração diretamente ("por ser X", "como é Y", "sendo Z", "tem o traço de"). Mostre-os por ações, escolhas e diálogos.
 - Use os eventos do Livro da Família como pano de fundo quando relevantes — nunca como enredo forçado.
-- O foco ${tom} é a diretriz principal. Siga-o com fidelidade.
-- Escreva em português brasileiro, estilo narrativo fluido, entre 180 e 280 palavras.
-- A história deve parecer um trecho vivo de um legado do The Sims 4 — específico para ESTE Sim, com os detalhes da vida dele.`;
+- O Estilo de Narrativa define a VOZ. O Nível de Caos define o CONTEÚDO. Os dois devem coexistir.
+- Escreva em português brasileiro. O estilo "Pop-up do Jogo" deve ser curtíssimo (máx. 80 palavras). Os demais entre 180 e 280 palavras.
+- A história deve parecer viva e específica para ESTE Sim — não genérica.`;
 
             try {
                 let responseText = '';
@@ -4407,12 +4421,116 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
         function gerarHistoriaSimSelecionado() {
             if(db.sims.length === 0) return alert("Crie Sims na Árvore Genealógica primeiro!");
             let selSimId = document.getElementById("sel-sim-narrativa").value;
-            let sim = selSimId ? getSimByIdCodex(selSimId) : (() => {
-                const pool = db.sims.filter(s => (s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true) && !s.isNpc);
-                return pool.length ? pool[Math.floor(Math.random() * pool.length)] : db.sims[0];
-            })();
-            let tom = document.getElementById("sel-tom-sinopse").value;
+            let tom    = document.getElementById("sel-tom-sinopse").value;
             let formato = document.getElementById("sel-tipo-sinopse").value;
+            let sim;
+
+            if (selSimId) {
+                sim = getSimByIdCodex(selSimId);
+            } else {
+                // ── Sortear com inteligência: considera tom, fase e perfil ──
+
+                // Fases bloqueadas por tom (conteúdo inapropriado)
+                const fasesBloqueadasPorTom = {
+                    'Romântico':   ['recem_nascido','bebe-colo','bebe','crianca'],
+                    'Dramático':   ['recem_nascido','bebe-colo','bebe'],
+                    'Caótico':     ['recem_nascido','bebe-colo','bebe'],
+                    'Místico':     ['recem_nascido','bebe-colo','bebe'],
+                    'Tradicional': [],
+                    'Aleatório':   []
+                };
+                const bloqueadas = fasesBloqueadasPorTom[tom] || [];
+
+                // Palavras-chave de traços/aspiração que combinam com cada tom
+                const palavrasChavePorTom = {
+                    'Romântico':   ['amor','romance','flerte','paixão','casamento','coração','namoro','sedução','parceiro','solteiro','relacionamento'],
+                    'Dramático':   ['dramático','ciúme','traição','malvado','inveja','manipulador','rancor','vingança','ódio','conflito','rivali'],
+                    'Caótico':     ['errático','impulsivo','cabeça-quente','desastrado','imprevisível','ansioso','louco','caos','rebelde'],
+                    'Místico':     ['vampiro','feiticeiro','bruxo','lobisomem','alien','ocult','magia','místico','sobrenatural','planta-vaca'],
+                    'Tradicional': ['família','legado','tradicional','ambicioso','trabalhador','dedicado','responsável','honesto','orgulho'],
+                    'Aleatório':   []
+                };
+                const palavras = palavrasChavePorTom[tom] || [];
+
+                // Pool base: sims vivos (ou fantasmas jogáveis), não-NPCs, fora das fases bloqueadas
+                let pool = db.sims.filter(s =>
+                    (s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true) &&
+                    !s.isNpc &&
+                    !bloqueadas.includes(s.fase)
+                );
+
+                // Fallback progressivo se pool vazio após filtro
+                if (!pool.length) {
+                    pool = db.sims.filter(s => (s.status !== 'Ancestral (Morto)' || s.fantasmaJogavel === true) && !s.isNpc);
+                }
+                if (!pool.length) pool = [...db.sims];
+
+                // Calcular peso de cada Sim
+                const scored = pool.map(s => {
+                    let peso = 1;
+                    const texto = [(s.tracos || ''), (s.aspiracao || ''), (s.extra || '')].join(' ').toLowerCase();
+
+                    // Boost por palavras-chave de traços/aspiração
+                    for (const p of palavras) {
+                        if (texto.includes(p)) peso += 2;
+                    }
+
+                    // Boosts específicos por tom
+                    if (tom === 'Romântico') {
+                        if (['jovem-adulto','adulto'].includes(s.fase)) peso += 2;
+                        if (s.relStatus && s.relStatus !== 'solteiro') peso += 2;
+                        if (s.historico_relacionamentos && s.historico_relacionamentos.length > 0) peso += 2;
+                    }
+                    if (tom === 'Dramático') {
+                        if (s.traicao) peso += 4;
+                        if (s.historico_relacionamentos && s.historico_relacionamentos.length > 1) peso += 2;
+                        // Relacionamento conflituoso detectado via MotorNarrativo
+                        try {
+                            const ctx = MotorNarrativo.contexto(s);
+                            if (ctx && ctx.relacionamentoConflituoso) peso += 3;
+                            if (ctx && ctx.lutoRecente) peso += 2;
+                            if (ctx && ctx.separacaoRecente) peso += 2;
+                        } catch(_) {}
+                    }
+                    if (tom === 'Místico') {
+                        // Priorizar sims ocultos
+                        if (/vampiro|feiticeiro|bruxo|lobisomem|alien|ocult|magia|sobrenatural|planta.vaca/i.test(s.extra || '')) peso += 6;
+                        if (s.fase === 'idoso') peso += 1; // anciãos têm mais história mística
+                    }
+                    if (tom === 'Caótico') {
+                        if (['jovem-adulto','adulto','adolescente'].includes(s.fase)) peso += 1;
+                        // Sims com muitas relações têm mais caos potencial
+                        if (s.historico_relacionamentos && s.historico_relacionamentos.length > 0) peso += 1;
+                        try {
+                            const ctx = MotorNarrativo.contexto(s);
+                            if (ctx && ctx.criseFinanceira) peso += 2;
+                            if (ctx && ctx.nascimentoRecente) peso += 2;
+                        } catch(_) {}
+                    }
+                    if (tom === 'Tradicional') {
+                        if (['adulto','idoso'].includes(s.fase)) peso += 2;
+                        if (s.spouse) peso += 2;
+                        try {
+                            const ctx = MotorNarrativo.contexto(s);
+                            if (ctx && ctx.casamentoRecente) peso += 3;
+                            if (ctx && ctx.nascimentoRecente) peso += 2;
+                            if (ctx && ctx.promocaoRecente) peso += 2;
+                        } catch(_) {}
+                    }
+
+                    return { sim: s, peso };
+                });
+
+                // Sorteio ponderado
+                const totalPeso = scored.reduce((acc, x) => acc + x.peso, 0);
+                let rand = Math.random() * totalPeso;
+                sim = scored[scored.length - 1].sim; // fallback
+                for (const item of scored) {
+                    rand -= item.peso;
+                    if (rand <= 0) { sim = item.sim; break; }
+                }
+            }
+
             chamarIA_HistoriaSimProfunda(sim, tom, formato);
         }
 
