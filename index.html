@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-53_15-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-53_15_2-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -4272,7 +4272,10 @@ if (ctx) {
 
 
         async function chamarIA_HistoriaSimProfunda(protagonista, tom, formato) {
-            const apiKey = localStorage.getItem('ts4_anthropic_key') || localStorage.getItem('ts4_openai_key');
+            const anthropicKey = localStorage.getItem('ts4_anthropic_key');
+            const openaiKey = localStorage.getItem('ts4_openai_key');
+            const apiKey = anthropicKey || openaiKey;
+            const isAnthropic = !!anthropicKey;
             let estatico = gerarTextoFocadoNoSim(protagonista, tom, formato);
 
             if (!apiKey || apiKey.trim() === "") {
@@ -4283,32 +4286,116 @@ if (ctx) {
 
             const btn = document.getElementById('btn-gerar'); btn.innerText = "Gerando..."; btn.disabled = true;
 
-            const _diretrizesTom = {
-                'Dramático':   'Drama intenso com traições, segredos revelados, inimizades e consequências sérias nos relacionamentos. Deve haver tensão emocional alta, conflito interpessoal claro e um desfecho que muda alguma relação.',
-                'Caótico':     'Caos total e eventos completamente inesperados. Use incêndios acidentais, mortes emotivas, bugs do jogo virando realidade, decisões impulsivas com consequências catastróficas e humor negro involuntário. Tudo pode e deve dar errado de formas absurdas.',
-                'Tradicional': 'Cotidiano familiar reconfortante com foco em conquistas, tradições e vínculos. Pode incluir aniversários, avanços de carreira, reuniões de família, receitas passadas de geração em geração ou festas de vizinhança. Clima positivo, sem grandes crises.',
-                'Místico':     'Elementos sobrenaturais e bizarros típicos do The Sims. Deve envolver pelo menos um elemento ocultista: feiticeiros, vampiros, aliens, a Planta-Vaca, Vladislaus Straud, poções, fantasmas, premonições ou eventos impossíveis de explicar.',
-                'Romântico':   'Romance e paquera com toda a complexidade e barraco que isso gera. Oba-oba arriscado, flerte autônomo no momento errado, triângulo amoroso, declaração no pior cenário possível ou uma recaída inesperada. Sentimentos em primeiro plano.',
-                'Aleatório':   'Mistura imprevisível — combine livremente qualquer um dos outros tons. Pode unir romance e caos, drama e misticismo, humor e tragédia. Quanto mais inesperado o cruzamento, melhor.',
-            };
-            const _instrucaoTom = _diretrizesTom[tom] || _diretrizesTom['Aleatório'];
-
             const _ctxH = (function(){ try { return MotorNarrativo.contexto(protagonista); } catch(_) { return null; } })();
             const _resumoH = MotorNarrativo.resumoParaPrompt(_ctxH);
-            const promptText = `Você é o narrador do The Sims 4. Crie um pequeno conto/história de vida para o Sim: ${protagonista.nome}. Fase de vida: ${protagonista.fase}. Relacionamento atual: ${protagonista.relStatus}.\n\nTOM OBRIGATÓRIO — ${tom.toUpperCase()}: ${_instrucaoTom}\nEste tom deve dominar a narrativa do início ao fim. Qualquer evento, diálogo ou desfecho deve refletir esse foco claramente.\n\nCONTEXTO DO SAVE (use como pano de fundo, NÃO cite literalmente): ${_resumoH || 'sem eventos marcantes recentes'}.\n\nREGRAS DE ESCRITA:\n- Nunca cite traços, aspirações ou características internas do Sim com palavras como "por ser X" ou "como é Y".\n- Mostre a personalidade através de ações, escolhas e diálogos — nunca rotule.\n- Mantenha continuidade com o contexto acima quando fizer sentido.\n- O tom escolhido deve ser evidente desde as primeiras linhas até o desfecho.`;
+
+            // ── Dados do Sim ────────────────────────────────────────────────
+            const tracos = (protagonista.tracos || '').trim();
+            const aspiracao = (protagonista.aspiracao || '').trim();
+            const relStatus = protagonista.relStatus || 'solteiro';
+            const spouseObj = protagonista.spouse
+                ? (typeof db !== 'undefined' ? db.sims.find(x => String(x.id) === String(protagonista.spouse)) : null)
+                : null;
+            const spouseNome = spouseObj ? spouseObj.nome : null;
+
+            const historicoRel = (protagonista.historico_relacionamentos || []).map(h => {
+                const exObj = typeof db !== 'undefined' ? db.sims.find(x => String(x.id) === String(h.exId)) : null;
+                const exNome = h.nomeEx || (exObj ? exObj.nome : null) || 'desconhecido';
+                return `${exNome} (${h.status || 'ex'})`;
+            }).join(', ');
+
+            let simInfo = `Nome: ${protagonista.nome}
+Fase de vida: ${protagonista.fase}
+Status vital: ${protagonista.status || 'Vivo'}
+Status de relacionamento: ${relStatus}`;
+            if (spouseNome) simInfo += `\nParceiro(a) atual: ${spouseNome}`;
+            if (historicoRel) simInfo += `\nHistórico de relacionamentos anteriores: ${historicoRel}`;
+            if (tracos) simInfo += `\nTraços de personalidade (molde COMPORTAMENTOS e REAÇÕES — nunca mencione diretamente): ${tracos}`;
+            if (aspiracao) simInfo += `\nAspiração de vida (use como motivação implícita — nunca mencione diretamente): ${aspiracao}`;
+
+            // ── Descrições de Nível de Caos / Foco ──────────────────────────
+            const tomDescricoes = {
+                'Aleatório':    'Gere uma história completamente imprevisível, com eventos aleatórios típicos do The Sims 4 (bugs do jogo viram enredo, coisas sem nexo acontecem). Misture humor e drama sem focar em um tema específico. Vale tudo.',
+                'Dramático':    'FOCO: traições, intrigas, inimizades, segredos revelados, confrontos emocionais pesados e consequências devastadoras. Clima de novela de alta tensão. O amor aqui apenas complica — não há romance feliz.',
+                'Caótico':      'FOCO: caos absoluto estilo The Sims 4 — incêndios espontâneos, mortes por emoção intensa (morte de vergonha, morte de rir), bugs que viram plot twist, múltiplas crises simultâneas, situações completamente fora de controle com humor surreal e absurdo.',
+                'Tradicional':  'FOCO: família, carreira, conquistas de vida, festas de aniversário, casamentos saudáveis, legado geracional e valores familiares. Tom tranquilo, progressivo e acolhedor — o clássico jogo de legado.',
+                'Místico':      'FOCO: o sobrenatural do The Sims 4 — vampiros, feiticeiros, lobisomens, alienígenas, plantas-vaca, Vladislaus Straud, poções, magia, rituais, morte e ressurreição. O oculto deve dominar a narrativa.',
+                'Romântico':    'FOCO: romance, flerte, relacionamentos amorosos, ciúmes, declarações, reconciliações, barraco de casal e drama sentimental. O oba-oba e as conexões afetivas são o centro de tudo — cada decisão gira em torno do coração.'
+            };
+
+            // ── Restrições por fase de vida ──────────────────────────────────
+            const idadeRestricoes = {
+                'recem_nascido': 'RESTRIÇÃO ABSOLUTA — Sim recém-nascido: narrar APENAS do ponto de vista dos cuidadores/família. PROIBIDO: fala, decisões autônomas, romance, carreira ou qualquer ação do bebê. O bebê é o contexto, não o agente.',
+                'bebe-colo':     'RESTRIÇÃO — Sim bebê de colo: narrar pela perspectiva dos pais/cuidadores. PROIBIDO: romance, carreira, decisões próprias, fala ou ações autônomas do bebê.',
+                'bebe':          'RESTRIÇÃO — Sim bebê: história narrada pelo olhar familiar. PROIBIDO: romance, trabalho ou ações adultas do bebê.',
+                'crianca':       'RESTRIÇÃO — Sim criança: PROIBIDO romance, conteúdo adulto, carreira profissional ou situações inapropriadas para a idade. Foque em escola, amizades, brincadeiras e dinâmica familiar.',
+                'adolescente':   'ATENÇÃO — Sim adolescente: permitido amizades, primeiro crush inocente e tensões familiares. PROIBIDO: relações sexuais, bebidas, conteúdo adulto explícito.',
+                'jovem-adulto':  'Jovem adulto: todos os temas do The Sims 4 são permitidos — romance, carreira, independência, conflitos.',
+                'adulto':        'Adulto: todos os temas são permitidos — família, carreira, romance, conflitos e dilemas.',
+                'idoso':         'Idoso: todos os temas adultos são permitidos, com atenção especial a legado, saúde, memórias e relacionamentos duradouros.'
+            };
+
+            const restricaoIdade = idadeRestricoes[protagonista.fase] || '';
+            const tomInstrucao = tomDescricoes[tom] || tomDescricoes['Aleatório'];
+
+            // ── Montagem do prompt ───────────────────────────────────────────
+            const promptText =
+`Você é co-narradora criativa do The Sims 4, gerando histórias envolventes baseadas nos dados reais do save do jogador.
+
+═══ DADOS DO SIM ═══
+${simInfo}
+
+═══ EVENTOS RECENTES DO LIVRO DA FAMÍLIA (plano de fundo narrativo) ═══
+${_resumoH || 'Nenhum evento registrado recentemente.'}
+
+═══ NÍVEL DE CAOS / FOCO SELECIONADO PELO JOGADOR: ${tom.toUpperCase()} ═══
+${tomInstrucao}
+⚠️ OBRIGATÓRIO: A história DEVE seguir esse foco temático com prioridade máxima. É a diretriz central — ignore temas não relacionados.
+
+═══ RESTRIÇÃO DE FASE DE VIDA ═══
+${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
+
+═══ REGRAS DE ESCRITA ═══
+- NUNCA mencione traços ou aspiração diretamente ("por ser X", "como é Y", "sendo Z", "tem o traço de"). Mostre-os por ações, escolhas e diálogos.
+- Use os eventos do Livro da Família como pano de fundo quando relevantes — nunca como enredo forçado.
+- O foco ${tom} é a diretriz principal. Siga-o com fidelidade.
+- Escreva em português brasileiro, estilo narrativo fluido, entre 180 e 280 palavras.
+- A história deve parecer um trecho vivo de um legado do The Sims 4 — específico para ESTE Sim, com os detalhes da vida dele.`;
 
             try {
-                const response = await fetch("https://api.openai.com/v1/chat/completions", {
-                    method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
-                    body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: promptText }] })
-                });
-                const data = await response.json();
-                exibirNarrativaCodex("HISTÓRIA DE " + protagonista.nome.toUpperCase(), MotorNarrativo.sanitizar(data.choices[0].message.content, protagonista), tom);
-            } catch(e) { 
-                alert("Erro de conexão de I.A.. Exibindo gerador nativo (offline)."); 
-                exibirNarrativaCodex(estatico.cabecalho, estatico.corpo, tom); 
-            } finally { 
-                btn.innerText = "✨ GERAR HISTÓRIA"; btn.disabled = false; 
+                let responseText = '';
+                if (isAnthropic) {
+                    const response = await fetch("https://api.anthropic.com/v1/messages", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "x-api-key": apiKey,
+                            "anthropic-version": "2023-06-01"
+                        },
+                        body: JSON.stringify({
+                            model: "claude-haiku-4-5-20251001",
+                            max_tokens: 700,
+                            messages: [{ role: "user", content: promptText }]
+                        })
+                    });
+                    const data = await response.json();
+                    responseText = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+                } else {
+                    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+                        body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: promptText }] })
+                    });
+                    const data = await response.json();
+                    responseText = (data.choices && data.choices[0] && data.choices[0].message) ? data.choices[0].message.content : '';
+                }
+                if (!responseText) throw new Error('Resposta vazia da API');
+                exibirNarrativaCodex("HISTÓRIA DE " + protagonista.nome.toUpperCase(), MotorNarrativo.sanitizar(responseText, protagonista), tom);
+            } catch(e) {
+                alert("Erro de conexão de I.A.. Exibindo gerador nativo (offline).");
+                exibirNarrativaCodex(estatico.cabecalho, estatico.corpo, tom);
+            } finally {
+                btn.innerText = "✨ GERAR HISTÓRIA"; btn.disabled = false;
             }
         }
 
