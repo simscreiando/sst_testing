@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE - 53_10 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-53_11-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2325,6 +2325,272 @@
         /** Hierarquia etária do The Sims 4 (do mais jovem para o mais velho). */
         const FASES_HIERARQUIA = ['bebe-colo', 'bebe', 'crianca', 'adolescente', 'jovem-adulto', 'adulto', 'idoso'];
 
+        // ================================================================
+        // SIMSTORIA — MOTOR NARRATIVO CONTEXTUAL v1.0
+        // Lê o estado real do save (Sims + Livro da Família) e produz um
+        // objeto ContextoNarrativo usado por sorteios e por geração de
+        // histórias. Não cria campos novos no Sim — tudo é inferido a
+        // partir de dados existentes. Compatível com saves antigos.
+        // ================================================================
+
+        /** Lista canônica de mundos do The Sims 4 usada para detecção textual. */
+        const MUNDOS_TS4 = [
+            "willow creek","oasis springs","newcrest","windenburg","san myshuno",
+            "forgotten hollow","brindleton bay","del sol valley","strangerville",
+            "sulani","glimmerbrook","britechester","evergreen harbor","mt. komorebi",
+            "monte komorebi","henford-on-bagley","henford","tartosa","copperdale",
+            "moonwood mill","san sequoia","tomarang","ravenwood","chestnut ridge"
+        ];
+
+        /** Mapa de consequências narrativas — eventos passados influenciam pesos futuros. */
+        const CONSEQUENCIAS_NARRATIVAS = {
+            demissaoRecente:        [/crise financeira|conta bancária zerada|dívida|mudança de aspiração|oferta de emprego|projeto de carreira/i],
+            casamentoRecente:       [/briga por ciúmes|traição|discussão familiar|vontade súbita de ter um filho|gravidez|gêmeos/i],
+            nascimentoRecente:      [/gravidez|gêmeos|vontade súbita de ter um filho|discussão familiar|pânico de aniversário|tradição/i],
+            lutoRecente:            [/crise (existencial|de identidade)|fuga espiritual|meditação|mudança de aspiração|desejo de se mudar|encontro com um fantasma|mensagem do além/i],
+            criseFinanceira:        [/dívida|conta bancária|investimento|oferta de emprego|compra por impulso|salário atrasado/i],
+            relacionamentoConflituoso:[/briga|traição|discussão|inimigo|ciúmes|separação/i],
+            riquezaAlta:            [/investimento de risco|disputa por herança|paparazzi|inveja do vizinho|festa saiu do controle/i],
+            mudancaRecente:         [/desejo de se mudar|tradição esquecida|vontade repentina de viajar/i]
+        };
+
+        /**
+         * Normaliza listas escritas pelo usuário em formatos variados
+         * (vírgulas, ponto-e-vírgula, pontos, quebras de linha).
+         * @param {string|string[]} input
+         * @returns {string[]} array minúsculo, sem duplicatas e sem vazios
+         */
+        function normalizarLista(input) {
+            if (!input) return [];
+            if (Array.isArray(input)) input = input.join(',');
+            const partes = String(input)
+                .toLowerCase()
+                .split(/[,;\n\r\t]+|(?<!\d)\.(?!\d)/) // vírgula, ;, quebra de linha, ponto (não-decimal)
+                .map(s => s.trim())
+                .filter(Boolean);
+            return Array.from(new Set(partes));
+        }
+
+        /**
+         * Faz parse defensivo de uma data brasileira "dd/mm/aaaa".
+         * @returns {Date|null}
+         */
+        function _parseDataBR(str) {
+            if (!str) return null;
+            const m = String(str).match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+            if (!m) return null;
+            const ano = m[3].length === 2 ? 2000 + parseInt(m[3], 10) : parseInt(m[3], 10);
+            const d = new Date(ano, parseInt(m[2], 10) - 1, parseInt(m[1], 10));
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        /**
+         * Converte a string db.historia em registros estruturados.
+         * Cada linha: "[dd/mm/aaaa] [TAG] texto"
+         */
+        function parseLivroEntries(historiaStr) {
+            if (!historiaStr) return [];
+            const linhas = String(historiaStr).split('\n').map(l => l.trim()).filter(Boolean);
+            const re = /^\[([^\]]+)\]\s*\[([^\]]+)\]\s*(.*)$/;
+            const out = [];
+            for (const linha of linhas) {
+                const m = linha.match(re);
+                if (m) {
+                    out.push({ data: _parseDataBR(m[1]), tag: m[2].toUpperCase(), texto: m[3] || "" });
+                } else {
+                    out.push({ data: null, tag: 'GERAL', texto: linha });
+                }
+            }
+            return out;
+        }
+
+        /**
+         * Lê os últimos N registros do Livro da Família (default 25) e
+         * extrai padrões de memória relevantes para o Sim informado.
+         */
+        function lerMemoriaLivro(db, sim, limite) {
+            limite = limite || 25;
+            const entries = parseLivroEntries(db && db.historia).slice(-limite);
+            const nomeSim = (sim && sim.nome ? sim.nome : '').toLowerCase();
+            const agora = new Date();
+            const recenteMs = 1000 * 60 * 60 * 24 * 90; // 90 dias = "recente"
+            const memo = {
+                total: entries.length,
+                nascimentoRecente: false,
+                casamentoRecente: false,
+                separacaoRecente: false,
+                lutoRecente: false,
+                mudancaRecente: false,
+                promocaoRecente: false,
+                demissaoRecente: false,
+                viagemRecente: false,
+                conquistasRecentes: 0,
+                fracassosRecentes: 0,
+                eventosRepetidos: [],
+                contagensTag: {},
+                mencoesAoSim: 0
+            };
+            const repetidos = {};
+            for (const e of entries) {
+                memo.contagensTag[e.tag] = (memo.contagensTag[e.tag] || 0) + 1;
+                const ehRecente = !e.data || (agora - e.data) <= recenteMs;
+                const texto = (e.texto || '').toLowerCase();
+                const mencionaSim = nomeSim && texto.includes(nomeSim);
+                if (mencionaSim) memo.mencoesAoSim++;
+                if (ehRecente) {
+                    if (e.tag === 'NASCIMENTO') memo.nascimentoRecente = true;
+                    if (e.tag === 'CASAMENTO') memo.casamentoRecente = true;
+                    if (e.tag === 'SEPARAÇÃO' || e.tag === 'SEPARACAO') memo.separacaoRecente = true;
+                    if (e.tag === 'MORTE') memo.lutoRecente = true;
+                    if (e.tag === 'VIAGEM') memo.viagemRecente = true;
+                    if (/promo[cç][aã]o|promovid/.test(texto)) memo.promocaoRecente = true;
+                    if (/demiss[aã]o|demitid|perdeu o emprego/.test(texto)) memo.demissaoRecente = true;
+                    if (/mudou de casa|se mudou|mudan[cç]a para/.test(texto)) memo.mudancaRecente = true;
+                    if (e.tag === 'CONQUISTA') memo.conquistasRecentes++;
+                    if (e.tag === 'DRAMA' || e.tag === 'META-DESISTIDA') memo.fracassosRecentes++;
+                }
+                if (e.texto) {
+                    const chave = e.texto.slice(0, 40).toLowerCase();
+                    repetidos[chave] = (repetidos[chave] || 0) + 1;
+                }
+            }
+            memo.eventosRepetidos = Object.keys(repetidos).filter(k => repetidos[k] >= 2);
+            return memo;
+        }
+
+        /**
+         * Infere campos ausentes (carreira, riqueza, mundo) a partir do
+         * texto livre do Sim e do Livro, sem exigir formulário extra.
+         */
+        function _inferirCampoTexto(sim, db, regexList) {
+            const fontes = [sim && sim.extra, sim && sim.aspiracao, db && db.historia].filter(Boolean).join(' ').toLowerCase();
+            for (const r of regexList) {
+                const m = fontes.match(r);
+                if (m) return m[0];
+            }
+            return null;
+        }
+
+        /**
+         * Constrói o objeto ContextoNarrativo final. Esse objeto é
+         * consumido internamente — nunca exibido ao usuário.
+         */
+        function construirContextoNarrativo(sim, db) {
+            const memo = lerMemoriaLivro(db, sim, 25);
+            const tracos = normalizarLista(sim && sim.tracos);
+            const aspiracao = (sim && sim.aspiracao ? sim.aspiracao : '').toLowerCase();
+            const ocultismo = (sim && sim.oculto && sim.oculto !== 'humano') ? sim.oculto : null;
+
+            // Carreira: tenta inferir comparando com vocabulário customizado
+            let carreira = null;
+            const vocCarreiras = (db && db.custom && db.custom.carreiras) || [];
+            const blobTextual = ((sim && sim.extra) || '').toLowerCase() + ' ' + (db && db.historia ? db.historia.toLowerCase() : '');
+            for (const c of vocCarreiras) {
+                const apenasNome = String(c).split(' - ').pop().toLowerCase().trim();
+                if (apenasNome && blobTextual.includes(apenasNome)) { carreira = apenasNome; break; }
+            }
+
+            // Mundo: regex contra MUNDOS_TS4 em extra/Livro
+            let mundo = null;
+            for (const w of MUNDOS_TS4) {
+                if (blobTextual.includes(w)) { mundo = w; break; }
+            }
+
+            // Riqueza/crise: heurística por proporção de conquistas vs fracassos financeiros
+            const dramasFin = (memo.contagensTag['DRAMA'] || 0);
+            const conquistas = (memo.contagensTag['CONQUISTA'] || 0);
+            const riquezaAlta = conquistas >= 3 && conquistas > dramasFin;
+            const criseFinanceira = memo.demissaoRecente || dramasFin >= 3;
+
+            // Relacionamento conflituoso: traição, status "complicado/separado", ou drama recente
+            const relStatus = (sim && sim.relStatus) ? sim.relStatus.toLowerCase() : '';
+            const relacionamentoConflituoso = !!(sim && sim.traicao) ||
+                /complicado|separad|divorciad|conflit/.test(relStatus) ||
+                (memo.fracassosRecentes >= 2 && relStatus && relStatus !== 'solteiro');
+
+            // Carreira estável: tem carreira inferida E nada de demissão recente
+            const carreiraEstavel = !!carreira && !memo.demissaoRecente;
+
+            return {
+                // padrões pedidos no briefing
+                nascimentoRecente: memo.nascimentoRecente,
+                casamentoRecente: memo.casamentoRecente,
+                separacaoRecente: memo.separacaoRecente,
+                lutoRecente: memo.lutoRecente,
+                mudancaRecente: memo.mudancaRecente,
+                promocaoRecente: memo.promocaoRecente,
+                demissaoRecente: memo.demissaoRecente,
+                viagemRecente: memo.viagemRecente,
+                criseFinanceira: criseFinanceira,
+                riquezaAlta: riquezaAlta,
+                carreiraEstavel: carreiraEstavel,
+                relacionamentoConflituoso: relacionamentoConflituoso,
+                ocultismo: ocultismo,
+                mundo: mundo,
+                carreira: carreira,
+                aspiracao: aspiracao || null,
+                fase: (sim && sim.fase) || 'jovem-adulto',
+                tracos: tracos,
+                // memória bruta (para depuração interna, não exibir)
+                _memoria: memo
+            };
+        }
+
+        /**
+         * Remove construções do tipo "Por ser X, Y..." e citações
+         * diretas de traços/aspirações do texto gerado.
+         */
+        function _sanitizarNarrativa(texto, sim) {
+            if (!texto) return texto;
+            let out = String(texto);
+            // remove abertura tipo "Por ser criativa," / "Sendo ambicioso,"
+            out = out.replace(/\b(Por ser|Sendo|Como (é|era)|Devido a(?:o)? (?:seu|sua) (?:traço|aspiração|característica)[^,.;!?]*)[^,.;!?]*[,;]\s*/gi, '');
+            // remove fragmentos "por ser <traço>"
+            const tracos = normalizarLista(sim && sim.tracos);
+            for (const t of tracos) {
+                if (!t || t.length < 4) continue;
+                const re = new RegExp("\\bpor ser\\s+" + t.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&") + "[,.;]?\\s*", "gi");
+                out = out.replace(re, '');
+            }
+            return out.replace(/\s{2,}/g, ' ').replace(/^\s*[,.;]\s*/, '').trim();
+        }
+
+        /**
+         * Fachada única consumida por Eventos Diários, Gerador de
+         * Dinâmicas e Co-Narradora. Mantém a mesma assinatura das
+         * funções antigas para não quebrar chamadores existentes.
+         */
+        const MotorNarrativo = {
+            contexto: function(sim) {
+                try { return construirContextoNarrativo(sim || {}, (typeof db !== 'undefined' ? db : {})); }
+                catch (e) { console.warn('[MotorNarrativo] contexto falhou:', e); return null; }
+            },
+            resumoParaPrompt: function(ctx) {
+                if (!ctx) return '';
+                const sinais = [];
+                if (ctx.nascimentoRecente) sinais.push('houve um nascimento recente na família');
+                if (ctx.casamentoRecente) sinais.push('um casamento aconteceu há pouco');
+                if (ctx.separacaoRecente) sinais.push('uma separação recente abalou o lar');
+                if (ctx.lutoRecente) sinais.push('a família atravessa um luto');
+                if (ctx.demissaoRecente) sinais.push('uma demissão recente trouxe insegurança');
+                if (ctx.promocaoRecente) sinais.push('uma promoção recente animou o Sim');
+                if (ctx.criseFinanceira) sinais.push('as finanças estão em crise');
+                if (ctx.riquezaAlta) sinais.push('a família vive um período de riqueza');
+                if (ctx.relacionamentoConflituoso) sinais.push('há tensão no relacionamento atual');
+                if (ctx.mudancaRecente) sinais.push('houve uma mudança de casa recente');
+                if (ctx.viagemRecente) sinais.push('uma viagem recente ainda repercute');
+                if (ctx.ocultismo) sinais.push('o Sim é ' + ctx.ocultismo);
+                if (ctx.mundo) sinais.push('vive em ' + ctx.mundo);
+                if (ctx.carreira) sinais.push('atua na área de ' + ctx.carreira);
+                return sinais.join('; ');
+            },
+            sanitizar: _sanitizarNarrativa
+        };
+
+        // expor para depuração no console (não exibido na UI)
+        try { window.MotorNarrativo = MotorNarrativo; } catch(_) {}
+
+
         /**
          * Banco de metadados dos eventos diários.
          *  idadeMin        : fase mínima exigida (default 'crianca' = permitido a todos exceto bebês).
@@ -2504,10 +2770,12 @@
                 return { evento: lista[i], idx: i };
             }
 
-            const tracosSim = (sim && sim.tracos)
-                ? sim.tracos.toLowerCase().split(',').map(t => t.trim())
-                : [];
+            const tracosSim = normalizarLista(sim && sim.tracos);
             const aspiracaoSim = (sim && sim.aspiracao) ? sim.aspiracao.toLowerCase() : '';
+
+            // Contexto narrativo (Fase 1/2/6) — degrada para null em saves antigos.
+            let ctx = null;
+            try { ctx = construirContextoNarrativo(sim || {}, (typeof db !== 'undefined' ? db : {})); } catch(_) {}
 
             const pool = [];
 
@@ -2537,8 +2805,32 @@
                     }
                 }
 
+                // ── Bônus avançados (Fase 3) — todos opcionais ──────────────
+                if (ctx) {
+                    const match = (arr, valor) => Array.isArray(arr) && valor && arr.some(x => String(valor).toLowerCase().includes(String(x).toLowerCase()));
+                    if (match(meta.carreira_boost,     ctx.carreira))   peso += 2;
+                    if (match(meta.riqueza_boost,      ctx.riquezaAlta ? 'alta' : (ctx.criseFinanceira ? 'baixa' : 'media'))) peso += 2;
+                    if (match(meta.relacionamento_boost, (sim && sim.relStatus) || '')) peso += 2;
+                    if (match(meta.ocultismo_boost,    ctx.ocultismo))  peso += 3;
+                    if (match(meta.mundo_boost,        ctx.mundo))      peso += 2;
+
+                    // historico_boost: aceita chaves de flags do ctx (ex: "lutoRecente")
+                    for (const chave of (meta.historico_boost || [])) {
+                        if (ctx[chave]) peso += 2;
+                    }
+
+                    // ── Fase 6: consequências narrativas declarativas ───────
+                    for (const flag in CONSEQUENCIAS_NARRATIVAS) {
+                        if (!ctx[flag]) continue;
+                        for (const re of CONSEQUENCIAS_NARRATIVAS[flag]) {
+                            if (re.test(evento)) { peso += 3; break; }
+                        }
+                    }
+                }
+
                 pool.push({ evento, peso, idx: i });
             }
+
 
             // Fallback: pool vazio = filtros muito restritivos, usa lista completa
             if (pool.length === 0) {
@@ -3908,29 +4200,42 @@ if (fase === 'recem_nascido') {
         }
 
         function gerarTextoNarrativoCodexEstatico(protagonista, tom, formato, modoSim) {
-            var tracoFoco = getTracoFocoCodex(protagonista);
             var espelho = protagonista.spouse ? getNomeSimCodex(protagonista.spouse) : (db.sims.length > 1 ? db.sims.filter(s => s.id !== protagonista.id)[0]?.nome || "um vizinho curioso" : "um vizinho curioso");
-            
-            var verbos = ["descontrolou-se e", "impulsionado(a) por sua natureza, acabou e", "ignorando todas as consequências,"];
+            var ctx = null;
+            try { ctx = MotorNarrativo.contexto(protagonista); } catch(_) {}
+
+            // Pool de ações ajustado pelo contexto (Fase 5: influência indireta).
             var acoes = ["estragou um evento importante", "descobriu um segredo doloroso", "se declarou na hora errada", "incendiou acidentalmente a cozinha", "fez uma inimizade profunda"];
-            
-            var conflito = `${verbos[Math.floor(Math.random()*verbos.length)]} ${acoes[Math.floor(Math.random()*acoes.length)]}. O foco disso envolveu ${espelho}. O traço fundamental para isso foi ser ${tracoFoco}.`;
+            if (ctx) {
+                if (ctx.lutoRecente)              acoes.push("encarou uma lembrança que parecia adormecida", "passou a tarde revirando antigos pertences da família");
+                if (ctx.nascimentoRecente)        acoes.push("tentou equilibrar o caos doméstico de um lar com um bebê novo", "perdeu o sono com responsabilidades inesperadas");
+                if (ctx.casamentoRecente)         acoes.push("descobriu um hábito do parceiro que nunca tinha notado", "teve uma discussão por causa de um detalhe ridículo");
+                if (ctx.separacaoRecente)         acoes.push("recebeu uma mensagem que abriu feridas recentes");
+                if (ctx.demissaoRecente)          acoes.push("recusou uma proposta financeira tentadora — e desconfiada", "passou o dia refazendo currículos");
+                if (ctx.criseFinanceira)          acoes.push("teve que escolher entre pagar uma conta ou aceitar um favor inconveniente");
+                if (ctx.riquezaAlta)              acoes.push("foi alvo de um pedido constrangedor envolvendo dinheiro");
+                if (ctx.relacionamentoConflituoso) acoes.push("travou uma conversa pesada que vinha sendo adiada há semanas");
+                if (ctx.ocultismo === 'vampiro')  acoes.push("flagrou um vizinho fazendo perguntas demais sobre seus hábitos noturnos");
+            }
+            var verbos = ["acabou e", "naquele dia,", "sem perceber,"];
+            var conflito = `${verbos[Math.floor(Math.random()*verbos.length)]} ${acoes[Math.floor(Math.random()*acoes.length)]}. O foco disso envolveu ${espelho}.`;
 
             var formatos = {
                 historia_vizinhanca: ["🗣️ HISTÓRIAS DA VIZINHANÇA", `O telefone tocou! A fofoca é de que ${protagonista.nome} causou um escândalo.\n${conflito}`],
-                lore_save: ["🎮 LORE DO SAVE", `Um acontecimento grave marcou a história de ${protagonista.nome}.\n\n${conflito}`],
+                lore_save: ["🎮 LORE DO SAVE", `Um acontecimento marcou a história de ${protagonista.nome}.\n\n${conflito}`],
                 notificacao_jogo: ["📜 POP-UP DO JOGO", `Atenção!\n\n${conflito}`],
-                diario_sim: ["📔 DIÁRIO DO SIM", `"Nem sei como descrever hoje... Eu estava apenas sendo eu. ${conflito}"`],
+                diario_sim: ["📔 DIÁRIO DO SIM", `"Nem sei como descrever hoje... ${conflito}"`],
                 dona_morte: ["💀 TABLET DA DONA MORTE", `[Aviso Ceifeiro] O destino observa ${protagonista.nome}.\n\n${conflito}`]
             };
             var escolhido = formatos[formato] || formatos.lore_save;
             var cabecalho = modoSim ? escolhido[0] + " | FOCO: " + protagonista.nome.toUpperCase() : escolhido[0];
-            return { cabecalho: cabecalho, corpo: escolhido[1] };
+            return { cabecalho: cabecalho, corpo: MotorNarrativo.sanitizar(escolhido[1], protagonista) };
         }
 
         function gerarTextoFocadoNoSim(sim, tom, formato) {
             let faseStr = sim.fase || "jovem-adulto";
-            let corpo = "";
+            let ctx = null;
+            try { ctx = MotorNarrativo.contexto(sim); } catch(_) {}
 
             const historias = {
                 "bebe-colo": [
@@ -3963,14 +4268,29 @@ if (fase === 'recem_nascido') {
                 ]
             };
 
-            let pool = historias[faseStr] || historias["jovem-adulto"];
-            corpo = pool[Math.floor(Math.random() * pool.length)];
+            // Adiciona variantes contextuais (Fase 5 + Fase 6) — todas indiretas,
+            // sem citar traços ou aspirações do Sim.
+            let pool = (historias[faseStr] || historias["jovem-adulto"]).slice();
+            if (ctx) {
+                if (ctx.lutoRecente)        pool.push(`${sim.nome} passou horas observando a janela, como se tentasse organizar pensamentos que não cabiam em palavras. Uma fotografia esquecida em uma gaveta mudou o rumo do dia.`);
+                if (ctx.nascimentoRecente)  pool.push(`Entre mamadeiras e fraldas, ${sim.nome} encontrou um minuto raro de silêncio — e foi justo nesse minuto que tudo desandou de novo.`);
+                if (ctx.casamentoRecente)   pool.push(`A novidade do compromisso ainda mexia com ${sim.nome}. Pequenos gestos do parceiro começavam a revelar uma rotina que ninguém tinha combinado.`);
+                if (ctx.demissaoRecente)    pool.push(`Sem horário para cumprir, ${sim.nome} olhou para a casa de uma forma diferente. Decidiu por algo que ninguém esperava — nem ele mesmo.`);
+                if (ctx.criseFinanceira)    pool.push(`Cada conta que chegava parecia maior que a anterior. ${sim.nome} tomou uma decisão difícil que envolveu engolir o orgulho.`);
+                if (ctx.relacionamentoConflituoso) pool.push(`Um comentário aparentemente inocente abriu uma discussão antiga. ${sim.nome} percebeu que algumas conversas nunca terminam de verdade.`);
+                if (ctx.ocultismo === 'vampiro') pool.push(`A noite chegou e, com ela, a rotina silenciosa de ${sim.nome}. Um vizinho insistente quase descobriu o que não devia.`);
+                if (ctx.mundo)              pool.push(`A vida em ${ctx.mundo} tem seu próprio ritmo, e hoje ${sim.nome} sentiu na pele por que esse lugar muda quem mora ali.`);
+            }
+
+            let corpo = pool[Math.floor(Math.random() * pool.length)];
+            corpo = MotorNarrativo.sanitizar(corpo, sim);
 
             return {
                 cabecalho: "HISTÓRIA PESSOAL | " + sim.nome.toUpperCase(),
                 corpo: corpo
             };
         }
+
 
         async function chamarIA_HistoriaSimProfunda(protagonista, tom, formato) {
             const apiKey = localStorage.getItem('ts4_anthropic_key') || localStorage.getItem('ts4_openai_key');
@@ -3984,7 +4304,9 @@ if (fase === 'recem_nascido') {
 
             const btn = document.getElementById('btn-gerar-2'); btn.innerText = "Pensando..."; btn.disabled = true;
 
-            const promptText = `Você é o narrador do The Sims 4. Crie um pequeno conto/história de vida para o Sim: ${protagonista.nome}. Fase de vida: ${protagonista.fase}. Traços: ${protagonista.tracos || 'Nenhum específico'}. Relacionamento atual: ${protagonista.relStatus}. Tom da história: ${tom}. Foque bastante na idade e personalidade do Sim. Seja criativo, traga um pouco do humor e caos típicos de The Sims.`;
+            const _ctxH = (function(){ try { return MotorNarrativo.contexto(protagonista); } catch(_) { return null; } })();
+            const _resumoH = MotorNarrativo.resumoParaPrompt(_ctxH);
+            const promptText = `Você é o narrador do The Sims 4. Crie um pequeno conto/história de vida para o Sim: ${protagonista.nome}. Fase de vida: ${protagonista.fase}. Relacionamento atual: ${protagonista.relStatus}. Tom da história: ${tom}.\n\nCONTEXTO DO SAVE (use como pano de fundo, NÃO cite literalmente): ${_resumoH || 'sem eventos marcantes recentes'}.\n\nREGRAS DE ESCRITA:\n- Nunca cite traços, aspirações ou características internas do Sim com palavras como "por ser X" ou "como é Y".\n- Mostre a personalidade através de ações, escolhas e diálogos — nunca rotule.\n- Mantenha continuidade com o contexto acima quando fizer sentido.\n- Traga humor e caos típicos de The Sims.`;
 
             try {
                 const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -3992,7 +4314,7 @@ if (fase === 'recem_nascido') {
                     body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: promptText }] })
                 });
                 const data = await response.json();
-                exibirNarrativaCodex("HISTÓRIA DE " + protagonista.nome.toUpperCase(), data.choices[0].message.content, tom);
+                exibirNarrativaCodex("HISTÓRIA DE " + protagonista.nome.toUpperCase(), MotorNarrativo.sanitizar(data.choices[0].message.content, protagonista), tom);
             } catch(e) { 
                 alert("Erro de conexão de I.A.. Exibindo gerador nativo (offline)."); 
                 exibirNarrativaCodex(estatico.cabecalho, estatico.corpo, tom); 
@@ -4012,7 +4334,9 @@ if (fase === 'recem_nascido') {
             }
 
             const btn1 = document.getElementById('btn-gerar-1'); btn1.innerText = "Pensando..."; btn1.disabled = true;
-            const promptText = `Você é o narrador do The Sims 4. Invente um evento criativo estilo '${formato}' focado em '${tom}' para o Sim: ${protagonista.nome}. Crie uma breve historinha de ação que justify a situação. Dê um resultado narrativo.`;
+            const _ctxA = (function(){ try { return MotorNarrativo.contexto(protagonista); } catch(_) { return null; } })();
+            const _resumoA = MotorNarrativo.resumoParaPrompt(_ctxA);
+            const promptText = `Você é o narrador do The Sims 4. Invente um evento criativo estilo '${formato}' focado em '${tom}' para o Sim: ${protagonista.nome}.\n\nCONTEXTO DO SAVE (use como pano de fundo, NÃO cite literalmente): ${_resumoA || 'nada marcante recente'}.\n\nREGRAS:\n- Não mencione traços, aspirações nem características internas do Sim de forma explícita.\n- Mostre tudo por meio de ações e consequências.\n- Mantenha continuidade narrativa com o contexto acima quando fizer sentido.\n- Crie uma breve historinha que justifique a situação e termine com um desfecho narrativo.`;
 
             try {
                 const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -4020,7 +4344,7 @@ if (fase === 'recem_nascido') {
                     body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: promptText }] })
                 });
                 const data = await response.json();
-                exibirNarrativaCodex("GERAÇÃO IA | " + protagonista.nome, data.choices[0].message.content, tom);
+                exibirNarrativaCodex("GERAÇÃO IA | " + protagonista.nome, MotorNarrativo.sanitizar(data.choices[0].message.content, protagonista), tom);
             } catch(e) { alert("Erro de API"); } finally { btn1.innerText = "GERAR ACONTECIMENTO"; btn1.disabled = false; }
         }
 
