@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-53_20-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-53-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1032,7 +1032,7 @@
                 
                 <div style="display:flex; gap:15px; margin-top: 15px; margin-bottom: 15px; flex-wrap: wrap;">
                     <div style="flex:1; min-width: 200px;">
-                        <label style="display:block; margin-bottom: 5px; font-weight: bold; font-size: 13px;">Nível de Caos / Foco:</label>
+                        <label style="display:block; margin-bottom: 5px; font-weight: bold; font-size: 13px;">Estilo de Narrativa</label>
                         <select id="sel-tom-sinopse">
                             <option value="Aleatório">🎲 Aleatório (Livre-Arbítrio Ativado)</option>
                             <option value="Dramático">🎭 Desvio & Malignidade (Inimigos, Tapões, Traições)</option>
@@ -1088,15 +1088,20 @@
                             <option value="[CASAMENTO]">💍 CASAMENTO</option>
                             <option value="[SEPARAÇÃO]">💔 SEPARAÇÃO</option>
                             <option value="[DRAMA]">🔥 DRAMA/ESCÂNDALO</option>
-                            <option value="[CONQUISTA]">🏆 CONQUISTA/CARREIRA</option>
+                            <option value="[CONQUISTA]">🏆 CONQUISTA</option>
+                            <option value="[CARREIRA]">💼 CARREIRA</option>
+                            <option value="[RELACIONAMENTOS]">💞 RELACIONAMENTOS</option>
                         </select>
                     </div>
 
-                    <div style="display:flex; align-items:center; gap:5px;">
-                        <label style="font-size:12px; color:#555; white-space:nowrap; margin:0;">👤 Sim:</label>
-                        <select id="sel-sim-historia" style="width:auto; padding:8px; margin:0;">
-                            <option value="">(Nenhum)</option>
-                        </select>
+                    <div style="display:flex; align-items:flex-start; gap:5px;">
+                        <label style="font-size:12px; color:#555; white-space:nowrap; margin:0; padding-top:9px;">👤 Sim:</label>
+                        <div style="display:flex; flex-direction:column; gap:3px;">
+                            <input type="text" id="busca-sel-sim-historia" placeholder="🔍 Buscar Sim..." oninput="filtrarSelectSims('busca-sel-sim-historia','sel-sim-historia')" style="font-size:11px; padding:5px 8px; border-radius:8px; border:1.5px solid #e6d5a8; background:#fffdf6; width:160px;">
+                            <select id="sel-sim-historia" style="width:auto; padding:8px; margin:0;" data-empty-label="(Nenhum)">
+                                <option value="">(Nenhum)</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div style="display:flex; align-items:center; gap:5px;">
@@ -1106,12 +1111,15 @@
                     <button class="btn-main" style="width:100px; margin:0;" onclick="addHistoriaManual()">Registrar</button>
                 </div>
                 
-                <div style="margin-bottom: 8px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                    <span style="font-size:12px; font-weight:bold; color:var(--ts4-blue);">👤 Filtrar por Sim:</span>
-                    <select id="filtro-sim-livro" style="width:auto; padding:6px; margin:0;" onchange="filtrarLivroPorSim(this.value)">
-                        <option value="">(Todos os Sims)</option>
-                    </select>
-                    <button class="filter-btn" onclick="limparFiltroSimLivro()" style="font-size:11px;">Limpar</button>
+                <div style="margin-bottom: 8px; display:flex; gap:6px; align-items:flex-start; flex-wrap:wrap;">
+                    <span style="font-size:12px; font-weight:bold; color:var(--ts4-blue); align-self:center;">👤 Filtrar por Sim:</span>
+                    <div style="display:flex; flex-direction:column; gap:3px;">
+                        <input type="text" id="busca-filtro-sim-livro" placeholder="🔍 Buscar Sim..." oninput="filtrarSelectSims('busca-filtro-sim-livro','filtro-sim-livro')" style="font-size:11px; padding:5px 8px; border-radius:8px; border:1.5px solid #e6d5a8; background:#fffdf6; width:160px;">
+                        <select id="filtro-sim-livro" style="width:auto; padding:6px; margin:0;" onchange="filtrarLivroPorSim(this.value)" data-empty-label="(Todos os Sims)">
+                            <option value="">(Todos os Sims)</option>
+                        </select>
+                    </div>
+                    <button class="filter-btn" onclick="limparFiltroSimLivro()" style="font-size:11px; align-self:center;">Limpar</button>
                 </div>
 
                 <div style="margin-bottom: 10px; display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
@@ -1124,6 +1132,8 @@
                     <button class="filter-btn" onclick="filtrarLivro('DRAMA', this)">Dramas</button>
                     <button class="filter-btn" onclick="filtrarLivro('META', this)">🎯 Metas</button>
                     <button class="filter-btn" onclick="filtrarLivro('CONQUISTA', this)">🏆 Conquistas</button>
+                    <button class="filter-btn" onclick="filtrarLivro('CARREIRA', this)">💼 Carreira</button>
+                    <button class="filter-btn" onclick="filtrarLivro('RELACIONAMENTOS', this)">💞 Relações</button>
                     <button class="filter-btn" onclick="filtrarLivro('META-DESISTIDA', this)">🏳️ Desistidas</button>
                     <div id="filtros-tags-custom" style="display:contents;"></div>
                 </div>
@@ -1449,6 +1459,7 @@
                     <li><strong>Conectar Google Drive:</strong> É a opção mais segura e recomendada. Seus dados são salvos na nuvem em tempo real. Você pode jogar no PC, e depois abrir o site no celular para ler sua história e tudo estará sincronizado.</li>
                     <li><strong>Salvar no Navegador (LocalStorage):</strong> Guarda as informações localmente no dispositivo que você está usando agora. <span style="color: #d35400;">Atenção:</span> Se você limpar o cache do navegador ou usar programas como CCleaner, esses dados serão perdidos.</li>
                     <li><strong>Backup Manual:</strong> Periodicamente, vá em "Configurações" e clique em "Exportar Backup". Você fará o download de um arquivo físico seguro que pode ser guardado onde quiser para proteção extra.</li>
+                    <li><strong>Proteção Contra Sobrescrita:</strong> Ao salvar sua família no Drive, o SimStoria agora verifica se já existe um arquivo com esse nome. Se existir, você pode optar por sobrescrever ou criar uma nova cópia. Além disso, o botão 🕐 permite acessar o Histórico de Versões para restaurar estados anteriores da sua família caso algo saia do planejado.</li>
                 </ul>
             </div>
 
@@ -1502,6 +1513,7 @@
                     <li><strong>Dados vs. Relações:</strong> O perfil de edição é organizado em quatro abas. Em "👤 Identidade do Sim", você cadastra o nome, atualiza foto, idade, muda a fase da vida do sim e seu status, se vivo ou falecido.  Em "🌳 Família (Ascendência)", cadastra-se os ascendentes e vincula os irmãos quando o jogo inicia somente com os irmãos, se forem irmãos de filhos dos mesmos progenitores cadastrados na árvore, o sistema já os vincula automaticamente como irmãos. Em "❤️ Relacionamentos Amorosos", você cadastra um cônjuge já existente ou ex-parceiro (no caso de viúvo ou separado), escolhe o status civil do sim, e cadastra o histórico de relacionamentos anteriores do sim. Em "✨ Dinâmicas, Traços e História", cadastra-se as notas da história, como anotações de vínculos (ódio, amizade ou outros vínculos afetivos que não cabem na árvore, mas que você gostaria de deixar registrado), registro dos traços de personalidade do sim, registro da(s) aspirações dos sims (esta com a possibilidade de sortear já na edição do perfil), o tipo de sim, se é humano ou oculto, e outras notas da história que queira registrar.  </li>
                     <li><strong>Inteligência de Vínculos:</strong> Ao registrar um filho para um Sim que já está casado, o sistema analisa os casais e preenche o nome do segundo progenitor automaticamente para você poupar tempo!</li>
                     <li><strong>Progenitores NPCs:</strong> Quer registrar o pai biológico de um Sim apenas para o mapa da árvore ficar coerente, mas não quer ter o trabalho de jogar com ele? Marque-o como "Progenitor NPC". Ele aparecerá com destaque na árvore, mas será excluído das suas roletas de sorteio diário.</li>
+                    <li><strong>Gerenciamento de NPCs:</strong> É possível transformar qualquer Sim em NPC diretamente no formulário de criação/edição, e também torná-lo "Falecido" (🪦) quando aplicável.</li>
                     <li><strong>Gestão de Morte e Luto:</strong> Quando um Sim falecer, basta ativar a chave "Falecido" no perfil ou na edição. A foto do Sim ficará em preto e branco na árvore, criando uma bela marca visual na sua linhagem.</li>
                     <li><strong>Álbum de Fotos Dinâmico:</strong> Você pode carregar e cortar uma foto específica para cada fase da vida do Sim. A foto se atualiza conforme ele envelhece, e fica registrada no perfil!</li>	
                     <li><strong>Exportar Card Resumido:</strong> Ideal para compartilhar rapidamente nas redes sociais ou em fóruns, gerando um resumo elegante dos dados principais do seu Sim.</li>
@@ -1514,6 +1526,7 @@
                 <li>👶 <strong>Adicionar Irmão(ã):</strong> Segue a lógica dos pais (se os pais já existirem no sistema, o vínculo é criado automaticamente).</li>
             </ul>
 	            <li><strong>Seletor de Irmãos:</strong> Ao adicionar irmãos, você pode selecioná-los via checkbox em uma lista, permitindo criar grupos de irmãos fundadores de uma só vez com precisão.</li>
+	            <li><strong>Nascimentos Automáticos:</strong> Para que o nascimento de um sim seja cadastrado no livro da família, ao cadastrar o Sim nascido, selecione "Recém-Nascido", e então o evento é automaticamente registrado na linha do tempo com os dados dos progenitores.</li>
                 </ul>
             </div>
 
@@ -1522,7 +1535,7 @@
                 <p>Sofrendo de bloqueio criativo? Chame a inteligência artificial para trazer caos ou drama para o bairro.</p>
                 <ul>
                     <li><strong>Ponto de Partida:</strong> Excelente para iniciar novos legados. Escolha uma temática (Dramático, Caótico, Tradicional, Místico, Romântico, Social) e receba instantaneamente um contexto de cenário para começar do zero.</li>
-                    <li><strong>Gerador de Dinâmicas:</strong> Escolha entre estilos de texto envolventes (Fofocas, Diário, Pop-ups simulando o jogo), defina o "Nível de Caos" e selecione os Sims para gerar novas tramas. Selecione todos os sims ou sims individualmente para gerar suas histórias.</li>
+                    <li><strong>Gerador de Dinâmicas:</strong> Escolha entre os estilos de narrativa existentes e selecione os Sims para gerar novas tramas. Selecione todos os sims ou sims individualmente para gerar suas histórias.</li>
                 </ul>
             </div>
 
@@ -1530,8 +1543,9 @@
                 <h3 style="margin-top: 0; color: #34495e;">📖 7. Livros e Metas: O Diário de Bordo</h3>
                 <p>É aqui que o jogo ganha peso emocional e histórico. O Livro é a verdadeira memória da sua dinastia.</p>
                 <ul>
-                    <li><strong>Registro Manual e Tags:</strong> Aconteceu algo drástico que a roleta não sorteou? Digite o evento na barra, escolha a Tag correspondente (👶 NASCIMENTO, 💍 CASAMENTO, 💀 MORTE, etc.) e eternize no mural.</li>
+                    <li><strong>Registro Manual e Tags:</strong> Aconteceu algo drástico que a roleta não sorteou? Digite o evento na barra, escolha a Tag correspondente (👶 NASCIMENTO, 💍 CASAMENTO, 💀 MORTE, 💼 CARREIRA, 💞 RELACIONAMENTOS, etc.) e eternize no mural.</li>
                     <li><strong>Linha do Tempo e Filtros:</strong> Use os botões de Tags no topo para filtrar a cronologia e relembrar todas as mortes ou conquistas de décadas passadas.</li>
+                    <li><strong>Filtragem Inteligente:</strong> Encontre a história do seu Sim rapidamente. No topo do Livro da Família, utilize o filtro por Personagem para ler apenas os acontecimentos relacionados a um membro específico da linhagem.</li>
                     <li><strong>A Lógica das Metas:</strong> Você pode adicionar objetivos de geração em uma lista de tarefas, seja escrita por você ou as sorteadas no dashboard. O segredo da organização é que as tarefas permanecem ativas na tela como <em>"Pendentes"</em>. Somente quando você realizar a ação no jogo e clicar manualmente em <em>"Concluída"</em> (ou "Desistir"), o sistema encerra a pendência e crava um log glorioso no Livro de Histórias oficial.</li>
                     <li><strong>Modo Apresentação:</strong> No topo da tela, clique para transformar a linha do tempo da sua família em uma apresentação cinematográfica de slides (ótimo para gerar vídeos pro TikTok/Instagram/Tumblr/Youtube ou relembrar o legado).</li>
                 </ul>
@@ -1544,6 +1558,8 @@
                     <li><strong>Salvamento no Drive:</strong> As imagens cadastradas por você são salvas em seu drive, portanto só funciona para quem estiver conectado na nuvem, e a capacidade de armazenamento depende de sua conta no drive.</li>
                     <li><strong>Gerenciamento:</strong> A Galeria funciona como um mural de memórias. Você pode organizar os registros fotográficos de cada geração, da forma que quiser.</li>
 		    <li><strong>Salvar no Álbum:</strong> Ao gerar um print ou captura completa do perfil do seu Sim, você não precisa apenas baixar o arquivo; agora você pode clicar em "Salvar no Álbum" ou salvar automaticamente, autorizando em "Configurações". As imagens salvas ficam guardadas de forma organizada em uma seção exclusiva daquela família, criando uma linha do tempo fotográfica do seu legado.</li>
+		    <li><strong>Várias fotos por vez:</strong> Ao adicionar fotos ao álbum você pode selecionar até 10 fotos de vez.</li>
+		    <li><strong>Modo Apresentação:</strong> Transforme seu álbum em uma experiência cinematográfica. Utilize o botão 🎬 para iniciar um slideshow. Você pode exportar essa apresentação diretamente como um vídeo, pronto para compartilhar com a comunidade, com saída webp.</li>
                 </ul>
             </div>
 
@@ -1583,6 +1599,36 @@
         <h2 style="color: var(--ts4-blue); border-bottom: 3px solid var(--ts4-blue); padding-bottom: 8px;">❓ Perguntas Frequentes (FAQ)</h2>
         
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+
+<details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer;">
+    <summary style="font-weight: 700; color: var(--ts4-blue); font-size: 14px; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Como protejo meu save contra sobrescrita?</span>
+        <span style="font-size: 12px; color: #aaa;">▼</span>
+    </summary>
+    <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
+        O sistema agora detecta se você já possui uma família ativa com aquele nome no Drive. Se tentar salvar, um alerta aparecerá perguntando se deseja sobrescrever ou salvar como um novo arquivo. Além disso, use o ícone 🕐 na lista de famílias para restaurar versões anteriores caso necessário.
+    </p>
+</details>
+
+<details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer;">
+    <summary style="font-weight: 700; color: var(--ts4-blue); font-size: 14px; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Posso exportar minha galeria como vídeo?</span>
+        <span style="font-size: 12px; color: #aaa;">▼</span>
+    </summary>
+    <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
+        Sim! Dentro de qualquer álbum, clique no botão 🎬 "Apresentar Álbum". Você pode configurar a duração e as fotos, e ao finalizar, o sistema gera um vídeo .webm que você pode baixar e compartilhar nas suas redes sociais.
+    </p>
+</details>
+
+<details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; margin-bottom: 10px; cursor: pointer;">
+    <summary style="font-weight: 700; color: var(--ts4-blue); font-size: 14px; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
+        <span>Como encontro um Sim específico na lista?</span>
+        <span style="font-size: 12px; color: #aaa;">▼</span>
+    </summary>
+    <p style="margin-top: 10px; margin-bottom: 0; color: #555; font-size: 13px; line-height: 1.5;">
+        Implementamos campos de busca com autocompletar em todos os seletores de Sims. Basta começar a digitar o nome do Sim em qualquer lista ou filtro (inclusive no Livro da Família) e o sistema filtrará os resultados para você instantaneamente.
+    </p>
+</details>
 
 <details style="background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 15px; cursor: pointer; transition: 0.2s; margin-bottom: 10px;">
     <summary style="font-weight: 700; color: var(--ts4-blue); font-size: 14px; outline: none; list-style: none; display: flex; justify-content: space-between; align-items: center;">
@@ -1745,19 +1791,35 @@
                 <div style="text-align: center; margin-bottom: 30px;">
                     <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png" alt="SimStoria Logo" style="width: 80px; margin-bottom: 10px;">
                     <h2 style="color: var(--ts4-blue); margin: 0;">SimStoria - Legacy Companion</h2>
-                    <p style="color: #666; font-size: 14px;">Versão Atual: v52 (Sims Edition)</p>
+                    <p style="color: #666; font-size: 14px;">Versão Atual: v53 (Sims Edition)</p>
                 </div>
 
                 <div style="background: #f0f7ff; padding: 20px; border-radius: 15px; border-left: 4px solid var(--ts4-blue); margin-bottom: 30px;">
                     <h3 style="margin-top: 0; color: var(--ts4-blue);">Sobre o Projeto</h3>
                     <p style="font-size: 14px; line-height: 1.6; color: #444;">
-                        O SimStoria nasceu por querer organizar um save de legado que eu tinha, mas que acabou quebrando algumas vezes por conta de mods ou bugs do jogo; Como foi ficando bem legal, quis abrir a ferramenta para outros simmers utilizarem, em razão da necessidade de organizar o caos e a beleza das histórias que criamos no The Sims 4.  
+                        O SimStoria nasceu por querer organizar um save de legado que eu tinha, mas que acabou quebrando algumas vezes por conta de mods ou bugs do jogo. Depois disso, quis criar formas de diversificar o jogo para meu amor, que enjoa fácil, ter mais opções e passar mais tempo no jogo comigo S2. Como foi ficando bem legal, quis abrir a ferramenta para outros simmers utilizarem, em razão da necessidade de organizar o caos e a beleza das histórias que criamos no The Sims 4.  
                         Este projeto é construído com muito carinho por uma simmer, para a comunidade simmer.
 			Vai Brasil!
                     </p>
                 </div>
 
                 <h3 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">🚀 Histórico de Atualizações - 3 últimas atualizações</h3>
+
+<div style="position: relative; padding-left: 20px; border-left: 2px solid #3498db; margin-bottom: 20px;">
+    <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #3498db;"></div>
+    <strong style="font-size: 14px; color: #333;">v53 - Segurança, Galeria Pro e Melhorias de UX</strong>
+    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 24 de Junho de 2026</span>
+    <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
+        <li><strong>Segurança:</strong> Proteção contra sobrescrita acidental, Histórico de Versões (Restauração via Google Drive) e Indicação clara da família ativa na sidebar.</li>
+        <li><strong>NPCs:</strong> Agora podem ser marcados como "Falecidos" (🪦), conversão rápida para Sim jogável e cartões simplificados (170×190).</li>
+        <li><strong>Galeria:</strong> Upload múltiplo (até 10 fotos de uma vez), modo Slideshow (Apresentação) com exportação de vídeo (.webm).</li>
+        <li><strong>Busca:</strong> Todos os seletores de Sims agora possuem busca (dropdown com digitação) para encontrar personagens facilmente.</li>
+        <li><strong>Personalização:</strong> Saudação de boas-vindas personalizada na entrada do site.</li>
+        <li><strong>Livro da Família:</strong> Filtro por Personagem e registro automático de [NASCIMENTO] na timeline. Para que um nascimento apareça no livro, o sim deve er cadastrado primeiramente como recém-nascido.</li>
+        <li><strong>Metas:</strong> Aspirações agora podem ser configuradas como metas (vincular/concluir/excluir).</li>
+        <li><strong>Perfil:</strong> Novos tipos de relacionamento: Namorado e Amante.</li>
+    </ul>
+</div>
 
 <div style="position: relative; padding-left: 20px; border-left: 2px solid #e74c3c; margin-bottom: 20px;">
     <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: #e74c3c;"></div>
@@ -2854,7 +2916,7 @@
         }
 
         const LAB_KEYS = ["gênero", "idade", "sexualidade", "sim oculto", "mundos a morar", "simoleons a começar", "estações", "regras"];
-        const DEFAULT_ROULETTES = ["eventos diários", "metas", "relações românticas", "carreiras", "curso universitário", "gênero", "idade", "sexualidade", "sim oculto", "modo de morte", "mundos a morar", "simoleons a começar", "estações", "regras", "sim ou não"];
+        const DEFAULT_ROULETTES = ["eventos diários", "metas", "relações românticas", "carreiras", "curso universitário", "modo de morte", "gênero", "idade", "sexualidade", "sim oculto", "mundos a morar", "simoleons a começar", "estações", "regras", "sim ou não"];
         const DEFAULT_CONFIG_WHEELS = {
             "eventos diários": ["Incêndio", "Promoção", "Gravidez Inesperada", "Gêmeos", "Traição", "Visita Inesperada", "Dilema Ético", "Inimigo Declarado", "Crise de Identidade", "Dia de Folga Forçado", "Investimento de Risco", "Multa Ambiental", "Bônus por Mérito", "Promoção", "Gravidez Inesperada", "Gêmeos", "Traição", "Visita Inesperada", "Dilema Ético", "Inimigo Declarado", "Crise de Identidade", "Dia de Folga Forçado", "Investimento de Risco", "Multa Ambiental", "Bônus por Mérito", "O Objeto Amaldiçoado", "Segredo de Família", "Tradição Esquecida", "Desejo Repentino", "Lei Seca de Eletrônicos", "Incêndio Culinário", "Fuga Espiritual", "Confissão Inesperada", "Pedido de Casamento Recusado", "Inveja do Vizinho", "Amizade com Alienígena", "Paparazzi no Quintal", "Fofoca na Vizinhança", "Reencontro com Ex", "Descoberta de Parentesco Distante", "Adoção de Pet Errante", "Convite para Festa Exclusiva", "Encontro às Cegas", "Briga por Ciúmes", "Presente de um Admirador Secreto", "Disputa por Herança", "Amor à Primeira Vista", "Demissão Injusta", "Acidente de Trabalho", "Oferta de Emprego Irrecusável", "Ganhou na Loteria (Cheat)", "Falha no Investimento", "Projeto de Carreira Concluído", "Dívida de Jogo", "Promoção do Rival", "Salário Atrasado", "Compra por impulso", "Obsessão por Pintura", "Vício em Jogos de Vídeo Game", "Mudança Radical de Visual", "Fase de Vegetarianismo", "Descoberta de Talento Oculto", "Limpeza Geral (Obsessão)", "Banho de Banheira Relaxante", "Dieta de Sucos Especiais", "Meditação Profunda", "Mudança de Aspiração", "Aula de Culinária Experimental", "Desejo de se Mudar", "Dia de Colecionador", "Encontro com um Fantasma", "Pânico de Aniversário", "Perdeu o Ônibus para o Trabalho", "Discussão Familiar no Café da Manhã", "Vizinho Fazendo Barulho", "Recebeu uma Carta Misteriosa", "Pane Elétrica em Casa", "Encontrou Dinheiro no Sofá", "Roupa Rasgou em Público", "Quebrou o Celular", "Dia de Má Sorte", "Dia de Sorte Extrema", "Teve um Sonho Estranho", "Mensagem Enviada para a Pessoa Errada", "Cozinha Invadida por Insetos", "Objeto Favorito Quebrou", "Mudança Repentina de Humor", "Recebeu Flores Anônimas", "Ficou Preso no Elevador", "Perdeu um Objeto Importante", "Recebeu um Convite Suspeito", "Encontrou um Diário Antigo", "Discussão com Melhor Amigo", "Convidado Não Vai Embora", "Festa Saiu do Controle", "Vazamento de Água", "Conta Bancária Zerada", "Compra Online Arrependimento", "Mentira Descoberta", "Crush Aparece Inesperadamente", "Mensagem do Além", "Recebeu um Presente Estranho", "Encontrou um Animal Ferido", "Adotou um Hábito Estranho", "Decidiu Virar Influencer", "Desafio Fitness Repentino", "Passou Vergonha em Público", "Acusado de Algo que Não Fez", "Reputação Arruinada Temporariamente", "Virou Meme na Cidade", "Recebeu um Boato Sobre Si", "Teve uma Crise Existencial", "Descobriu um Hobby Obsessivo", "Começou uma Reforma Impulsiva", "Ficou Sem Internet", "Teve um Ataque de Criatividade", "Mudança Súbita de Personalidade", "Vontade Repentina de Viajar", "Comprou Algo Caríssimo Sem Querer", "Perdeu o Controle na Festa", "Ficou Famoso da Noite para o Dia", "Recebeu uma Visita Paranormal", "Discussão no Grupo da Família", "Encontrou uma Caixa Misteriosa", "Entrou em Pânico Social", "Recebeu um Desafio Viral", "Tentativa de Reconciliação", "Descobriu um Segredo do Parceiro", "Recebeu uma Herança Pequena", "Seu Pet Fugiu", "Seu Pet Trouxe Algo Estranho para Casa", "Apareceu um Parente Desconhecido", "Mudança de Estilo Radical", "Quebrou um Objeto Caríssimo", "Dormiu Demais e Perdeu Compromisso", "Acidentalmente Flertou com Alguém", "Encontrou um Colecionável Raro", "Dia de Limpeza Extrema", "Recebeu uma Ligação Assustadora", "Decidiu Aprender Algo Novo", "Começou uma Rivalidade", "Vontade Súbita de Ter um Filho", "Passou Mal Depois de Comer Algo", "Participou de um Escândalo Local", "Recebeu um Favor Impossível", "Precisou Mentir para se Safar", "Foi Confundido com Outra Pessoa", "Mudou de Ideia Sobre a Vida", "Recebeu Críticas Cruéis", "Teve um Surto de Compras", "Ficou Obcecado por Organização", "Teve um Dia Extremamente Produtivo", "Teve um Dia Totalmente Improdutivo", "Recebeu uma Proposta Suspeita", "Começou uma Paixão Proibida", "Ficou Sem Energia em Casa", "Descobriu um Lugar Secreto", "Recebeu Notícias Chocantes", "Entrou em Discussão Online", "Passou Vergonha em Evento Social", "Decidiu Recomeçar do Zero", "Foi Desafiado por um Rival", "Recebeu uma Oportunidade de Mudança", "Encontro Desastroso", "Desastre na Cozinha", "Acidente Doméstico Bobo", "Mudança de Humor Extrema", "Tentou Impressionar Alguém e Falhou", "Virou Assunto da Vizinhança", "Recebeu um Pedido Inusitado", "Descobriu um Talento Vergonhoso", "Foi Ignorado por Todo Mundo", "Um Sim sonha em se tornar o centro das fofocas da cidade e quer conhecer literalmente todos os moradores.", "Uma aspirante a influencer cria um clube apenas para gravar desafios absurdos pela cidade.", "Um grupo de amigos transforma a própria casa em ponto oficial de festas clandestinas.", "Uma Sim decide organizar eventos comunitários em todos os bairros para unir os moradores.", "Um político ambicioso tenta conquistar popularidade enquanto esconde vários segredos.", "Uma família inteira vive apenas de networking, festas e contatos influentes.", "Um Sim extremamente carismático cria um culto estranho baseado em positivismo exagerado.", "Uma adolescente quer se tornar a pessoa mais popular da escola usando apenas manipulação social e fofocas.", "Acordou Inspirado para Mudar de Vida", "Recebeu uma Intimação Misteriosa", "Discussão com Vizinho por Barulho", "Quebrou o Chuveiro", "Esqueceu um Compromisso Importante", "Recebeu um Pacote Sem Remetente", "Encontrou Fotos Antigas Embaraçosas", "Descobriu um Rumor Sobre a Família", "Ficou Preso Fora de Casa", "Seu Sim Virou Assunto em Fórum Online", "Recebeu um Convite para Reality Show", "Acidentalmente Ofendeu Alguém Importante", "Começou um Diário Secreto", "Vizinho Pediu Dinheiro Emprestado", "Teve uma Crise de Vaidade", "Recebeu uma Proposta de Trabalho Estranha", "Passou a Noite em Claro", "Perdeu Dinheiro na Rua", "Encontrou um Bilhete Ameaçador", "Discussão Durante o Jantar", "Recebeu uma Visita do Proprietário", "Seu Sim Desenvolveu uma Obsessão Aleatória", "Foi Flagrado Espionando", "Recebeu um Convite para Culto Misterioso", "Esqueceu o Aniversário de Alguém", "Teve um Dia de Azar Amoroso", "A Geladeira Quebrou", "Recebeu uma Crítica Humilhante", "Entrou em Dívida Sem Perceber", "Descobriu um Esconderijo Secreto", "Ficou Obcecado por Teorias da Conspiração", "Perdeu a Chave de Casa", "Teve uma Discussão no Trabalho", "Recebeu um Álbum de Fotos Antigo", "Seu Sim Foi Bloqueado nas Redes Sociais", "Acidentalmente Iniciou um Boato", "Recebeu uma Proposta Romântica Estranha", "Começou uma Reforma Sem Dinheiro", "Seu Sim Desenvolveu Medo de Algo Aleatório", "Recebeu um Desafio Ridículo", "Encontrou uma Carteira Perdida", "Foi Acusado de Roubo", "Seu Sim Virou Fofoqueiro Oficial do Bairro", "Teve uma Crise de Ciúmes", "Recebeu uma Carta de Amor Antiga", "Dormiu no Trabalho", "Ficou Viciado em Café", "Seu Sim Resolveu Virar Minimalista", "Recebeu um Convite para Casamento", "Encontrou um Objeto Enterrado no Quintal", "Seu Sim Virou Obcecado por Jardinagem", "Teve uma Discussão em Público", "Recebeu uma Reclamação dos Vizinhos", "Seu Sim Decidiu Fazer Detox Digital", "Encontrou um Animal Exótico Perdido", "Passou Vergonha em Rede Social", "Seu Sim Começou a Falar Sozinho", "Recebeu uma Multa Injusta", "Foi Expulso de um Evento", "Seu Sim Resolveu Mudar de Estilo de Vida", "Entrou em Crise Financeira Repentina", "Recebeu uma Herança Inútil", "Seu Sim Virou Paranóico", "Teve uma Discussão com o Parceiro por Dinheiro", "Recebeu uma Proposta Tentadora", "Seu Sim Decidiu Virar Vegetariano Radical", "Descobriu um Quarto Trancado", "Ficou Sem Água em Casa", "Seu Sim Resolveu Sumir por um Dia", "Recebeu Notícias do Ex", "Entrou em Guerra com os Vizinhos", "Seu Sim Desenvolveu Obsessão por Limpeza", "Recebeu um Convite para Festa Suspeita", "Seu Sim Foi Esquecido em Evento Importante", "Passou Mal Durante um Evento Social", "Seu Sim Resolveu Mudar de Nome", "Recebeu Flores da Pessoa Errada", "Foi Vítima de Fake News Local", "Seu Sim Resolveu Cortar Relações com Todos", "Recebeu uma Oferta de Moradia Estranha", "Seu Sim Encontrou um Cofre Antigo", "Perdeu um Save Importante do Computador", "Seu Sim Resolveu Fazer Justiça com as Próprias Mãos", "Foi Desafiado para uma Competição", "Recebeu uma Proposta de Casamento Aleatória", "Seu Sim Descobriu um Seguidor Obsessivo", "Teve um Colapso Durante Festa", "Recebeu uma Mensagem Criptografada", "Seu Sim Virou Obcecado por Fama", "Encontrou uma Lista de Segredos da Cidade", "Seu Sim Resolveu Espionar os Vizinhos", "Foi Humilhado em Público", "Recebeu uma Visita da Polícia", "Seu Sim Resolveu Adotar um Estilo Gótico", "Entrou em Conflito com um Familiar", "Recebeu um Convite para Viagem Misteriosa", "Seu Sim Desenvolveu Obsessão por Astrologia", "Perdeu o Controle em Discussão Familiar", "Recebeu um Pedido de Ajuda Suspeito", "Seu Sim Resolveu Fugir da Cidade por Uns Dias", "Foi Flagrado Mentindo", "Recebeu um Objeto Estranho pelo Correio", "Seu Sim Virou Competitivo Demais", "Teve uma Crise de Nostalgia", "Recebeu um Convite para Morar com Alguém", "Seu Sim Resolveu Apagar as Redes Sociais", "Encontrou um Mapa Misterioso", "Seu Sim Foi Ignorado em Evento Importante", "Recebeu uma Ligação no Meio da Madrugada", "Seu Sim Desenvolveu Obsessão por Luxo", "Entrou em Discussão com Melhor Amigo por Besteira", "Recebeu um Convite para Negócio Arriscado", "Seu Sim Resolveu Fazer uma Grande Mudança na Casa"],
             "metas": ["Juntar 10k", "Topo da carreira", "Ter um herdeiro", "Comprar mansão", "Alcançar o topo da carreira atual", "Completar uma Aspiração de vida", "Ter um herdeiro com três traços positivos", "Juntar 20k", "Topo da carreira", "Ter um herdeiro", "Comprar mansão", "Alcançar o topo da carreira atual", "Completar uma Aspiração de vida", "Ter um herdeiro com três traços positivos", "Economizar 50.000 simoleons sem cheats", "Construir um porão ou sótão memorial", "Ter um retrato pintado de cada herdeiro", "Dominar completamente uma habilidade", "Fazer amizade com a Dona Morte", "Ter três filhos com o traço de recompensa de notas altas", "Viajar para todos os mundos disponíveis", "Possuir uma coleção completa de itens colecionáveis", "Organizar cinco festas padrão ouro", "Manter um jardim com plantas de qualidade perfeita", "Adotar e treinar um animal de estimação até o nível máximo", "Escrever uma biografia sobre o patriarca ou matriarca", "Realizar um casamento em um lote comunitário luxuoso", "Descobrir todos os segredos de um bairro específico", "Ter um Sim fantasma vivendo na casa da família", "Ganhar uma briga com um inimigo declarado", "Doar 1.000 simoleons para caridade via computador", "Ter uma família com 4 gerações vivas simultaneamente", "Alcançar a árvore genealógica com 10 membros vivos", "Casar um herdeiro com um Sim de outra espécie (Alien/Vampiro/etc)", "Ter um herdeiro que nunca saiu de casa", "Ter um filho que seguiu a mesma carreira dos pais", "Garantir que todos os membros da família saibam cozinhar", "Ter um herdeiro que viveu 100 dias sim sem nunca trabalhar", "Fazer uma festa de aniversário para cada fase da vida do herdeiro", "Ter um Sim da família que se tornou uma celebridade 5 estrelas", "Publicar 5 livros de sucesso sobre a história da família", "Dominar 3 habilidades diferentes com um único Sim", "Alcançar o nível 10 de uma habilidade secreta (ex: Fotografia)", "Ter um Sim que nunca teve uma emoção negativa por uma semana", "Construir um cômodo dedicado a cada habilidade do jogo", "Criar uma refeição de qualidade perfeita com ingredientes do próprio jardim", "Dominar a habilidade de arqueologia ou cultura de selva", "Fazer um Sim completar a aspiração 'Sim do Mundo'", "Ter um Sim com 5 traços de recompensa diferentes", "Transformar a casa em um lote de 'Ponto de Encontro' badalado", "Manter a casa sem nenhum incêndio por 3 gerações", "Ter um Sim que foi abduzido por alienígenas", "Viver com um Sim que possui o traço 'Insano'", "Alcançar o nível máximo de todas as carreiras de meio período", "Ter 3 Sims fantasmas de tipos diferentes na casa", "Construir um cemitério privativo no lote da família", "Ter um Sim que se aposentou com nível 10 de carreira", "Adotar 3 animais de estimação diferentes", "Tornar-se o inimigo número 1 de um Sim famoso", "Ter um Sim que passou um dia inteiro na prisão (se tiver Aos Trabalhos)", "Ganhar 10.000 simoleons apenas vendendo quadros ou livros", "Comprar um lote de férias e ir lá uma vez por geração", "Ter um Sim que conhece todos os Sims de um bairro", "Fazer um Sim atingir o peso máximo e depois o mínimo (ou vice-versa)", "Doar todos os bens da família e começar do zero na 3ª geração", "Construir uma casa do zero sem usar galeria", "Casar com um Sim extremamente rico", "Criar uma linhagem de artistas famosos", "Completar todas as coleções de jardinagem", "Ter uma família com apenas filhos únicos por 3 gerações", "Manter uma rivalidade familiar por gerações", "Criar um restaurante cinco estrelas", "Transformar um herdeiro em vilão da vizinhança", "Ter um Sim que dominou todas as emoções", "Completar todas as aspirações infantis", "Criar um legado de criminosos", "Ter um herdeiro milionário antes de virar adulto", "Sobreviver apenas vendendo itens coletados", "Viver fora da rede elétrica por uma geração inteira", "Ter uma família inteira vegetariana", "Completar a coleção de fósseis", "Ter um Sim que escreveu um best-seller mundial", "Criar um herdeiro com todos os traços negativos possíveis", "Fazer um Sim se divorciar e reconstruir a vida", "Manter um casamento feliz até a velhice", "Criar uma dinastia política ou influente", "Ter um Sim que nunca entrou em um emprego tradicional", "Construir uma mansão de 500k simoleons", "Dominar todas as receitas culinárias", "Ter um herdeiro que nunca mentiu para ninguém", "Fazer um Sim conquistar 20 almas gêmeas", "Completar todos os festivais de San Myshuno", "Ter uma família dona de vários negócios", "Transformar um Sim pobre em celebridade mundial", "Criar um legado de cientistas", "Construir uma casa temática para cada geração", "Ter um Sim que morreu e voltou à vida", "Criar um herdeiro obcecado por riqueza", "Ter uma geração inteira sem romances", "Fazer um Sim conhecer todos os mundos ocultos", "Completar a coleção de cristais e metais", "Ter um Sim mestre em travessuras", "Criar um orfanato improvisado com adoções", "Ter um Sim que nunca cozinhou uma refeição", "Construir uma fazenda totalmente funcional", "Ter um Sim que adotou todos os estilos de vida possíveis", "Fazer um herdeiro abandonar completamente a tradição familiar", "Criar uma família famosa por escândalos", "Ter uma casa sustentável e ecológica", "Dominar todas as habilidades criativas", "Ter um Sim que nunca brigou com ninguém", "Construir um império de pinturas e esculturas", "Criar um Sim arqueólogo renomado", "Ter uma família com apenas um filho por geração", "Transformar um bairro inteiro em amigos da família", "Ter um Sim que foi inimigo de todos os colegas de trabalho", "Completar a coleção de peixes raros", "Criar um legado baseado em culinária", "Ter um Sim que morou sozinho até a velhice", "Fazer um Sim completar todas as aspirações românticas", "Criar uma família de ocultistas", "Ter um herdeiro expulso de casa", "Construir uma biblioteca gigante na casa da família", "Ter um Sim que dominou todas as habilidades sociais", "Criar uma tradição familiar obrigatória", "Ter um Sim que nunca usou celular", "Construir uma casa em cada mundo", "Fazer um Sim sobreviver apenas de freelas", "Criar um legado de músicos famosos", "Ter um Sim que teve um filho com cada ocultista", "Dominar completamente a habilidade de atuação", "Ter uma família que odeia tecnologia", "Construir um bunker subterrâneo", "Ter um Sim que viveu apenas de agricultura", "Criar um herdeiro perfeccionista obcecado por sucesso", "Completar todos os objetivos de férias", "Ter um Sim que fugiu de casa na adolescência", "Transformar um Sim tímido em celebridade", "Criar uma geração inteira focada em fitness", "Ter um Sim dono de uma loja lendária", "Construir uma cobertura luxuosa em San Myshuno", "Fazer um Sim conquistar todos os vizinhos", "Ter uma família marcada por tragédias", "Completar todas as receitas experimentais", "Ter um Sim que nunca ficou sem dinheiro", "Criar um legado de escritores", "Ter um herdeiro rebelde que destruiu a reputação da família", "Construir uma casa assombrada lendária", "Ter um Sim que dominou todas as habilidades mentais", "Completar a coleção de cartões postais", "Criar uma família completamente caótica", "Ter um Sim que nunca trabalhou mas ficou rico", "Fazer um Sim atingir o máximo de fama e infâmia", "Criar uma geração focada apenas em romances", "Ter uma família dona do maior jardim da cidade", "Construir um museu familiar com memórias de gerações", "Ter um Sim que nunca perdeu uma amizade", "Criar um legado baseado em viagens", "Fazer um Sim abandonar tudo para viver no mato", "Ter um herdeiro que reconstruiu a reputação da família", "Criar uma linhagem de Sims gênios", "Ter um Sim que completou todas as habilidades infantis e adultas", "Construir uma casa minimalista perfeita", "Ter um Sim que passou por todos os tipos de morte possíveis", "Criar um legado focado em ocultismo e mistérios", "Ter uma família que nunca saiu do mesmo lote por gerações", "Fazer um Sim acumular inimigos em todos os mundos", "Criar uma família extremamente unida por 5 gerações", "Ter um Sim que largou tudo para seguir arte", "Construir um palácio familiar histórico", "Ter um herdeiro que foi rejeitado pela família e venceu na vida"],
@@ -3685,15 +3747,22 @@ if (fase === 'recem_nascido') {
             const optsCad = '<option value="">(Nenhum)</option>' + (db.sims||[]).map(s => `<option value="${s.id}">${escapar(s.nome)}</option>`).join('');
             const selCad = document.getElementById('sel-sim-historia');
             if (selCad) { const v = selCad.value; selCad.innerHTML = optsCad; selCad.value = v; }
+            // Re-aplicar busca de texto se houver termos digitados
+            const buscaCad = document.getElementById('busca-sel-sim-historia');
+            if (buscaCad && buscaCad.value.trim()) filtrarSelectSims('busca-sel-sim-historia', 'sel-sim-historia');
+
             const selFiltro = document.getElementById('filtro-sim-livro');
             if (selFiltro) {
                 const atual = filtroSimLivro;
                 selFiltro.innerHTML = '<option value="">(Todos os Sims)</option>' + (db.sims||[]).map(s => `<option value="${s.id}">${escapar(s.nome)}</option>`).join('');
                 selFiltro.value = atual;
             }
+            // Re-aplicar busca de texto no filtro do livro se houver termos digitados
+            const buscaFiltro = document.getElementById('busca-filtro-sim-livro');
+            if (buscaFiltro && buscaFiltro.value.trim()) filtrarSelectSims('busca-filtro-sim-livro', 'filtro-sim-livro');
         }
         function filtrarLivroPorSim(simId){ filtroSimLivro = simId || ''; renderLivroComFiltro(); }
-        function limparFiltroSimLivro(){ filtroSimLivro = ''; const sel = document.getElementById('filtro-sim-livro'); if (sel) sel.value = ''; renderLivroComFiltro(); }
+        function limparFiltroSimLivro(){ filtroSimLivro = ''; const sel = document.getElementById('filtro-sim-livro'); if (sel) sel.value = ''; const busca = document.getElementById('busca-filtro-sim-livro'); if (busca) busca.value = ''; renderLivroComFiltro(); }
         function renderLivroComFiltro() {
             popularSelectsSimLivro();
             let historico = db.historia || "";
@@ -3725,7 +3794,7 @@ if (fase === 'recem_nascido') {
                     let match = textoLimpo.match(/^\[(.*?)\]\s*(\[.*?\])?\s*(.*)/);
                     let dataStr = match ? match[1] : ""; let tag = match && match[2] ? match[2] : ""; let texto = match ? match[3] : textoLimpo;
                     let corTag = "#555";
-                    if(tag.includes("NASCIMENTO")) corTag = "#e83e8c"; else if(tag.includes("MORTE")) corTag = "#343a40"; else if(tag.includes("CASAMENTO")) corTag = "#fd7e14"; else if(tag.includes("DRAMA") || tag.includes("SEPARAÇÃO")) corTag = "#dc3545"; else if(tag.includes("FASES")) corTag = "#17a2b8"; else if(tag.includes("CONQUISTA")) corTag = "#28a745"; else if(tag.includes("META-DESISTIDA")) corTag = "#7f8c8d"; else if(tag.includes("META")) corTag = "#0079C1";
+                    if(tag.includes("NASCIMENTO")) corTag = "#e83e8c"; else if(tag.includes("MORTE")) corTag = "#343a40"; else if(tag.includes("CASAMENTO")) corTag = "#fd7e14"; else if(tag.includes("DRAMA") || tag.includes("SEPARAÇÃO")) corTag = "#dc3545"; else if(tag.includes("FASES")) corTag = "#17a2b8"; else if(tag.includes("CONQUISTA")) corTag = "#28a745"; else if(tag.includes("CARREIRA")) corTag = "#6f42c1"; else if(tag.includes("RELACIONAMENTOS")) corTag = "#d63384"; else if(tag.includes("META-DESISTIDA")) corTag = "#7f8c8d"; else if(tag.includes("META")) corTag = "#0079C1";
                     else if (db.custom && db.custom.tags && db.custom.tags.some(t => tag.includes(t))) corTag = "#9B59B6";
 
                     const nomeSimVinc = simIdLinha ? _nomeSimPorId(simIdLinha) : '';
@@ -3773,7 +3842,7 @@ if (fase === 'recem_nascido') {
 
     showToast("✓ Narrativa registrada no Livro da Família!");
 }
-        function addHistoriaManual() { const v = document.getElementById('nova-historia-manual').value; const tag = document.getElementById('sel-tag-historia').value; const simId = document.getElementById('sel-sim-historia') ? document.getElementById('sel-sim-historia').value : ''; if(v) { let dataInput = document.getElementById('data-historia-manual').value; let dataStr = dataInput ? new Date(dataInput + 'T00:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR'); db.historia += `\n[${dataStr}] ${tag} ${v}${_marcadorSim(simId)}`; document.getElementById('nova-historia-manual').value = ""; const selSimH = document.getElementById('sel-sim-historia'); if (selSimH) selSimH.value = ''; salvarTudo(); renderLivroComFiltro(); showToast("Evento anotado!"); } }
+        function addHistoriaManual() { const v = document.getElementById('nova-historia-manual').value; const tag = document.getElementById('sel-tag-historia').value; const simId = document.getElementById('sel-sim-historia') ? document.getElementById('sel-sim-historia').value : ''; if(v) { let dataInput = document.getElementById('data-historia-manual').value; let dataStr = dataInput ? new Date(dataInput + 'T00:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR'); db.historia += `\n[${dataStr}] ${tag} ${v}${_marcadorSim(simId)}`; document.getElementById('nova-historia-manual').value = ""; const selSimH = document.getElementById('sel-sim-historia'); if (selSimH) selSimH.value = ''; const buscaSimH = document.getElementById('busca-sel-sim-historia'); if (buscaSimH) buscaSimH.value = ''; salvarTudo(); renderLivroComFiltro(); showToast("Evento anotado!"); } }
         // ---------- Metas: helpers ----------
         function normalizarMeta(m) {
             if (typeof m === 'string') return { texto: m, criadaEm: null, simId: null };
@@ -4359,7 +4428,7 @@ Status de relacionamento: ${relStatus}`;
             if (tracos) simInfo += `\nTraços de personalidade (molde COMPORTAMENTOS e REAÇÕES — nunca mencione diretamente): ${tracos}`;
             if (aspiracao) simInfo += `\nAspiração de vida (use como motivação implícita — nunca mencione diretamente): ${aspiracao}`;
 
-            // ── Descrições de Nível de Caos / Foco ──────────────────────────
+            // ── Descrições de Estilos de Narrativa ──────────────────────────
             const tomDescricoes = {
                 'Aleatório':    'Gere uma história completamente imprevisível, com eventos aleatórios típicos do The Sims 4 (bugs do jogo viram enredo, coisas sem nexo acontecem). Misture humor e drama sem focar em um tema específico. Vale tudo.',
                 'Dramático':    'FOCO: traições, intrigas, inimizades, segredos revelados, confrontos emocionais pesados e consequências devastadoras. Clima de novela de alta tensão. O amor aqui apenas complica — não há romance feliz.',
