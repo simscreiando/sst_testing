@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-53-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -923,6 +923,10 @@
         
         <div id="tab-dash" class="tab-pane">
             <h2>Sorteios do Destino</h2>
+            <div id="espelho-familia-wrap"></div>
+            <div id="badges-wrap"></div>
+            <div id="legacy-wrap"></div>
+            <h3 style="margin-top:24px;">🎲 Roletas</h3>
             <div class="card-grid" id="dash-cards"></div>
         </div>
 
@@ -978,6 +982,29 @@
             </div>
             
             <p style="font-size:12px; color:#555; margin-bottom:10px;">💡 Use o mouse para explorar as gerações (Arraste e use o Scroll para Zoom). Clique no card de um personagem para abrir seu perfil e editar seus dramas.</p>
+
+            <div id="painel-filtros-arvore" style="background:#fffaf0;border:1px solid #f0d97a;border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;">
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <input list="datalist-sims-arvore" id="busca-sim-arvore" placeholder="🔍 Focar Sim..." style="font-size:12px;padding:6px 10px;border-radius:10px;border:1px solid #ccc;min-width:160px;" onkeydown="if(event.key==='Enter'){event.preventDefault();onBuscarSimArvore();}">
+                    <datalist id="datalist-sims-arvore"></datalist>
+                    <button type="button" class="btn-main btn-sec" style="width:auto;margin:0;padding:6px 10px;font-size:11px;" onclick="onBuscarSimArvore()">Ir</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+                    <label style="font-weight:bold;color:#555;">Mostrar até:</label>
+                    <input type="range" id="slider-max-ger" min="1" max="6" value="6" oninput="setMaxGeracao(this.value)" style="width:120px;">
+                    <span id="lbl-max-ger" style="font-weight:bold;color:#7fb069;">G6</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;font-size:12px;">
+                    <label style="font-weight:bold;color:#555;">Destaque:</label>
+                    <select id="sel-destaque-ger" onchange="setDestaqueGer(this.value)" style="font-size:11px;padding:4px 6px;border-radius:8px;">
+                        <option value="0">— Sem destaque —</option>
+                    </select>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                    <span style="font-weight:bold;color:#555;font-size:12px;">Gerações:</span>
+                    <span id="legenda-geracoes" style="display:inline-flex;gap:4px;flex-wrap:wrap;"></span>
+                </div>
+            </div>
             
             <div id="tree-container-wrapper" style="position: relative;">
                 <div id="tree-legend" style="position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.85); padding: 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); font-size: 11px; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.05); backdrop-filter: blur(5px);">
@@ -1122,6 +1149,14 @@
                     <button class="filter-btn" onclick="limparFiltroSimLivro()" style="font-size:11px; align-self:center;">Limpar</button>
                 </div>
 
+                <!-- #57 — Busca por texto livre no Livro da Família -->
+                <div style="margin-bottom: 8px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:12px; font-weight:bold; color:var(--ts4-blue);">🔎 Buscar texto:</span>
+                    <input type="search" id="busca-texto-livro" placeholder="Digite uma palavra-chave..." oninput="filtrarLivroPorTexto(this.value)" style="flex:1; min-width:200px; max-width:320px; font-size:12px; padding:6px 10px; border-radius:8px; border:1.5px solid #e6d5a8; background:#fffdf6;">
+                    <button class="filter-btn" onclick="limparBuscaTextoLivro()" style="font-size:11px;">Limpar</button>
+                </div>
+
+
                 <div style="margin-bottom: 10px; display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
                     <span style="font-size:12px; font-weight:bold; color:var(--ts4-blue);">Filtros:</span>
                     <button class="filter-btn active" onclick="filtrarLivro('TODOS', this)">Todos</button>
@@ -1158,8 +1193,16 @@
                 <hr style="margin: 30px 0; border: 1px solid #eee;">
 
                 <h2 style="margin-top:0;">🎯 Metas do Legado</h2>
+                <p style="font-size:12px; color:#666; margin:0 0 8px 0;">📚 Organize em camadas: <strong>Save</strong> (globais), <strong>Geração</strong> (ex: G2 deve ter 3 filhos) ou <strong>Sim</strong> (ex: Bella deve se formar).</p>
                 <div style="display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
                     <input type="text" id="nova-meta" placeholder="Ex: Dominar a habilidade de Culinária Gourmet..." style="flex:1; min-width:220px;">
+                    <select id="nova-meta-escopo" onchange="onMudarEscopoMeta()" style="width:130px; margin:0; font-size:12px;">
+                        <option value="save">🌍 Save (global)</option>
+                        <option value="geracao">🧬 Por Geração</option>
+                        <option value="sim">👤 Por Sim</option>
+                    </select>
+                    <select id="nova-meta-geracao" style="width:110px; margin:0; font-size:12px; display:none;">
+                    </select>
                     <div style="display:flex; flex-direction:column; gap:2px; width:200px;">
                         <input type="text" id="busca-nova-meta-sim" placeholder="🔍 Buscar Sim..." oninput="filtrarSelectSims('busca-nova-meta-sim','nova-meta-sim')" style="font-size:11px; padding:5px 8px; border-radius:8px; border:1px solid #ccc;">
                         <select id="nova-meta-sim" style="margin:0;" data-empty-label="— Sem Sim vinculado —"><option value="">— Sem Sim vinculado —</option></select>
@@ -1854,20 +1897,6 @@
     </ul>
 </div>
 
-	       <div style="position: relative; padding-left: 20px; border-left: 2px solid var(--ts4-blue); margin-bottom: 20px;">
-    <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--ts4-blue);"></div>
-    <strong style="font-size: 14px; color: #333;">v50 - Inteligência de Vínculos e UX</strong>
-    <span style="font-size: 11px; color: #888; display: block; margin-bottom: 5px;">📅 07 de Junho de 2026</span>
-    <ul style="font-size: 13px; color: #555; margin: 0; padding-left: 15px; line-height: 1.5;">
-        <li><strong>UX - Inteligência de Vínculos:</strong> Adição automática de pais ao cadastrar filhos ou irmãos (se o Sim tiver cônjuge).</li>
-        <li><strong>UX - Botões de Ação:</strong> Novos botões rápidos para "Adicionar Cônjuge" e "Adicionar Irmão" diretamente no perfil.</li>
-        <li><strong>Interface:</strong> Divisão visual clara entre "Dados Básicos" e "Relacionamentos" para reduzir carga mental.</li>
-        <li><strong>UX - Ajuda:</strong> Implementação de tooltips (❓) em campos críticos para guiar jogadores iniciantes na criação de novos sims.</li>
-        <li><strong>Recurso - Irmãos:</strong> Seleção múltipla de inmãos fundadores por checkboxes.</li>
-        <li><strong>Dashboard:</strong> Novas roletas de "Carreira" e "Curso Universitário".</li>
-    </ul>
-</div> 
-
              </div>
         </div>
        
@@ -1986,6 +2015,7 @@
 
             <div class="profile-view-grid" id="profile-details-view">
                 <div class="profile-field"><strong>Status de Vida</strong><span id="v-status">Vivo</span></div>
+                <div class="profile-field" id="campo-causa-morte" style="display:none; border-left-color:#7f8c8d;"><strong style="color:#555;">✝️ Causa do Óbito</strong><span id="v-causa-morte" style="cursor:pointer;" onclick="editarCausaMorte()" title="Clique para editar">—</span></div>
                 <div class="profile-field"><strong>Fase de Vida Atual</strong><span id="v-fase">—</span></div>
                 <div class="profile-field"><strong>Progenitor(a) 1</strong><span id="v-p1">Nenhum</span></div>
                 <div class="profile-field"><strong>Progenitor(a) 2</strong><span id="v-p2">Nenhum</span></div>
@@ -2140,6 +2170,14 @@
                     <div id="lista-sims-irmaos" style="max-height: 130px; overflow-y: auto; border: 1px solid #FF8C00; padding: 8px 10px; border-radius: 12px; background: #fffdf5;">
                         <em style="font-size:11px; color:#aaa;">Nenhum outro Sim criado ainda.</em>
                     </div>
+                </div>
+                <div style="margin-top:10px;">
+                    <label style="font-weight:bold; font-size:13px; color:#7fb069; display:flex; align-items:center; gap:5px;">
+                        🧬 Geração (manual):
+                        <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Útil para Sims adotados ou narrativos. Vazio = automático (calculado a partir dos pais).">❓</span>
+                    </label>
+                    <input type="number" id="e-geracao-manual" min="1" max="20" placeholder="Vazio = automático" style="width:100%; max-width:200px; font-size:12px; padding:6px 10px; border-radius:10px; border:1.5px solid #7fb069; margin-top:4px;">
+                    <p style="font-size:11px; color:#888; margin:4px 0 0 0;">Sobrepõe a geração calculada. Útil para Sims adotados de gerações narrativas diferentes.</p>
                 </div>
             </div>
 
@@ -2330,6 +2368,28 @@
     <div id="toast">✓ Sucesso!</div>
 
     <script>
+        /* =======================================================================
+         * 📝 NOTA PARA IAs QUE EDITAREM ESTE CÓDIGO NO FUTURO (Padrão #53):
+         * Sempre que você criar um novo <select> que liste Sims (ou qualquer
+         * lista potencialmente longa de itens nomeados), adicione LOGO ACIMA
+         * dele um <input type="text"> com:
+         *
+         *   oninput="filtrarSelectSims('idDoInputDeBusca', 'idDoSelect')"
+         *
+         * Isso ativa o comportamento "digite e a lista filtra" (estilo
+         * Choices.js) já implementado em filtrarSelectSims() neste arquivo.
+         * Exemplos: busca-sel-sim-historia, busca-filtro-sim-livro, etc.
+         * NUNCA crie um <select> de Sims sem esse input de busca em cima.
+         * =====================================================================*/
+        /* ========== Causas de morte do The Sims (#27) ========== */
+        const SIMSTORIA_CAUSAS_MORTE = [
+            "Velhice","Fogo","Afogamento","Fome","Eletrocussão","Raio",
+            "Risada","Fúria","Constrangimento","Exaustão por Esforço","Susto",
+            "Hipertermia (Calor)","Hipotermia (Frio)","Planta-Vaca","Cogumelo Venenoso",
+            "Veneno (Mordida de Aranha)","Sereia (Afogamento)","Sobrecarga (Bruxo)",
+            "Sede de Sangue (Vampiro)","Fragmento do Cristal da Morte","Múmia",
+            "Outro / Desconhecido"
+        ];
         const SIMSTORIA_LOGO_B64 = 'data:image/png;base64,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';
         const CLIENT_ID = "79661785248-q5l1vkh6oja916nlpenbablk34c7vgi2.apps.googleusercontent.com"; 
         const SCOPES = "https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
@@ -3004,6 +3064,8 @@
             if (!db.custom.tags) db.custom.tags = [];
             if (!db.reactionAudio) db.reactionAudio = AUDIO_DEFAULTS;
             if (!Array.isArray(db.regras_lista)) db.regras_lista = [];
+            if (!Array.isArray(db.pinnedWheels)) db.pinnedWheels = [];   // #62
+            if (!Array.isArray(db.hiddenWheels)) db.hiddenWheels = [];   // #62
 
             // Mescla config salvo com os defaults da versão atual
             // (adiciona roletas/itens novos sem perder customizações do usuário)
@@ -3404,6 +3466,8 @@ function atualizarIndicadorMemoria() {
             db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS, galeria: { albuns: [{ id: "album-geral", nome: "Álbum de Capturas", desc: "Cards e prints gerados automaticamente" }], fotos: [] } };
             currentCloudFileId = null; currentFamilyName = "Família Padrão";
             salvarTudo(); recarregarInterface(); atualizarIndicadorFamiliaAtiva(); showToast("✨ Novo tabuleiro criado!");
+            try { if (typeof verificarMetasAuto === 'function') verificarMetasAuto(); } catch(e){}
+            try { if (typeof renderEspelhoFamilia === 'function' && document.getElementById('tab-dash') && document.getElementById('tab-dash').classList.contains('active')) { renderEspelhoFamilia(); renderBadges(); renderDesafioLegado(); } } catch(e){}
         }
 
 function salvarTudo() { 
@@ -3489,6 +3553,8 @@ function salvarTudo() {
             renderFiltrosTagsCustom();
             renderTagSelectOptions();
             if(accessToken) atualizarListaFamilias();
+            // #39 – atualiza barra de rodapé sempre que a interface recarregar
+            setTimeout(() => { if (typeof atualizarIndicadorMemoria === 'function') atualizarIndicadorMemoria(); }, 100);
             
             let selTreeBg = document.getElementById('sel-tree-bg');
             if (selTreeBg) {
@@ -3528,6 +3594,10 @@ function salvarTudo() {
 	    if(id === 'tab-galeria') {
                 voltarParaAlbuns(); // Garante que abre na raiz dos álbuns
                 verificarSessaoDrive();
+            }
+
+            if(id === 'tab-dash') {
+                try { renderEspelhoFamilia(); renderBadges(); renderDesafioLegado(); } catch(e){ console.warn('espelho/badges', e); }
             }
 	}
 // ==========================================
@@ -3739,6 +3809,7 @@ if (fase === 'recem_nascido') {
 
         let filtroAtivoLivro = 'TODOS';
         let filtroSimLivro = '';
+        let filtroTextoLivro = ''; // #57 — busca por texto livre no Livro da Família
         function _marcadorSim(simId){ return simId ? ` {{SIM:${simId}}}` : ''; }
         function _extrairSimIdDaLinha(linha){ const m = linha.match(/\{\{SIM:([^}]+)\}\}/); return m ? m[1] : ''; }
         function _limparMarcadorSim(linha){ return linha.replace(/\s*\{\{SIM:[^}]+\}\}/g, ''); }
@@ -3773,6 +3844,7 @@ if (fase === 'recem_nascido') {
             const nomeFiltro = filtroSimLivro ? (_nomeSimPorId ? _nomeSimPorId(filtroSimLivro) : '') : '';
             const regexNome = nomeFiltro ? new RegExp(`\\b${nomeFiltro.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`,'i') : null;
 
+            const textoFiltroLower = (filtroTextoLivro || '').trim().toLowerCase();
             linhas.forEach((linha, originalIndex) => {
                 const passaTag = (filtroAtivoLivro === 'TODOS' || linha.includes(`[${filtroAtivoLivro}]`));
                 let passaSim = true;
@@ -3781,7 +3853,8 @@ if (fase === 'recem_nascido') {
                     if (idLinha) passaSim = String(idLinha) === String(filtroSimLivro);
                     else passaSim = regexNome ? regexNome.test(_limparMarcadorSim(linha)) : false;
                 }
-                if (passaTag && passaSim) { resultadoFiltrado.push({texto: linha, idx: originalIndex}); }
+                const passaTexto = !textoFiltroLower || _limparMarcadorSim(linha).toLowerCase().includes(textoFiltroLower);
+                if (passaTag && passaSim && passaTexto) { resultadoFiltrado.push({texto: linha, idx: originalIndex}); }
             });
 
             if(resultadoFiltrado.length === 0) {
@@ -3801,16 +3874,17 @@ if (fase === 'recem_nascido') {
                     const chipSim = nomeSimVinc ? `<span style="font-size:10px; font-weight:bold; color:#4a3b2a; background:#f0d97a; padding:2px 8px; border-radius:10px; margin-right:4px;">👤 ${nomeSimVinc}</span>` : '';
 
                     html += `
-                    <div style="position:relative; margin-bottom:15px; background:white; padding:10px 15px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.05); border:1px solid #eee;">
+                    <div id="livro-item-${item.idx}" style="position:relative; margin-bottom:15px; background:white; padding:10px 15px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.05); border:1px solid #eee;">
                         <div style="position:absolute; left:-26px; top:15px; width:10px; height:10px; border-radius:50%; background:var(--ts4-blue);"></div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                             <strong style="font-size:11px; color:#888;">${dataStr}</strong>
                             <div>
                                 ${chipSim}<span style="font-size:10px; font-weight:bold; color:white; background:${corTag}; padding:2px 8px; border-radius:10px;">${tag || '[GERAL]'}</span>
+                                <button class="del-historia-btn" style="background:#fff8e1; border-color:#f0c040; color:#9a6f00;" onclick="editarLinhaLivro(${item.idx})" title="Editar evento">✏️</button>
                                 <button class="del-historia-btn" onclick="deletarLinhaLivro(${item.idx})">🗑️</button>
                             </div>
                         </div>
-                        <div style="font-size:14px; color:#11f02f; line-height:1.5;">${texto.replace(/\\n/g, '<br>')}</div>
+                        <div class="livro-item-texto" style="font-size:14px; color:#11f02f; line-height:1.5;">${texto.replace(/\\n/g, '<br>')}</div>
                     </div>`;
                 });
                 html += '</div>';
@@ -3823,6 +3897,56 @@ if (fase === 'recem_nascido') {
                 let linhas = db.historia.split('\n').filter(linha => linha.trim() !== '');
                 linhas.splice(index, 1); db.historia = linhas.join('\n'); salvarTudo(); renderLivroComFiltro();
             }
+        }
+
+        // #57 — busca por texto livre
+        function filtrarLivroPorTexto(v){ filtroTextoLivro = v || ''; renderLivroComFiltro(); }
+        function limparBuscaTextoLivro(){ filtroTextoLivro = ''; const i = document.getElementById('busca-texto-livro'); if(i) i.value=''; renderLivroComFiltro(); }
+
+        // #56 — edição inline de eventos do Livro
+        function editarLinhaLivro(index){
+            const linhas = (db.historia||'').split('\n').filter(l => l.trim() !== '');
+            const linhaOriginal = linhas[index]; if (linhaOriginal === undefined) return;
+            // separa prefixo "[data] [TAG]" do corpo, preservando o marcador de Sim no final
+            const semMarcador = (typeof _limparMarcadorSim === 'function') ? _limparMarcadorSim(linhaOriginal) : linhaOriginal;
+            const marcador = linhaOriginal.length > semMarcador.length ? linhaOriginal.slice(semMarcador.length) : '';
+            const m = semMarcador.match(/^(\[[^\]]*\]\s*(?:\[[^\]]*\]\s*)?)([\s\S]*)$/);
+            const prefixo = m ? m[1] : '';
+            const corpo = m ? m[2] : semMarcador;
+            const container = document.getElementById('livro-item-' + index);
+            if (!container) return;
+            const textoDiv = container.querySelector('.livro-item-texto');
+            if (!textoDiv) return;
+            if (container.dataset.editando === '1') return;
+            container.dataset.editando = '1';
+            const ta = document.createElement('textarea');
+            ta.value = corpo;
+            ta.style.cssText = 'width:100%; min-height:70px; padding:8px; border-radius:8px; border:1.5px solid #f0c040; font-family:inherit; font-size:13px; box-sizing:border-box;';
+            const acoes = document.createElement('div');
+            acoes.style.cssText = 'margin-top:6px; display:flex; gap:6px;';
+            const btnSalvar = document.createElement('button');
+            btnSalvar.className = 'btn-main'; btnSalvar.style.cssText = 'width:auto; margin:0; padding:6px 14px; font-size:12px;'; btnSalvar.innerText = '💾 Salvar';
+            const btnCancelar = document.createElement('button');
+            btnCancelar.className = 'btn-main btn-sec'; btnCancelar.style.cssText = 'width:auto; margin:0; padding:6px 14px; font-size:12px;'; btnCancelar.innerText = 'Cancelar';
+            btnCancelar.onclick = () => { container.dataset.editando = '0'; renderLivroComFiltro(); };
+            btnSalvar.onclick = () => {
+                const novoCorpo = ta.value.trim();
+                if (!novoCorpo) { alert('O evento não pode ficar vazio.'); return; }
+                const novaLinha = (prefixo + novoCorpo + marcador).trim();
+                const todas = (db.historia||'').split('\n').filter(l => l.trim() !== '');
+                todas[index] = novaLinha;
+                db.historia = todas.join('\n');
+                salvarTudo();
+                container.dataset.editando = '0';
+                renderLivroComFiltro();
+                if (typeof showToast === 'function') showToast('Evento atualizado!');
+            };
+            textoDiv.innerHTML = '';
+            textoDiv.appendChild(ta);
+            textoDiv.appendChild(acoes);
+            acoes.appendChild(btnSalvar);
+            acoes.appendChild(btnCancelar);
+            ta.focus();
         }
 
         function filtrarLivro(tag, btnElement) { filtroAtivoLivro = tag; document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); if(btnElement) btnElement.classList.add('active'); renderLivroComFiltro(); }
@@ -3872,7 +3996,11 @@ if (fase === 'recem_nascido') {
             if (!v) return;
             const simSel = document.getElementById('nova-meta-sim');
             const simId = simSel ? simSel.value : '';
-            db.metas_pendentes.push({ texto: v, criadaEm: Date.now(), simId: simId || null });
+            const escSel = document.getElementById('nova-meta-escopo');
+            const escopo = escSel ? escSel.value : 'save';
+            const gerSel = document.getElementById('nova-meta-geracao');
+            const geracaoAlvo = (escopo==='geracao' && gerSel) ? (parseInt(gerSel.value)||null) : null;
+            db.metas_pendentes.push({ texto: v, criadaEm: Date.now(), simId: (escopo==='sim' ? (simId||null) : null), escopo, geracaoAlvo });
             const sufixo = simId ? ` (vinculada a ${_nomeSimPorId(simId)})` : '';
             db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [META] Nova meta definida: ${v}${sufixo}`;
             document.getElementById('nova-meta').value = "";
@@ -3884,8 +4012,10 @@ if (fase === 'recem_nascido') {
         }
 
         function concluirMeta(i) {
-            const m = normalizarMeta(db.metas_pendentes[i]); if (!m) return;
+            const m = _normMetaFull(db.metas_pendentes[i]); if (!m) return;
             if (!confirm(`Marcar a meta "${m.texto}" como concluída?`)) return;
+            _metasConcluidasArr().push({ ...m, concluidaEm: Date.now() });
+            try { _checarMarcoCamada(m); } catch(e){}
             db.metas_pendentes.splice(i, 1);
             const sufixo = m.simId ? ` (${_nomeSimPorId(m.simId)})` : '';
             db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [CONQUISTA] Meta Concluída: ${m.texto}${sufixo}`;
@@ -3931,8 +4061,142 @@ if (fase === 'recem_nascido') {
             inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); else if (e.key === 'Escape') { salvou = true; renderMetas(); } });
         }
 
+
+        /* === SIMSTORIA v54_3 EXTRAS === */
+        function _checarMarcoCamada(metaConcluida){
+            if (!metaConcluida) return;
+            const filtro = (metaConcluida.escopo === 'geracao')
+                ? (mm => mm.escopo==='geracao' && Number(mm.geracaoAlvo)===Number(metaConcluida.geracaoAlvo))
+                : (metaConcluida.escopo === 'sim')
+                ? (mm => mm.escopo==='sim' && String(mm.simId)===String(metaConcluida.simId))
+                : null;
+            if (!filtro) return;
+            const p = progressoCamada(filtro);
+            if (p.total>0 && p.pct===100) {
+                const lbl = metaConcluida.escopo==='geracao'
+                    ? `Geração G${metaConcluida.geracaoAlvo}`
+                    : (`Sim ` + (typeof _nomeSimPorId==='function' ? _nomeSimPorId(metaConcluida.simId) : metaConcluida.simId));
+                if (typeof showToast==='function') showToast(`🏆 ${lbl}: todas as metas concluídas!`);
+                try { db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [MARCO] ${lbl} alcançou 100% das metas.`; } catch(e){}
+            }
+        }
+        function popularSelectGeracoesMeta(){
+            const sel = document.getElementById('nova-meta-geracao'); if (!sel) return;
+            const mx = Math.max(getMaxGeracao(), 1);
+            const cur = sel.value;
+            sel.innerHTML = Array.from({length: Math.max(mx, 1)}, (_,i)=>i+1)
+                .map(g => `<option value="${g}">G${g}</option>`).join('');
+            if (cur) sel.value = cur;
+        }
+        function onMudarEscopoMeta(){
+            const esc = document.getElementById('nova-meta-escopo').value;
+            const gerSel = document.getElementById('nova-meta-geracao');
+            const simWrap = document.getElementById('nova-meta-sim');
+            if (gerSel) gerSel.style.display = (esc==='geracao') ? '' : 'none';
+            if (simWrap) simWrap.parentElement && (simWrap.parentElement.style.opacity = (esc==='sim') ? '1' : '0.5');
+            if (esc==='geracao') popularSelectGeracoesMeta();
+        }
+
+        function renderMetasCamadas(){
+            const c = document.getElementById('lista-metas'); if (!c) return;
+            const pendNorm = (db.metas_pendentes||[]).map((raw,i)=>({m:_normMetaFull(raw), idx:i}));
+            if (pendNorm.length === 0 && (_metasConcluidasArr().length === 0)) {
+                c.innerHTML = `<p style="color:#888; font-style:italic; text-align:center; padding:10px;">Nenhuma meta ainda. Adicione acima escolhendo o escopo (Save, Geração ou Sim).</p>`;
+                return;
+            }
+            const fmtItem = (entry) => {
+                const m = entry.m; const i = entry.idx;
+                const tempo = (typeof _haQuantosDias==='function') ? _haQuantosDias(m.criadaEm) : '';
+                const simNome = m.simId ? _nomeSimPorId(m.simId) : '';
+                const tag = m.escopo==='geracao' ? `<span style="background:${_corGer(m.geracaoAlvo)};color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:bold;">G${m.geracaoAlvo}</span>`
+                    : m.escopo==='sim' ? `<span style="background:#0079C1;color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:bold;">👤 ${_escapeHtml(simNome||'?')}</span>`
+                    : `<span style="background:#888;color:#fff;border-radius:8px;padding:2px 7px;font-size:10px;font-weight:bold;">🌍 Save</span>`;
+                const meta = [tempo].filter(Boolean).join(' • ');
+                return `<div style="background:#f9f9f9; padding:10px; border-radius:8px; border-left:4px solid var(--ts4-blue); margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:4px;">
+                        <div style="display:flex; gap:6px; align-items:center;">${tag}<span id="meta-txt-${i}" style="font-size:14px;">${_escapeHtml(m.texto)}</span></div>
+                        ${meta ? `<small style="color:#888; font-size:11px;">${meta}</small>` : ''}
+                    </div>
+                    <div style="display:flex; gap:4px; flex-wrap:wrap;">
+                        ${i > 0 ? `<button class="btn-main" title="Priorizar" style="width:auto; margin:0; padding:5px 9px; background:#f1c40f; color:#fff;" onclick="priorizarMeta(${i})">⭐</button>` : ''}
+                        <button class="btn-main" title="Editar" style="width:auto; margin:0; padding:5px 9px; background:#3498db; color:#fff;" onclick="editarMeta(${i})">✏️</button>
+                        <button class="btn-main" title="Concluir" style="width:auto; margin:0; padding:5px 10px; background:var(--ts4-green);" onclick="concluirMeta(${i})">✓</button>
+                        <button class="btn-main" title="Desistir" style="width:auto; margin:0; padding:5px 10px; background:#c0392b; color:#fff;" onclick="desistirMeta(${i})">🏳️</button>
+                    </div>
+                </div>`;
+            };
+
+            const camadaSave = pendNorm.filter(e => e.m.escopo === 'save');
+            const camadaGer  = pendNorm.filter(e => e.m.escopo === 'geracao');
+            const camadaSim  = pendNorm.filter(e => e.m.escopo === 'sim');
+
+            const pSave = progressoCamada(m => m.escopo === 'save');
+            const pGerAll = progressoCamada(m => m.escopo === 'geracao');
+            const pSimAll = progressoCamada(m => m.escopo === 'sim');
+
+            // Agrupa
+            const porGer = {};
+            camadaGer.forEach(e => { const g = e.m.geracaoAlvo || 0; (porGer[g] = porGer[g]||[]).push(e); });
+            const porSim = {};
+            camadaSim.forEach(e => { const sId = e.m.simId || '?'; (porSim[sId] = porSim[sId]||[]).push(e); });
+
+            const bloco = (titulo, cor, prog, conteudo) => `
+                <details open style="background:#fff; border:1px solid #eee; border-left:4px solid ${cor}; border-radius:10px; padding:10px 14px; margin-bottom:10px;">
+                    <summary style="cursor:pointer; font-weight:bold; color:#444; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                        <span>${titulo}</span>
+                        <span style="font-size:11px; color:#888; font-weight:normal;">${prog.conc}/${prog.total}</span>
+                    </summary>
+                    ${barraProgresso(prog, cor)}
+                    <div style="margin-top:10px;">${conteudo || '<em style="color:#aaa;font-size:12px;">Sem metas pendentes nesta camada.</em>'}</div>
+                </details>`;
+
+            const html = [];
+            html.push(bloco('🌍 Metas do Save', '#888', pSave, camadaSave.map(fmtItem).join('')));
+
+            const gKeys = Object.keys(porGer).map(Number).sort((a,b)=>a-b);
+            let gerInner = '';
+            if (gKeys.length === 0 && pGerAll.total === 0) gerInner = '';
+            else {
+                gerInner = gKeys.map(g => {
+                    const p = progressoCamada(mm => mm.escopo==='geracao' && Number(mm.geracaoAlvo)===g);
+                    return `<div style="margin-bottom:8px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <strong style="color:${_corGer(g)};">G${g}</strong>
+                            <small style="color:#888;">${p.conc}/${p.total}</small>
+                        </div>
+                        ${barraProgresso(p, _corGer(g))}
+                        <div style="margin-top:6px;">${porGer[g].map(fmtItem).join('')}</div>
+                    </div>`;
+                }).join('');
+            }
+            html.push(bloco('🧬 Metas por Geração', '#7fb069', pGerAll, gerInner));
+
+            const sKeys = Object.keys(porSim);
+            let simInner = '';
+            if (sKeys.length === 0 && pSimAll.total === 0) simInner = '';
+            else {
+                simInner = sKeys.map(sId => {
+                    const p = progressoCamada(mm => mm.escopo==='sim' && String(mm.simId)===String(sId));
+                    const nome = _nomeSimPorId(sId) || 'Sim removido';
+                    return `<div style="margin-bottom:8px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <strong style="color:#0079C1;">👤 ${_escapeHtml(nome)}</strong>
+                            <small style="color:#888;">${p.conc}/${p.total}</small>
+                        </div>
+                        ${barraProgresso(p, '#0079C1')}
+                        <div style="margin-top:6px;">${porSim[sId].map(fmtItem).join('')}</div>
+                    </div>`;
+                }).join('');
+            }
+            html.push(bloco('👤 Metas de Sim', '#0079C1', pSimAll, simInner));
+
+            c.innerHTML = html.join('');
+        }
+
         function renderMetas() {
             popularSelectSimsMeta();
+            try { popularSelectGeracoesMeta(); } catch(e){}
+            try { renderMetasCamadas(); return; } catch(e){ console.warn('camadas falhou', e); }
             const c = document.getElementById('lista-metas'); if (!c) return;
             if (!db.metas_pendentes || db.metas_pendentes.length === 0) {
                 c.innerHTML = `<p style="color:#888; font-style:italic; text-align:center; padding:10px;">Nenhuma meta pendente. Adicione uma acima ou sorteie no Laboratório.</p>`;
@@ -4095,34 +4359,443 @@ if (fase === 'recem_nascido') {
         function removerAudioReacao(tipo) { db.reactionAudio[tipo] = AUDIO_DEFAULTS[tipo]; salvarTudo(); renderReactionAudioConfig(); showToast("Áudio restaurado para o padrão!"); }
         function playReactionSound(tipo) { let mapa = db.reactionAudio || AUDIO_DEFAULTS; let src = mapa[tipo] || mapa.geral; if(!src) return; let audio = new Audio(src); audio.volume = 0.55; audio.play().catch(()=>{}); }
 
+        // ============================================================
+        // ESPELHO DA FAMÍLIA · BADGES · METAS-AUTO · LEGADO  (v54.5)
+        // ============================================================
+        function _ssEscape(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+        function computarEstatisticasFamilia(){
+            const sims = Array.isArray(db.sims) ? db.sims : [];
+            const entries = (typeof parseLivroEntries === 'function') ? parseLivroEntries(db.historia || '') : [];
+            const isMorto = s => s && s.status === 'Ancestral (Morto)';
+            const vivos = sims.filter(s => !isMorto(s) && !s.isNpc);
+            const mortos = sims.filter(isMorto);
+            const npcs = sims.filter(s => s.isNpc);
+
+            // Gerações
+            const gerSet = new Set();
+            sims.forEach(s => { const g = parseInt(s.geracao,10); if(!isNaN(g) && g>0) gerSet.add(g); });
+            const geracoesAtivas = new Set();
+            vivos.forEach(s => { const g = parseInt(s.geracao,10); if(!isNaN(g) && g>0) geracoesAtivas.add(g); });
+
+            // Contagem de eventos por tag
+            const porTag = {};
+            entries.forEach(e => { porTag[e.tag] = (porTag[e.tag]||0)+1; });
+            const casamentos = (porTag['CASAMENTO']||0);
+            const separacoes = (porTag['SEPARAÇÃO']||0) + (porTag['SEPARACAO']||0) + (porTag['DIVÓRCIO']||0) + (porTag['DIVORCIO']||0);
+            const nascimentos = (porTag['NASCIMENTO']||0);
+            const mortesEvt = (porTag['MORTE']||0);
+            const conquistasEvt = (porTag['CONQUISTA']||0);
+            const totalEventos = entries.length;
+
+            // Sim mais lembrado (proxy de "mais longevo / com mais história")
+            const mencoes = {};
+            const reMarc = /\{\{SIM:([^\}]+)\}\}/g;
+            entries.forEach(e => {
+                const txt = (e.texto||'');
+                let m; while ((m = reMarc.exec(txt)) !== null) {
+                    const id = m[1]; mencoes[id] = (mencoes[id]||0)+1;
+                }
+                // fallback por nome
+                sims.forEach(s => {
+                    if (!s || !s.nome) return;
+                    if (s.id && txt.indexOf('{{SIM:'+s.id+'}}') !== -1) return; // já contado
+                    const nome = s.nome.trim(); if (nome.length<2) return;
+                    if (new RegExp('\\b'+nome.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i').test(txt)) {
+                        mencoes[s.id] = (mencoes[s.id]||0)+1;
+                    }
+                });
+            });
+            let simLongevo = null, maxMen = -1;
+            sims.forEach(s => { const c = mencoes[s.id]||0; if (c > maxMen) { maxMen = c; simLongevo = s; } });
+
+            // Geração mais prolífica (mais nascimentos atribuídos)
+            const nascPorGer = {};
+            entries.forEach(e => {
+                if (e.tag !== 'NASCIMENTO') return;
+                const m = /\{\{SIM:([^\}]+)\}\}/.exec(e.texto||'');
+                if (!m) return;
+                const s = sims.find(x => String(x.id) === String(m[1]));
+                if (!s) return;
+                const g = parseInt(s.geracao,10) || 1;
+                nascPorGer[g] = (nascPorGer[g]||0)+1;
+            });
+            // fallback: geração com mais membros
+            if (Object.keys(nascPorGer).length === 0) {
+                sims.forEach(s => { const g = parseInt(s.geracao,10)||1; nascPorGer[g] = (nascPorGer[g]||0)+1; });
+            }
+            let geracaoProlifica = null, maxNasc = 0;
+            Object.keys(nascPorGer).forEach(g => { if (nascPorGer[g] > maxNasc) { maxNasc = nascPorGer[g]; geracaoProlifica = parseInt(g,10); } });
+
+            // Idosos vivos
+            const idosos = vivos.filter(s => (s.fase||'').toLowerCase() === 'idoso').length;
+
+            return {
+                totalSims: sims.length, vivos: vivos.length, mortos: mortos.length, npcs: npcs.length,
+                geracoesCount: gerSet.size, geracoesAtivas: geracoesAtivas.size, geracaoMax: Math.max(0, ...gerSet),
+                casamentos, separacoes, nascimentos, mortesEvt, conquistasEvt, totalEventos,
+                simLongevo, mencoesSimLongevo: Math.max(0, maxMen),
+                geracaoProlifica, nascGeracaoProlifica: maxNasc,
+                idosos, porTag, mencoes
+            };
+        }
+
+        function renderEspelhoFamilia(){
+            const wrap = document.getElementById('espelho-familia-wrap'); if (!wrap) return;
+            const s = computarEstatisticasFamilia();
+            const tile = (icone, valor, label, cor) => `
+                <div style="flex:1 1 130px; min-width:120px; background:#fff; border:1.5px solid #f0d97a;
+                            border-radius:14px; padding:12px 10px; text-align:center;
+                            box-shadow:0 2px 6px rgba(120,90,40,0.08);">
+                    <div style="font-size:26px; line-height:1;">${icone}</div>
+                    <div style="font-size:22px; font-weight:800; color:${cor||'#4a3b2a'}; margin-top:4px;">${valor}</div>
+                    <div style="font-size:11px; color:#7a6849; font-weight:700; margin-top:2px; text-transform:uppercase; letter-spacing:.3px;">${label}</div>
+                </div>`;
+            const longevo = s.simLongevo ? `${_ssEscape(s.simLongevo.nome)} <span style="font-size:11px;color:#888;">(${s.mencoesSimLongevo} menções)</span>` : '<span style="color:#aaa;">—</span>';
+            const prolifica = s.geracaoProlifica ? `Geração ${s.geracaoProlifica} <span style="font-size:11px;color:#888;">(${s.nascGeracaoProlifica} nasc.)</span>` : '<span style="color:#aaa;">—</span>';
+            wrap.innerHTML = `
+                <div style="background:linear-gradient(135deg, rgba(244,184,199,0.22), rgba(155,199,228,0.22));
+                            border:1.5px solid #f0d97a; border-radius:18px; padding:16px; margin-bottom:18px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+                        <h3 style="margin:0;">📊 Espelho da Família</h3>
+                        <button class="btn-main btn-sec" style="width:auto; margin:0; padding:7px 14px; font-size:12px;" onclick="compartilharResumoFamilia()">📤 Compartilhar resumo</button>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                        ${tile('🟢', s.vivos, 'Sims vivos', '#7fb069')}
+                        ${tile('🪦', s.mortos, 'Ancestrais', '#9b7d6b')}
+                        ${tile('🧬', s.geracoesAtivas, 'Gerações ativas', '#9bc7e4')}
+                        ${tile('💍', s.casamentos, 'Casamentos', '#d4af37')}
+                        ${tile('💔', s.separacoes, 'Separações', '#c97064')}
+                        ${tile('👶', s.nascimentos, 'Nascimentos', '#f4b8c7')}
+                        ${tile('📖', s.totalEventos, 'Eventos no Livro', '#7a6849')}
+                        ${tile('🧓', s.idosos, 'Idosos vivos', '#bfa46f')}
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:14px; margin-top:12px; font-size:13px; color:#4a3b2a;">
+                        <div style="flex:1; min-width:220px; background:rgba(255,255,255,0.65); padding:10px 12px; border-radius:12px;">
+                            <div style="font-weight:800; font-size:11px; text-transform:uppercase; color:#7a6849; letter-spacing:.4px;">🏆 Sim mais lembrado</div>
+                            <div style="margin-top:4px;">${longevo}</div>
+                        </div>
+                        <div style="flex:1; min-width:220px; background:rgba(255,255,255,0.65); padding:10px 12px; border-radius:12px;">
+                            <div style="font-weight:800; font-size:11px; text-transform:uppercase; color:#7a6849; letter-spacing:.4px;">🌱 Geração mais prolífica</div>
+                            <div style="margin-top:4px;">${prolifica}</div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function compartilharResumoFamilia(){
+            const s = computarEstatisticasFamilia();
+            const nome = (typeof currentFamilyName === 'string' && currentFamilyName) ? currentFamilyName : 'Minha Família';
+            const longevo = s.simLongevo ? `${s.simLongevo.nome} (${s.mencoesSimLongevo} menções)` : '—';
+            const prolifica = s.geracaoProlifica ? `Geração ${s.geracaoProlifica} (${s.nascGeracaoProlifica} nasc.)` : '—';
+            const txt = `📖 ${nome} — Espelho da Família\n` +
+                `🟢 Vivos: ${s.vivos}   🪦 Ancestrais: ${s.mortos}\n` +
+                `🧬 Gerações ativas: ${s.geracoesAtivas}\n` +
+                `💍 Casamentos: ${s.casamentos}   💔 Separações: ${s.separacoes}\n` +
+                `👶 Nascimentos: ${s.nascimentos}   📖 Eventos: ${s.totalEventos}\n` +
+                `🏆 Sim mais lembrado: ${longevo}\n` +
+                `🌱 Geração mais prolífica: ${prolifica}\n` +
+                `— gerado pelo SimStoria`;
+            const done = () => showToast('📋 Resumo copiado!');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(done).catch(()=>{ window.prompt('Copie o resumo:', txt); });
+            } else { window.prompt('Copie o resumo:', txt); }
+        }
+
+        // ---------- BADGES ----------
+        const BADGES_DEFS = [
+            { id:'familia-numerosa', icone:'👶', nome:'Família Numerosa', desc:'Registrar 5 nascimentos no Livro.', meta:5, calc:s=>s.nascimentos },
+            { id:'romantico',        icone:'💍', nome:'Romântico',        desc:'Registrar 3 casamentos.',         meta:3, calc:s=>s.casamentos },
+            { id:'ciclo-da-vida',    icone:'🕊️', nome:'Ciclo da Vida',    desc:'Primeiro Ancestral na família.',  meta:1, calc:s=>s.mortos },
+            { id:'legado',           icone:'🧬', nome:'Legado Vivo',      desc:'Manter 3 gerações ativas simultaneamente.', meta:3, calc:s=>s.geracoesAtivas },
+            { id:'dinastia',         icone:'🏛️', nome:'Dinastia',         desc:'Alcançar 5 gerações na família.', meta:5, calc:s=>s.geracaoMax },
+            { id:'cronista',         icone:'📖', nome:'Cronista',         desc:'Registrar 50 eventos no Livro.', meta:50, calc:s=>s.totalEventos },
+            { id:'biografo',         icone:'✒️', nome:'Biógrafo',         desc:'Registrar 150 eventos no Livro.', meta:150, calc:s=>s.totalEventos },
+            { id:'patriarca',        icone:'🧓', nome:'Patriarca/Matriarca', desc:'Ter pelo menos 1 idoso vivo.', meta:1, calc:s=>s.idosos },
+            { id:'conquistador',     icone:'🏆', nome:'Conquistador',     desc:'10 conquistas registradas.',     meta:10, calc:s=>s.conquistasEvt },
+            { id:'novela',           icone:'🎭', nome:'Drama de Novela',   desc:'3 separações registradas.',      meta:3, calc:s=>s.separacoes }
+        ];
+
+        function computarBadges(stats){
+            db.conquistas = db.conquistas || {};
+            const out = [];
+            BADGES_DEFS.forEach(b => {
+                const v = Math.max(0, b.calc(stats)|0);
+                const desbloqueada = v >= b.meta;
+                if (desbloqueada && !db.conquistas[b.id]) {
+                    db.conquistas[b.id] = { desbloqueadaEm: new Date().toISOString() };
+                    setTimeout(()=>{ try { showToast('🏅 Conquista desbloqueada: '+b.nome); } catch(e){} }, 50);
+                }
+                out.push({ ...b, valor:v, desbloqueada, desbloqueadaEm: db.conquistas[b.id] && db.conquistas[b.id].desbloqueadaEm });
+            });
+            return out;
+        }
+
+        function renderBadges(){
+            const wrap = document.getElementById('badges-wrap'); if (!wrap) return;
+            const stats = computarEstatisticasFamilia();
+            const list = computarBadges(stats);
+            const item = b => {
+                const prog = Math.min(100, Math.round(100 * (b.valor / b.meta)));
+                const dataTxt = b.desbloqueadaEm ? new Date(b.desbloqueadaEm).toLocaleDateString('pt-BR') : '';
+                return `
+                <div title="${_ssEscape(b.desc)}"
+                     style="width:118px; padding:10px; border-radius:14px; text-align:center;
+                            background:${b.desbloqueada ? 'linear-gradient(135deg, #fff7d6, #ffe9b3)' : '#f3efe6'};
+                            border:1.5px solid ${b.desbloqueada ? '#d4af37' : '#d8d0c2'};
+                            box-shadow:${b.desbloqueada ? '0 3px 8px rgba(212,175,55,0.25)' : 'none'};
+                            filter:${b.desbloqueada ? 'none' : 'grayscale(0.7) opacity(0.75)'};">
+                    <div style="font-size:30px; line-height:1;">${b.desbloqueada ? b.icone : '🔒'}</div>
+                    <div style="font-size:11px; font-weight:800; margin-top:6px; color:#4a3b2a;">${_ssEscape(b.nome)}</div>
+                    <div style="font-size:10px; color:#7a6849; margin-top:3px; line-height:1.25;">${_ssEscape(b.desc)}</div>
+                    <div style="height:5px; background:#e7dfcd; border-radius:5px; margin-top:6px; overflow:hidden;">
+                        <div style="height:100%; width:${prog}%; background:${b.desbloqueada ? '#d4af37' : '#9bc7e4'};"></div>
+                    </div>
+                    <div style="font-size:10px; color:#7a6849; margin-top:3px;">${Math.min(b.valor, b.meta)}/${b.meta}${dataTxt ? ' · '+dataTxt : ''}</div>
+                </div>`;
+            };
+            wrap.innerHTML = `
+                <div style="background:#fff; border:1.5px solid #f0d97a; border-radius:18px; padding:16px; margin-bottom:18px;">
+                    <h3 style="margin:0 0 10px 0;">🏅 Conquistas de Geração</h3>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:flex-start;">
+                        ${list.map(item).join('')}
+                    </div>
+                </div>`;
+        }
+
+        // ---------- METAS AUTO (#31) ----------
+        const META_TAG_MAP = [
+            { rx:/\b(filh[oa]s?|beb[eê]s?|nasc(er|imento)|gravid|gestaç[aã]o)\b/i, tag:'NASCIMENTO' },
+            { rx:/\b(casar|casamento|nupcia|matrim[oô]ni)/i, tag:'CASAMENTO' },
+            { rx:/\b(separ|divor)/i, tag:'SEPARAÇÃO' },
+            { rx:/\b(morr|falec|[oó]bito|enterr|morte)\b/i, tag:'MORTE' },
+            { rx:/\b(promo[cç][aã]o|carreira|n[ií]vel|emprego)\b/i, tag:'PROMOÇÃO' },
+            { rx:/\b(viag|viaj|f[eé]rias)\b/i, tag:'VIAGEM' },
+            { rx:/\b(conquist|aspira[cç][aã]o|objetivo)\b/i, tag:'CONQUISTA' }
+        ];
+
+        function _contarTagPorSim(tag, simId){
+            const entries = parseLivroEntries(db.historia||'');
+            return entries.filter(e => {
+                if (e.tag !== tag && !(tag==='SEPARAÇÃO' && (e.tag==='SEPARACAO'||e.tag==='DIVÓRCIO'||e.tag==='DIVORCIO'))) return false;
+                if (!simId) return true;
+                return (e.texto||'').indexOf('{{SIM:'+simId+'}}') !== -1;
+            }).length;
+        }
+
+        function verificarMetasAuto(){
+            if (!Array.isArray(db.metas_pendentes) || db.metas_pendentes.length === 0) return;
+            let mudou = false;
+            for (let i = db.metas_pendentes.length - 1; i >= 0; i--) {
+                const raw = db.metas_pendentes[i];
+                const m = (typeof raw === 'string') ? { texto: raw } : raw;
+                if (!m || !m.texto || m.autoConcluida) continue;
+                const txt = String(m.texto);
+                let tag = null;
+                for (const map of META_TAG_MAP) { if (map.rx.test(txt)) { tag = map.tag; break; } }
+                if (!tag) continue;
+                const numMatch = txt.match(/(\d+)/);
+                const alvo = numMatch ? Math.max(1, parseInt(numMatch[1],10)) : 1;
+                const simId = m.simId || null;
+                const atual = _contarTagPorSim(tag, simId);
+                if (atual >= alvo) {
+                    // marca e move para conquista
+                    db.metas_pendentes.splice(i, 1);
+                    const dataStr = new Date().toLocaleDateString('pt-BR');
+                    const sufixo = simId ? (typeof _marcadorSim==='function' ? _marcadorSim(simId) : '') : '';
+                    db.historia = (db.historia||'') + `\n[${dataStr}] [CONQUISTA] 🎯 Meta cumprida automaticamente: ${txt}${sufixo}`;
+                    mudou = true;
+                    setTimeout((t => () => { try { showToast('🎯 Meta cumprida: '+t); } catch(e){} })(txt), 80);
+                }
+            }
+            if (mudou) {
+                if (allowLocalSave) localStorage.setItem('ts4_companion_data', JSON.stringify(db));
+                try { if (typeof renderMetas === 'function') renderMetas(); } catch(e){}
+                try { if (typeof renderLivroComFiltro === 'function') renderLivroComFiltro(); } catch(e){}
+            }
+        }
+
+        // ---------- DESAFIO DE LEGADO (#45) ----------
+        const LEGACY_PRESETS = {
+            'sims4-legacy':   { nome:'Sims 4 Legacy Challenge', porGeracao:10, porCasamento:3, porNascimento:5, porCarreiraTopo:8, porMortePrecoce:-5, porSeparacao:-2 },
+            'rags-to-riches': { nome:'Rags to Riches',           porGeracao:5,  porCasamento:2, porNascimento:3, porCarreiraTopo:12, porMortePrecoce:-3, porSeparacao:-1 },
+            'custom':         { nome:'Personalizado',            porGeracao:10, porCasamento:5, porNascimento:5, porCarreiraTopo:10, porMortePrecoce:-5, porSeparacao:-2 }
+        };
+
+        function _legacyRules(){
+            if (!db.legacyRules) db.legacyRules = { preset:'sims4-legacy', ...LEGACY_PRESETS['sims4-legacy'] };
+            return db.legacyRules;
+        }
+
+        function calcularScoreLegado(){
+            const s = computarEstatisticasFamilia();
+            const r = _legacyRules();
+            // "Geração completa" ≈ qualquer geração cadastrada
+            const geracoesCompletas = s.geracoesCount;
+            // Morte precoce ≈ MORTE de Sim que NÃO está em fase idoso
+            const mortesPrecoces = (db.sims||[]).filter(x => x.status === 'Ancestral (Morto)' && (x.fase||'').toLowerCase() !== 'idoso').length;
+            const partes = [
+                { lbl:'Gerações',       n:geracoesCompletas,   p:r.porGeracao },
+                { lbl:'Casamentos',     n:s.casamentos,        p:r.porCasamento },
+                { lbl:'Nascimentos',    n:s.nascimentos,       p:r.porNascimento },
+                { lbl:'Carreiras topo', n:s.conquistasEvt,     p:r.porCarreiraTopo },
+                { lbl:'Mortes precoces',n:mortesPrecoces,      p:r.porMortePrecoce },
+                { lbl:'Separações',     n:s.separacoes,        p:r.porSeparacao }
+            ];
+            const total = partes.reduce((t,x) => t + (x.n||0)*(x.p||0), 0);
+            return { total, partes, regras:r };
+        }
+
+        function aplicarPresetLegado(key){
+            const p = LEGACY_PRESETS[key] || LEGACY_PRESETS['custom'];
+            db.legacyRules = { preset:key, ...p };
+            if (typeof salvarTudo === 'function') salvarTudo(); else renderDesafioLegado();
+        }
+
+        function atualizarRegraLegado(campo, valor){
+            const r = _legacyRules();
+            r[campo] = parseInt(valor,10) || 0;
+            r.preset = 'custom';
+            if (typeof salvarTudo === 'function') salvarTudo(); else renderDesafioLegado();
+        }
+
+        function renderDesafioLegado(){
+            const wrap = document.getElementById('legacy-wrap'); if (!wrap) return;
+            const { total, partes, regras } = calcularScoreLegado();
+            const num = (k,lbl) => `
+                <label style="display:flex; flex-direction:column; gap:3px; font-size:11px; color:#7a6849; font-weight:700;">
+                    ${lbl}
+                    <input type="number" value="${regras[k]||0}" onchange="atualizarRegraLegado('${k}', this.value)"
+                           style="width:90px; padding:5px 8px; border-radius:8px; border:1px solid #d8d0c2; font-size:13px;">
+                </label>`;
+            const linha = p => `
+                <tr>
+                    <td style="padding:4px 8px;">${p.lbl}</td>
+                    <td style="padding:4px 8px; text-align:center;">${p.n}</td>
+                    <td style="padding:4px 8px; text-align:center; color:#888;">× ${p.p}</td>
+                    <td style="padding:4px 8px; text-align:right; font-weight:700; color:${(p.n*p.p)>=0?'#7fb069':'#c97064'};">${p.n*p.p}</td>
+                </tr>`;
+            wrap.innerHTML = `
+                <div style="background:#fff; border:1.5px solid #f0d97a; border-radius:18px; padding:16px; margin-bottom:18px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                        <h3 style="margin:0;">🏆 Desafio de Legado</h3>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <select onchange="aplicarPresetLegado(this.value)" style="font-size:12px; padding:5px 8px; border-radius:8px; margin:0; width:auto;">
+                                ${Object.keys(LEGACY_PRESETS).map(k => `<option value="${k}" ${regras.preset===k?'selected':''}>${LEGACY_PRESETS[k].nome}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+                        ${num('porGeracao','+ por geração')}
+                        ${num('porCasamento','+ por casamento')}
+                        ${num('porNascimento','+ por nascimento')}
+                        ${num('porCarreiraTopo','+ por conquista')}
+                        ${num('porSeparacao','+/- separação')}
+                        ${num('porMortePrecoce','+/- morte precoce')}
+                    </div>
+                    <table style="width:100%; font-size:13px; border-collapse:collapse; background:#fbf6e8; border-radius:10px; overflow:hidden;">
+                        <thead><tr style="background:#f0d97a; color:#4a3b2a;">
+                            <th style="text-align:left; padding:6px 8px;">Critério</th>
+                            <th style="padding:6px 8px;">Qtd</th>
+                            <th style="padding:6px 8px;">Pontos</th>
+                            <th style="text-align:right; padding:6px 8px;">Subtotal</th>
+                        </tr></thead>
+                        <tbody>${partes.map(linha).join('')}</tbody>
+                        <tfoot><tr style="background:#fff7d6;">
+                            <td colspan="3" style="padding:8px; text-align:right; font-weight:800;">SCORE TOTAL</td>
+                            <td style="padding:8px; text-align:right; font-weight:800; font-size:18px; color:#d4af37;">${total}</td>
+                        </tr></tfoot>
+                    </table>
+                </div>`;
+        }
+
         function renderDash() { renderWheels('dash-cards', Object.keys(db.config).filter(key => !LAB_KEYS.includes(key) && key !== 'treeBgMode' && key !== 'treeBgCustom')); }
         function renderLab() { renderWheels('lab-cards', LAB_KEYS); }
         const WHEEL_TITLES = { 'regras': 'Regras' };
+
+        // ── #62: funções de pin/hide roletas ──────────────────────────────
+        function togglePinWheel(key) {
+            db.pinnedWheels = db.pinnedWheels || [];
+            const idx = db.pinnedWheels.indexOf(key);
+            if (idx === -1) db.pinnedWheels.push(key);
+            else db.pinnedWheels.splice(idx, 1);
+            salvarTudo(); renderDash(); renderLab();
+        }
+        function toggleHideWheel(key) {
+            db.hiddenWheels = db.hiddenWheels || [];
+            const idx = db.hiddenWheels.indexOf(key);
+            if (idx === -1) db.hiddenWheels.push(key);
+            else db.hiddenWheels.splice(idx, 1);
+            // Se estava oculta e estamos mostrando, remove do pin também não é necessário
+            salvarTudo(); renderDash(); renderLab();
+        }
+        function _buildWheelPanel(key) {
+            const lista = db.config[key]; if(!lista || lista.length === 0) return '';
+            const isPinned = (db.pinnedWheels || []).includes(key);
+            const degSize = 360 / lista.length;
+            const colors = ["#0079C1", "#7CD700", "#FFC83D", "#FF6B6B", "#9B59B6", "#1ABC9C", "#E67E22"];
+            const stops = lista.map((_, i) => `${colors[i % colors.length]} ${i * (100/lista.length)}% ${(i+1) * (100/lista.length)}%`).join(', ');
+            const titulo = WHEEL_TITLES[key] || key;
+            const simsAtivos = db.sims.filter(s => s.status !== 'Ancestral (Morto)' && !s.isNpc);
+            const simSelectorHtml = (key === 'eventos diários') ? `
+                <div style="margin-bottom:10px; padding:10px 12px; background:var(--ts4-input-bg); border-radius:12px; border:1px solid var(--ts4-border);">
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <span style="font-size:11px; font-weight:800; color:var(--ts4-blue); white-space:nowrap;">🎭 Sim foco:</span>
+                        <select id="sel-sim-foco-evento" style="flex:1; min-width:120px; margin:0; font-size:11px; padding:4px 8px;" onchange="atualizarSimFocoEvento()">
+                            <option value="">Livre (sem filtro de idade)</option>
+                            ${simsAtivos.map(s => `<option value="${s.id}">${s.nome} · ${(s.fase||'jovem-adulto').replace(/-/g,' ')}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div id="badge-sim-foco-evento"></div>
+                </div>` : '';
+            const pinBtn = `<button title="${isPinned ? 'Desafixar roleta' : 'Fixar no topo'}" onclick="togglePinWheel('${key}')" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;line-height:1;opacity:${isPinned?'1':'0.45'};transition:opacity .2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='${isPinned?'1':'0.45'}'">📌</button>`;
+            const hideBtn = `<button title="Ocultar esta roleta" onclick="toggleHideWheel('${key}')" style="background:none;border:none;cursor:pointer;font-size:12px;padding:2px 4px;line-height:1;opacity:0.45;transition:opacity .2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.45'">🙈</button>`;
+            return `<div class="panel" style="${isPinned ? 'border:2px solid var(--cozy-gold,#d4af37);box-shadow:0 0 12px rgba(212,175,55,.22);' : ''}">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <h3 style="text-transform:capitalize;margin:0;">${isPinned ? '📌 ' : ''}${titulo}</h3>
+                    <span style="display:flex;gap:2px;">${pinBtn}${hideBtn}</span>
+                </div>
+                ${simSelectorHtml}
+                <div class="wheel-wrapper"><div class="wheel-pointer"></div><div class="roulette-display" id="rol-${key}" style="background: conic-gradient(${stops})">${lista.map((txt, i) => `<div class="roulette-label" style="transform: rotate(${i * degSize + (degSize/2) - 90}deg)">${txt}</div>`).join('')}</div></div>
+                <div class="suggestion-box" id="sug-${key}">Role para decidir...</div>
+                <div id="ctrl-${key}" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-main" style="margin:0;" onclick="girar('${key}')">GIRAR</button></div>
+            </div>`;
+        }
         function renderWheels(containerId, keys) {
+            db.pinnedWheels = db.pinnedWheels || [];
+            db.hiddenWheels = db.hiddenWheels || [];
             const container = document.getElementById(containerId);
-            container.innerHTML = keys.map(key => {
-                const lista = db.config[key]; if(!lista || lista.length === 0) return '';
-                const degSize = 360 / lista.length; const colors = ["#0079C1", "#7CD700", "#FFC83D", "#FF6B6B", "#9B59B6", "#1ABC9C", "#E67E22"];
-                const stops = lista.map((_, i) => `${colors[i % colors.length]} ${i * (100/lista.length)}% ${(i+1) * (100/lista.length)}%`).join(', ');
-                const titulo = WHEEL_TITLES[key] || key;
 
-                // ── Seletor de Sim foco (apenas na roleta de eventos diários) ──
-                const simsAtivos = db.sims.filter(s => s.status !== 'Ancestral (Morto)' && !s.isNpc);
-                const simSelectorHtml = (key === 'eventos diários') ? `
-                    <div style="margin-bottom:10px; padding:10px 12px; background:var(--ts4-input-bg); border-radius:12px; border:1px solid var(--ts4-border);">
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                            <span style="font-size:11px; font-weight:800; color:var(--ts4-blue); white-space:nowrap;">🎭 Sim foco:</span>
-                            <select id="sel-sim-foco-evento" style="flex:1; min-width:120px; margin:0; font-size:11px; padding:4px 8px;" onchange="atualizarSimFocoEvento()">
-                                <option value="">Livre (sem filtro de idade)</option>
-                                ${simsAtivos.map(s => `<option value="${s.id}">${s.nome} · ${(s.fase||'jovem-adulto').replace(/-/g,' ')}</option>`).join('')}
-                            </select>
-                        </div>
-                        <div id="badge-sim-foco-evento"></div>
-                    </div>` : '';
+            const pinned   = keys.filter(k => db.pinnedWheels.includes(k) && !db.hiddenWheels.includes(k));
+            const visible  = keys.filter(k => !db.pinnedWheels.includes(k) && !db.hiddenWheels.includes(k));
+            const hidden   = keys.filter(k => db.hiddenWheels.includes(k));
 
-                return `<div class="panel"><h3 style="text-transform:capitalize">${titulo}</h3>${simSelectorHtml}<div class="wheel-wrapper"><div class="wheel-pointer"></div><div class="roulette-display" id="rol-${key}" style="background: conic-gradient(${stops})">${lista.map((txt, i) => `<div class="roulette-label" style="transform: rotate(${i * degSize + (degSize/2) - 90}deg)">${txt}</div>`).join('')}</div></div><div class="suggestion-box" id="sug-${key}">Role para decidir...</div><div id="ctrl-${key}" style="display:flex; gap:10px; margin-top:10px;"><button class="btn-main" style="margin:0;" onclick="girar('${key}')">GIRAR</button></div></div>`;
-            }).join('');
-            keys.forEach(k => { const e = document.getElementById('rol-'+k); if(e && lastRotation[k]) e.style.transform = `rotate(${lastRotation[k]}deg)`; });
+            // Seção pinned (sempre visível)
+            let html = pinned.map(_buildWheelPanel).join('');
+
+            // Seção visível com toggle de collapse
+            const collapseId = 'wheel-collapse-' + containerId;
+            const collapseState = localStorage.getItem(collapseId) !== 'closed';
+            if (visible.length > 0) {
+                html += `<div style="width:100%;grid-column:1/-1;margin:4px 0 2px;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="(function(){var s=localStorage.getItem('${collapseId}');var next=s==='closed'?'open':'closed';localStorage.setItem('${collapseId}',next);renderDash();renderLab();})()">
+                    <span style="font-size:10px;font-weight:800;color:var(--ts4-blue);text-transform:uppercase;letter-spacing:.5px;">${collapseState ? '▾' : '▸'} Outras roletas (${visible.length})</span>
+                    <hr style="flex:1;border:none;border-top:1px dashed var(--ts4-border);">
+                </div>`;
+                if (collapseState) {
+                    html += `<div style="display:contents;">` + visible.map(_buildWheelPanel).join('') + `</div>`;
+                }
+            }
+
+            // Seção ocultas (apenas listagem compacta)
+            if (hidden.length > 0) {
+                html += `<div style="width:100%;grid-column:1/-1;margin:6px 0 2px;font-size:10px;color:#aaa;font-weight:700;text-transform:uppercase;">🙈 Ocultas (${hidden.length}): ${hidden.map(k=>`<span onclick="toggleHideWheel('${k}')" style="cursor:pointer;color:var(--ts4-blue);text-decoration:underline;">${k}</span>`).join(', ')}</div>`;
+            }
+
+            container.innerHTML = html;
+            keys.filter(k => !db.hiddenWheels.includes(k)).forEach(k => {
+                const e = document.getElementById('rol-'+k);
+                if (e && lastRotation[k]) e.style.transform = `rotate(${lastRotation[k]}deg)`;
+            });
         }
         function girar(key) {
             playReactionSound(key === "relações românticas" ? "obaoba" : "geral");
@@ -5110,7 +5783,8 @@ function salvarSim() {
                 p1NpcFoto: document.getElementById('e-p1-npc').checked ? ((oldSimAtual && oldSimAtual.p1NpcFoto) || '') : '',
                 p2NpcFoto: document.getElementById('e-p2-npc').checked ? ((oldSimAtual && oldSimAtual.p2NpcFoto) || '') : '',
                 p1NpcStatus: document.getElementById('e-p1-npc').checked ? ((oldSimAtual && oldSimAtual.p1NpcStatus) || 'vivo') : '',
-                p2NpcStatus: document.getElementById('e-p2-npc').checked ? ((oldSimAtual && oldSimAtual.p2NpcStatus) || 'vivo') : ''
+                p2NpcStatus: document.getElementById('e-p2-npc').checked ? ((oldSimAtual && oldSimAtual.p2NpcStatus) || 'vivo') : '',
+                geracaoManual: (parseInt(document.getElementById('e-geracao-manual')?.value)>0 ? parseInt(document.getElementById('e-geracao-manual').value) : null)
             };
 
             if(currentSimId) {
@@ -5170,7 +5844,21 @@ function salvarSim() {
                     if(novoConj) { 
                         novoConj.spouse = s.id; 
                         novoConj.relStatus = s.relStatus; 
-                    } 
+                    }
+
+                    // Registra casamento no Livro da Família quando o cônjuge é novo
+                    // (vínculo criado agora, ou cônjuge diferente do anterior) e o status é "casado"
+                    const conjugeAntigo = oldSim ? String(oldSim.spouse || '') : '';
+                    const conjugeNovo   = String(s.spouse);
+                    const statusCasado  = (s.relStatus === 'casado');
+                    const vinculoNovo   = conjugeNovo && (conjugeNovo !== conjugeAntigo);
+
+                    if (vinculoNovo && statusCasado) {
+                        let nomeConj = novoConj ? novoConj.nome : 'cônjuge';
+                        db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [CASAMENTO] 💍 ${s.nome} e ${nomeConj} se casaram!`;
+                        renderLivroComFiltro();
+                        showToast("💍 Casamento registrado no Livro da Família!");
+                    }
                 }
 
                 // (vinculação de irmandade já realizada pelo bloco acima)
@@ -5184,7 +5872,13 @@ function salvarSim() {
                     let novoConj = db.sims.find(x => String(x.id) === String(s.spouse)); 
                     if(novoConj) { 
                         novoConj.spouse = s.id; 
-                        novoConj.relStatus = s.relStatus; 
+                        novoConj.relStatus = s.relStatus;
+
+                        // Registra casamento quando o Sim novo é criado já com cônjuge existente
+                        if (s.relStatus === 'casado') {
+                            db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [CASAMENTO] 💍 ${s.nome} e ${novoConj.nome} se casaram!`;
+                            window._pendingCasamentoToast = true;
+                        }
                     } 
                 }
               
@@ -5240,6 +5934,13 @@ function salvarSim() {
                     renderLivroComFiltro();
                     showToast("Adoção registrada no Livro da Família!");
                 }
+
+                // Dispara toast de casamento (para Sim novo já criado casado)
+                if (window._pendingCasamentoToast) {
+                    window._pendingCasamentoToast = false;
+                    renderLivroComFiltro();
+                    showToast("💍 Casamento registrado no Livro da Família!");
+                }
             }
 
             salvarTudo(); fecharModal(); renderTree(); renderGenList(); renderIaSimList(); showToast("Perfil salvo!");
@@ -5281,6 +5982,17 @@ function salvarSim() {
             
             const getNome = (fid) => db.sims.find(x => String(x.id) === String(fid))?.nome || "Nenhum";
             document.getElementById('v-status').innerText = s.status;
+            // #27 — Causa do Óbito (visível só quando Ancestral)
+            const _campoCausa = document.getElementById('campo-causa-morte');
+            const _vCausa = document.getElementById('v-causa-morte');
+            if (_campoCausa && _vCausa) {
+                if (s.status === 'Ancestral (Morto)') {
+                    _campoCausa.style.display = '';
+                    _vCausa.innerText = s.causaMorte ? s.causaMorte : '— (clique para definir)';
+                } else {
+                    _campoCausa.style.display = 'none';
+                }
+            }
             
             const FASES_LABELS = {"recem_nascido":"👶 Recém-nascido", "bebe-colo":"👶 Bebê de Colo","bebe":"🍼 Bebê","crianca":"🧒 Criança","adolescente":"🧑 Adolescente","jovem-adulto":"👨 Jovem Adulto","adulto":"🧔 Adulto","idoso":"👴 Idoso" };
             const faseLabel = FASES_LABELS[s.fase] || s.fase || "—";
@@ -5333,12 +6045,19 @@ function salvarSim() {
             document.getElementById('modal-sim').style.display = 'flex';
         }
 
+        // #27 — Causa do Óbito: ao marcar morte, perguntar a causa e registrar no Livro
         function marcarFalecidoRapido() {
             let s = db.sims.find(x => String(x.id) === String(currentSimId));
-            if(s) { 
-                s.status = 'Ancestral (Morto)'; 
-                let msgHistoria = `\n[${new Date().toLocaleDateString('pt-BR')}] [MORTE] ${s.nome} infelizmente faleceu e tornou-se um Ancestral.`;
-
+            if(!s) return;
+            const jaMorto = s.status === 'Ancestral (Morto)';
+            const causa = _promptCausaMorte(s.causaMorte || '');
+            if (causa === null) return; // cancelou
+            s.status = 'Ancestral (Morto)';
+            s.causaMorte = causa || s.causaMorte || '';
+            let msgHistoria = '';
+            if (!jaMorto) {
+                const sufixoCausa = s.causaMorte ? ` Causa: ${s.causaMorte}.` : '';
+                msgHistoria = `\n[${new Date().toLocaleDateString('pt-BR')}] [MORTE] ${s.nome} infelizmente faleceu e tornou-se um Ancestral.${sufixoCausa}${(typeof _marcadorSim==='function')?_marcadorSim(s.id):''}`;
                 if(s.spouse && s.relStatus === 'casado') {
                     s.relStatus = 'viuvo';
                     let conjuge = db.sims.find(x => String(x.id) === String(s.spouse));
@@ -5347,10 +6066,40 @@ function salvarSim() {
                         msgHistoria += ` Seu(sua) cônjuge, ${conjuge.nome}, agora é viúvo(a).`;
                     }
                 }
-
-                db.historia += msgHistoria;
-                salvarTudo(); abrirPerfil(currentSimId); renderTree(); renderLivroComFiltro(); showToast("Marcado como falecido!"); 
+            } else if (s.causaMorte) {
+                msgHistoria = `\n[${new Date().toLocaleDateString('pt-BR')}] [MORTE] Causa do óbito de ${s.nome} registrada: ${s.causaMorte}.${(typeof _marcadorSim==='function')?_marcadorSim(s.id):''}`;
             }
+            if (msgHistoria) db.historia += msgHistoria;
+            salvarTudo(); abrirPerfil(currentSimId); renderTree(); renderLivroComFiltro();
+            showToast(jaMorto ? "Causa do óbito atualizada!" : "Marcado como falecido!");
+        }
+
+        // Mini-seletor de causa de morte (reaproveita as causas da roleta do The Sims)
+        function _promptCausaMorte(atual){
+            const causas = (typeof SIMSTORIA_CAUSAS_MORTE !== 'undefined') ? SIMSTORIA_CAUSAS_MORTE : ['Velhice','Outro / Desconhecido'];
+            let lista = causas.map((c,i) => `${i+1}. ${c}`).join('\n');
+            const sugestao = atual || 'Velhice';
+            const resp = prompt(
+                `✝️ Causa do Óbito\n\nDigite o NÚMERO da causa, ou escreva a causa livremente:\n\n${lista}\n\n(Deixe em branco para não definir agora.)`,
+                sugestao
+            );
+            if (resp === null) return null;
+            const limpo = (resp||'').trim();
+            if (!limpo) return '';
+            const n = parseInt(limpo, 10);
+            if (!isNaN(n) && n >= 1 && n <= causas.length) return causas[n-1];
+            return limpo;
+        }
+
+        function editarCausaMorte(){
+            const s = db.sims.find(x => String(x.id) === String(currentSimId));
+            if (!s || s.status !== 'Ancestral (Morto)') return;
+            const causa = _promptCausaMorte(s.causaMorte || '');
+            if (causa === null) return;
+            s.causaMorte = causa;
+            db.historia += `\n[${new Date().toLocaleDateString('pt-BR')}] [MORTE] Causa do óbito de ${s.nome} ${causa ? 'atualizada para: ' + causa : 'removida'}.${(typeof _marcadorSim==='function')?_marcadorSim(s.id):''}`;
+            salvarTudo(); abrirPerfil(currentSimId); renderLivroComFiltro();
+            showToast("Causa do óbito atualizada!");
         }
 // Substitua a função antiga adicionarFilhoPerfil() por esta:
 function adicionarFilhoPerfil() {
@@ -5721,6 +6470,190 @@ function importarArquivo(event) {
             return niveis;
         }
 
+/* === SIMSTORIA v54_3 PATCH === */
+        // --- v54_3: gerações, filtros, badges, metas em camadas ---
+        const GER_COLORS = ['#7fb069','#0079C1','#9B59B6','#e67e22','#e74c3c','#16a085','#d4af37','#34495e'];
+        function _corGer(g){ if(!g||g<1) return '#888'; return GER_COLORS[(g-1)%GER_COLORS.length]; }
+
+        function getGeracaoFinal(sim){
+            if(!sim) return 1;
+            if (sim.geracaoManual && Number(sim.geracaoManual) > 0) return Number(sim.geracaoManual);
+            try {
+                const niveis = (typeof calcularNiveisDeGeracao==='function') ? calcularNiveisDeGeracao() : {};
+                return (Number(niveis[sim.id])||0) + 1;
+            } catch(e){ return 1; }
+        }
+        function getMaxGeracao(){
+            let mx = 1;
+            ((typeof db!=="undefined" && db.sims) || []).forEach(s => { mx = Math.max(mx, getGeracaoFinal(s)); });
+            return mx;
+        }
+        function renderGenBadgeSVG(sim){
+            try {
+                const g = getGeracaoFinal(sim);
+                const cor = _corGer(g);
+                return `<g><rect x="10" y="30" width="44" height="22" rx="11" ry="11" fill="${cor}" filter="url(#shadow)"/><text x="32" y="46" font-family="'Nunito',Arial,sans-serif" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">G${g}</text></g>`;
+            } catch(e){ return ''; }
+        }
+
+        // Estado dos filtros da árvore
+        window.__treeFilters = window.__treeFilters || { maxGer: 99, destaqueGer: 0, ocultarGers: [] };
+        function _tf(){ return window.__treeFilters; }
+
+        function _simPassaFiltro(sim){
+            const tf = _tf();
+            const g = getGeracaoFinal(sim);
+            if (g > (tf.maxGer||99)) return false;
+            if ((tf.ocultarGers||[]).includes(g)) return false;
+            return true;
+        }
+
+        function aplicarFiltrosArvore(){
+            const tf = _tf();
+            // vis.js
+            try {
+                if (window.network && window.network.body && window.network.body.data) {
+                    const nodes = window.network.body.data.nodes;
+                    (db.sims||[]).forEach(s => {
+                        const id = String(s.id);
+                        if (!nodes.get(id)) return;
+                        const g = getGeracaoFinal(s);
+                        const hide = (g > (tf.maxGer||99)) || (tf.ocultarGers||[]).includes(g);
+                        const dim = (tf.destaqueGer && tf.destaqueGer !== g);
+                        nodes.update({ id, hidden: hide, opacity: dim ? 0.25 : 1.0 });
+                    });
+                }
+            } catch(e){ console.warn('filtro vis falhou', e); }
+            // Cytoscape
+            try {
+                if (window.cyTree) {
+                    window.cyTree.nodes().forEach(n => {
+                        const id = n.id();
+                        const s = (db.sims||[]).find(x => String(x.id) === id);
+                        if (!s) return;
+                        const g = getGeracaoFinal(s);
+                        const hide = (g > (tf.maxGer||99)) || (tf.ocultarGers||[]).includes(g);
+                        const dim = (tf.destaqueGer && tf.destaqueGer !== g);
+                        n.style('display', hide ? 'none' : 'element');
+                        n.style('opacity', dim ? 0.25 : 1);
+                    });
+                    window.cyTree.edges().forEach(e => {
+                        const src = e.source(), tgt = e.target();
+                        const hidden = src.style('display')==='none' || tgt.style('display')==='none';
+                        e.style('display', hidden ? 'none' : 'element');
+                    });
+                }
+            } catch(e){ console.warn('filtro cy falhou', e); }
+            renderLegendaGeracoes();
+        }
+
+        function focarSimNaArvore(simId){
+            if (!simId) return;
+            try {
+                if (window.network && window.network.focus) {
+                    window.network.selectNodes([String(simId)]);
+                    window.network.focus(String(simId), { scale: 1.2, animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
+                    return;
+                }
+            } catch(e){}
+            try {
+                if (window.cyTree) {
+                    const n = window.cyTree.$id(String(simId));
+                    if (n && n.length) {
+                        window.cyTree.animate({ fit: { eles: n, padding: 80 }, duration: 600 });
+                        n.flashClass && n.flashClass('highlighted', 1500);
+                    }
+                }
+            } catch(e){}
+        }
+
+        function renderLegendaGeracoes(){
+            const c = document.getElementById('legenda-geracoes'); if (!c) return;
+            const tf = _tf();
+            const buckets = {};
+            (db.sims||[]).forEach(s => { const g = getGeracaoFinal(s); buckets[g] = (buckets[g]||0)+1; });
+            const keys = Object.keys(buckets).map(Number).sort((a,b)=>a-b);
+            if (keys.length === 0) { c.innerHTML = ''; return; }
+            c.innerHTML = keys.map(g => {
+                const cor = _corGer(g);
+                const ativo = !((tf.ocultarGers||[]).includes(g));
+                return `<button type="button" onclick="toggleOcultarGer(${g})" style="background:${ativo?cor:'#ddd'};color:${ativo?'#fff':'#888'};border:none;border-radius:14px;padding:4px 10px;font-size:11px;font-weight:bold;cursor:pointer;opacity:${ativo?1:0.6};" title="${ativo?'Clique para ocultar':'Clique para mostrar'} esta geração">G${g} (${buckets[g]})</button>`;
+            }).join(' ');
+        }
+        function toggleOcultarGer(g){
+            const tf = _tf();
+            tf.ocultarGers = tf.ocultarGers || [];
+            const i = tf.ocultarGers.indexOf(g);
+            if (i>=0) tf.ocultarGers.splice(i,1); else tf.ocultarGers.push(g);
+            aplicarFiltrosArvore();
+        }
+        function setMaxGeracao(v){
+            const tf = _tf();
+            tf.maxGer = Number(v)||99;
+            const lab = document.getElementById('lbl-max-ger'); if (lab) lab.textContent = 'G' + tf.maxGer;
+            aplicarFiltrosArvore();
+        }
+        function setDestaqueGer(v){
+            const tf = _tf();
+            tf.destaqueGer = Number(v)||0;
+            aplicarFiltrosArvore();
+        }
+        function atualizarControlesArvore(){
+            const mx = Math.max(getMaxGeracao(), 1);
+            const sl = document.getElementById('slider-max-ger');
+            if (sl) {
+                sl.max = mx;
+                if (!_tf().maxGer || _tf().maxGer > mx) { _tf().maxGer = mx; sl.value = mx; }
+                const lab = document.getElementById('lbl-max-ger'); if (lab) lab.textContent = 'G' + sl.value;
+            }
+            const dest = document.getElementById('sel-destaque-ger');
+            if (dest) {
+                const cur = dest.value;
+                dest.innerHTML = '<option value="0">— Sem destaque —</option>' +
+                    Array.from({length:mx},(_,i)=>i+1).map(g=>`<option value="${g}">Destacar G${g}</option>`).join('');
+                dest.value = cur || '0';
+            }
+            const sb = document.getElementById('busca-sim-arvore');
+            if (sb) {
+                const dl = document.getElementById('datalist-sims-arvore');
+                if (dl) dl.innerHTML = (db.sims||[]).map(s => `<option data-id="${s.id}" value="${_escapeHtml ? _escapeHtml(s.nome) : s.nome}">`).join('');
+            }
+            renderLegendaGeracoes();
+        }
+        function onBuscarSimArvore(){
+            const inp = document.getElementById('busca-sim-arvore'); if (!inp) return;
+            const v = (inp.value||'').trim().toLowerCase(); if (!v) return;
+            const s = (db.sims||[]).find(x => (x.nome||'').toLowerCase() === v) ||
+                       (db.sims||[]).find(x => (x.nome||'').toLowerCase().includes(v));
+            if (s) { focarSimNaArvore(s.id); }
+        }
+
+        // --- Metas em camadas ---
+        function _metasConcluidasArr(){ db.metas_concluidas = db.metas_concluidas || []; return db.metas_concluidas; }
+        function _normMetaFull(m){
+            if (typeof m === 'string') m = { texto: m };
+            m = m || {};
+            m.escopo = m.escopo || 'save';
+            if (m.escopo !== 'geracao' && m.escopo !== 'sim') m.escopo = m.escopo === 'save' ? 'save' : 'save';
+            m.geracaoAlvo = m.geracaoAlvo || null;
+            m.simId = m.simId || null;
+            m.criadaEm = m.criadaEm || null;
+            return m;
+        }
+        function progressoCamada(filtroFn){
+            const pend = (db.metas_pendentes||[]).map(_normMetaFull).filter(filtroFn);
+            const conc = (_metasConcluidasArr()).map(_normMetaFull).filter(filtroFn);
+            const total = pend.length + conc.length;
+            const pct = total === 0 ? 0 : Math.round(100*conc.length/total);
+            return { pend: pend.length, conc: conc.length, total, pct };
+        }
+        function barraProgresso(p, cor){
+            cor = cor || '#7fb069';
+            return `<div style="background:#eee;border-radius:8px;height:8px;overflow:hidden;margin-top:4px;"><div style="width:${p.pct}%;height:100%;background:${cor};transition:width .3s;"></div></div>
+            <small style="color:#888;font-size:10px;">${p.conc}/${p.total} concluídas (${p.pct}%)</small>`;
+        }
+
+
         function generateSimCardSVG(sim, isDead, hideDead) {
             let isFounder = !sim.p1 && !sim.p2;
             let tracos = (sim.tracos || "").toLowerCase();
@@ -5841,6 +6774,7 @@ function importarArquivo(event) {
                 
                 <text x="110" y="262" font-family="Arial, sans-serif" font-size="16" fill="#2B2B2B" text-anchor="middle">${iconStr}</text>
                 ${exTextElement}
+                ${renderGenBadgeSVG(sim)}
                 ${sim.isNpc ? `<rect x="55" y="6" width="110" height="26" rx="13" ry="13" fill="#888899" filter="url(#shadow)"/>
                 <text x="110" y="24" font-family="'Nunito', Arial, sans-serif" font-size="13" font-weight="bold" fill="#ffffff" text-anchor="middle">👤 NPC</text>` : ''}
             </svg>
@@ -5911,7 +6845,7 @@ function importarArquivo(event) {
 
             let geracoes = calcularNiveisDeGeracao();
             
-            let baseSims = db.sims;
+            let baseSims = (db.sims||[]).filter(_simPassaFiltro);
             if (currentTreeLayout === 5) {
                 let keptIds = new Set();
                 
@@ -5935,13 +6869,22 @@ function importarArquivo(event) {
 
             let nodesArray = baseSims.map(s => {
                 let isDead = s.status === 'Ancestral (Morto)';
+                // #33 — tooltip de hover com miniatura + nome completo
+                const _foto = s.foto || (s.fotosFase && (s.fotosFase[s.fase] || Object.values(s.fotosFase).find(Boolean))) || '';
+                const _escNome = (typeof _escapeHtml === 'function') ? _escapeHtml(s.nome || '') : String(s.nome || '');
+                const _causa = (isDead && s.causaMorte) ? `<div style="font-size:11px;color:#888;margin-top:2px;">✝️ ${(typeof _escapeHtml==='function')?_escapeHtml(s.causaMorte):s.causaMorte}</div>` : '';
+                const _imgTag = _foto ? `<img src="${_foto}" alt="" style="width:80px;height:80px;border-radius:10px;object-fit:cover;display:block;margin:0 auto 6px;border:2px solid #d4af37;">` : `<div style="width:80px;height:80px;border-radius:10px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 6px;">👤</div>`;
+                const tooltipEl = document.createElement('div');
+                tooltipEl.style.cssText = 'font-family:Nunito,sans-serif;padding:8px;max-width:160px;text-align:center;';
+                tooltipEl.innerHTML = `${_imgTag}<div style="font-weight:700;font-size:13px;color:#4a3b2a;">${_escNome}</div>${_causa}`;
                 return {
-                    id: String(s.id), 
+                    id: String(s.id),
                     shape: 'image',
                     image: generateSimCardSVG(s, isDead, hideDead),
-                    size: 82, 
+                    size: 82,
                     level: geracoes[s.id],
-                    opacity: isDead && hideDead ? 0.2 : 1
+                    opacity: isDead && hideDead ? 0.2 : 1,
+                    title: tooltipEl
                 };
             });
 
@@ -6157,6 +7100,7 @@ let edgesArray = [];
             if(window.network) { window.network.destroy(); }
 
             window.network = new vis.Network(container, data, options);
+            setTimeout(()=>{ try{ atualizarControlesArvore(); aplicarFiltrosArvore(); }catch(e){} }, 50);
             
             window.network.on("click", function (params) {
                 if (params.nodes.length > 0) {
@@ -6753,6 +7697,7 @@ let edgesArray = [];
                 layout: { name: 'preset', fit: true, padding: 60 }
             });
 
+            setTimeout(()=>{ try{ atualizarControlesArvore(); aplicarFiltrosArvore(); }catch(e){} }, 50);
             window.cyTree.on('tap', 'node[kind = "sim"]', evt => {
                 const simId = evt.target.data('simId');
                 if (simId) abrirPerfil(simId);
@@ -8042,6 +8987,7 @@ function adicionarIrmaoPerfil() {
     
     document.getElementById('e-p1').value = simAtual.p1 || "";
     document.getElementById('e-p2').value = simAtual.p2 || "";
+    { const gm = document.getElementById('e-geracao-manual'); if (gm) gm.value = simAtual.geracaoManual || ""; }
     
     if (!simAtual.p1 && !simAtual.p2) {
         let idsParaMarcar = [idOrigem, ...(simAtual.irmaos || [])];
@@ -8197,53 +9143,73 @@ function abrirLightboxGaleria(idxOrSrc, titulo) {
     }
 }
 function atualizarIndicadorMemoria() {
-    // 1. Verifica se o banco de dados 'db' e os elementos visuais existem na tela
     if (typeof db === 'undefined') return;
-    
-    const chkLocal = document.getElementById('chk-local-save');
-    const container = document.getElementById('container-memoria-local');
-    const barra = document.getElementById('barra-progresso-memoria');
-    const textoPorcentagem = document.getElementById('texto-porcentagem-memoria');
-    const aviso = document.getElementById('aviso-memoria-cheia');
-    
-    if (!container || !barra || !textoPorcentagem || !aviso) return;
 
-    // 2. Só exibe o painel se o jogador estiver usando o salvamento local ativado
-    if (chkLocal && chkLocal.checked) {
-        container.style.display = 'block';
+    // ── Cálculo central ──────────────────────────────────────────────────
+    const tamanhoBytes = JSON.stringify(db).length;
+    const tamanhoMB    = tamanhoBytes / (1048576); // 1024²
+    const LIMITE_MB    = 4.5; // teto amigável (localStorage tem ~5 MB mas com overhead de codificação)
+    let porcentagem    = Math.min(100, (tamanhoMB / LIMITE_MB) * 100);
+
+    // Decide cor e estado de alerta (85 % ≈ 3.825 MB)
+    const ALERTA_AMARELO = LIMITE_MB * 0.70; // ~3.15 MB → atenção laranja
+    const ALERTA_VERMELHO= LIMITE_MB * 0.85; // ~3.825 MB → aviso preventivo
+    let corBarra, mostrarAviso;
+    if (tamanhoMB >= ALERTA_VERMELHO) {
+        corBarra = '#fd7e14'; mostrarAviso = true;   // laranja/amarelo + aviso Google Drive
+    } else if (tamanhoMB >= ALERTA_AMARELO) {
+        corBarra = '#FFC83D'; mostrarAviso = false;  // amarelo
     } else {
-        container.style.display = 'none';
-        return; // Sai da função se o salvamento local estiver desligado
+        corBarra = 'var(--ts4-blue,#0079C1)'; mostrarAviso = false;
     }
 
-    // 3. Calcula o tamanho aproximado do objeto db em caracteres (Bytes)
-    const tamanhoBytes = JSON.stringify(db).length;
-    
-    // Converte para Megabytes (1MB = 1024 * 1024 Bytes)
-    const tamanhoMB = tamanhoBytes / (1024 * 1024);
-    const limiteMaximoMB = 5.0; // Limite padrão do localStorage
+    // ── 1. Painel sidebar original (container-memoria-local) ─────────────
+    const chkLocal = document.getElementById('chk-local-save');
+    const container = document.getElementById('container-memoria-local');
+    const barra     = document.getElementById('barra-progresso-memoria');
+    const textoPorc = document.getElementById('texto-porcentagem-memoria');
+    const aviso     = document.getElementById('aviso-memoria-cheia');
+    if (container && barra && textoPorc && aviso) {
+        if (chkLocal && chkLocal.checked) {
+            container.style.display = 'block';
+            textoPorc.innerText = porcentagem.toFixed(1) + '%';
+            barra.style.width = porcentagem + '%';
+            barra.style.backgroundColor = corBarra;
+            aviso.style.display = mostrarAviso ? 'block' : 'none';
+        } else {
+            container.style.display = 'none';
+        }
+    }
 
-    // 4. Calcula a porcentagem de uso atual contra o teto de 5MB
-    let porcentagem = (tamanhoMB / limiteMaximoMB) * 100;
-    if (porcentagem > 100) porcentagem = 100; // Evita que a barra quebre o layout se passar do limite
+    // ── 2. Painel sidebar secundário (memory-tracker) ────────────────────
+    const container2 = document.getElementById('memory-tracker');
+    const barra2     = document.getElementById('memory-bar-fill');
+    const textoPorc2 = document.getElementById('memory-percent');
+    const aviso2     = document.getElementById('memory-warning');
+    if (container2 && barra2 && textoPorc2) {
+        if (chkLocal && chkLocal.checked) {
+            container2.style.display = 'block';
+            textoPorc2.innerText = porcentagem.toFixed(1) + '%';
+            barra2.style.width = porcentagem + '%';
+            barra2.style.backgroundColor = corBarra;
+            if (aviso2) aviso2.style.display = mostrarAviso ? 'block' : 'none';
+        } else {
+            container2.style.display = 'none';
+        }
+    }
 
-    // 5. Atualiza os textos e o tamanho da barra na tela
-    textoPorcentagem.innerText = porcentagem.toFixed(1) + '%';
-    barra.style.width = porcentagem + '%';
-
-    // 6. Altera as cores baseadas no nível de perigo (Regra de Negócio)
-    if (tamanhoMB >= 4.5) {
-        // Alerta Crítico (4.5MB ou mais)
-        barra.style.backgroundColor = '#ff4d4d'; // Vermelho
-        aviso.style.display = 'block';
-    } else if (tamanhoMB >= 3.5) {
-        // Atenção (Entre 3.5MB e 4.49MB)
-        barra.style.backgroundColor = '#fd7e14'; // Laranja
-        aviso.style.display = 'none';
-    } else {
-        // Seguro (Abaixo de 3.5MB)
-        barra.style.backgroundColor = 'var(--ts4-blue)'; // Azul original do SimStoria
-        aviso.style.display = 'none';
+    // ── 3. Barra de rodapé sutil (#39) ───────────────────────────────────
+    const footerBar  = document.getElementById('footer-storage-bar');
+    const fsFill     = document.getElementById('fs-fill');
+    const fsText     = document.getElementById('fs-text');
+    const fsWarn     = document.getElementById('fs-warn');
+    if (footerBar && fsFill && fsText) {
+        // Sempre visível quando há dados
+        footerBar.style.display = tamanhoMB > 0.01 ? 'flex' : 'none';
+        fsFill.style.width = porcentagem + '%';
+        fsFill.style.backgroundColor = corBarra;
+        fsText.innerText = tamanhoMB.toFixed(2) + ' MB / ' + LIMITE_MB.toFixed(1) + ' MB utilizados';
+        if (fsWarn) fsWarn.style.display = mostrarAviso ? 'inline' : 'none';
     }
 }
     </script>
@@ -8545,9 +9511,15 @@ function atualizarIndicadorMemoria() {
             status: 'pendente',
             dataConfirmada: new Date().toISOString().slice(0,10)
         });
+        // ── #64: envia também para db.metas_pendentes e Livro da Família ──
+        db.metas_pendentes = db.metas_pendentes || [];
+        db.metas_pendentes.push({ texto, criadaEm: Date.now(), simId: sim.id, origemAspiracao: true });
+        db.historia = (db.historia || '') + `\n[${new Date().toLocaleDateString('pt-BR')}] [META] 🎯 Meta Aspiracional de ${sim.nome}: ${texto}`;
         salvarTudo();
         renderMetasAspiracaoEdit(sim);
-        showToast("🎯 Meta de aspiração registrada!");
+        if (typeof renderMetas === 'function') renderMetas();
+        if (typeof renderLivroComFiltro === 'function') renderLivroComFiltro();
+        showToast("🎯 Meta de aspiração registrada no Livro e nas Metas!");
     };
 
     function renderMetasAspiracaoEdit(s) {
@@ -8602,26 +9574,55 @@ function atualizarIndicadorMemoria() {
     window.concluirMetaAspiracao = function(simId, idx) {
         const s = db.sims.find(x => String(x.id) === String(simId));
         if (!s || !s.metasAspiracao || !s.metasAspiracao[idx]) return;
+        const textoMeta = s.metasAspiracao[idx].texto;
         s.metasAspiracao[idx].status = 'concluida';
         s.metasAspiracao[idx].dataConcluida = new Date().toISOString().slice(0,10);
+        // ── #64: remove de metas_pendentes e registra no Livro ──
+        db.metas_pendentes = (db.metas_pendentes || []).filter(m => {
+            const txt = typeof m === 'string' ? m : m.texto;
+            return !(txt === textoMeta && (typeof m !== 'string' ? String(m.simId) === String(simId) : false));
+        });
+        db.historia = (db.historia || '') + `\n[${new Date().toLocaleDateString('pt-BR')}] [CONQUISTA] 🏆 Meta Aspiracional concluída por ${s.nome}: ${textoMeta}`;
         salvarTudo();
         renderMetasAspiracaoView(s);
-        showToast("🏆 Meta concluída! Parabéns!");
+        if (typeof renderMetas === 'function') renderMetas();
+        if (typeof renderLivroComFiltro === 'function') renderLivroComFiltro();
+        showToast("🏆 Meta concluída e registrada no Livro!");
     };
     window.reabrirMetaAspiracao = function(simId, idx) {
         const s = db.sims.find(x => String(x.id) === String(simId));
         if (!s || !s.metasAspiracao || !s.metasAspiracao[idx]) return;
+        const textoMeta = s.metasAspiracao[idx].texto;
         s.metasAspiracao[idx].status = 'pendente';
+        // ── #64: re-adiciona a metas_pendentes se não estiver lá ──
+        db.metas_pendentes = db.metas_pendentes || [];
+        const jaExiste = db.metas_pendentes.some(m => {
+            const txt = typeof m === 'string' ? m : m.texto;
+            return txt === textoMeta && (typeof m !== 'string' ? String(m.simId) === String(simId) : false);
+        });
+        if (!jaExiste) db.metas_pendentes.push({ texto: textoMeta, criadaEm: Date.now(), simId, origemAspiracao: true });
         salvarTudo();
         renderMetasAspiracaoView(s);
+        if (typeof renderMetas === 'function') renderMetas();
     };
     window.excluirMetaAspiracaoView = function(simId, idx) {
         if (!confirm("Excluir esta meta?")) return;
         const s = db.sims.find(x => String(x.id) === String(simId));
         if (!s || !s.metasAspiracao) return;
+        const textoMeta = s.metasAspiracao[idx] ? s.metasAspiracao[idx].texto : '';
         s.metasAspiracao.splice(idx, 1);
+        // ── #64: remove de metas_pendentes e registra no Livro ──
+        if (textoMeta) {
+            db.metas_pendentes = (db.metas_pendentes || []).filter(m => {
+                const txt = typeof m === 'string' ? m : m.texto;
+                return !(txt === textoMeta && (typeof m !== 'string' ? String(m.simId) === String(simId) : false));
+            });
+            db.historia = (db.historia || '') + `\n[${new Date().toLocaleDateString('pt-BR')}] [META-DESISTIDA] 🏳️ Meta Aspiracional removida (${s.nome}): ${textoMeta}`;
+        }
         salvarTudo();
         renderMetasAspiracaoView(s);
+        if (typeof renderMetas === 'function') renderMetas();
+        if (typeof renderLivroComFiltro === 'function') renderLivroComFiltro();
     };
 
     // Atualiza preview de metas quando abre o perfil de edição:
@@ -8961,7 +9962,72 @@ function atualizarIndicadorMemoria() {
     /* Inputs e textareas continuam selecionáveis normalmente. */
     .tree-container input, .tree-container textarea,
     #grid-albuns input, #grid-albuns textarea { user-select: text; }
+
+    /* ── #39: Rodapé de armazenamento ── */
+    #footer-storage-bar {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 9990;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 16px;
+        background: rgba(246,236,214,.92);
+        backdrop-filter: blur(8px);
+        border-top: 1px solid rgba(212,175,55,.25);
+        font-family: 'Nunito','Quicksand',sans-serif;
+        font-size: 10.5px;
+        font-weight: 700;
+        color: #7a6240;
+        box-shadow: 0 -2px 8px rgba(120,90,40,.08);
+        transition: opacity .3s;
+    }
+    body.dark-mode #footer-storage-bar {
+        background: rgba(30,30,40,.92);
+        border-top-color: rgba(255,255,255,.08);
+        color: #bbb;
+    }
+    #footer-storage-bar .fs-label { white-space: nowrap; opacity: .75; }
+    #footer-storage-bar .fs-track {
+        flex: 1;
+        max-width: 200px;
+        height: 5px;
+        background: rgba(120,90,40,.15);
+        border-radius: 99px;
+        overflow: hidden;
+    }
+    #footer-storage-bar .fs-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 99px;
+        background: var(--ts4-blue,#0079C1);
+        transition: width .4s ease, background-color .4s ease;
+    }
+    #footer-storage-bar .fs-text { white-space: nowrap; opacity: .85; font-size: 10px; }
+    #footer-storage-bar .fs-warn {
+        display: none;
+        white-space: nowrap;
+        color: #c17800;
+        font-size: 10px;
+        animation: fs-pulse 2s infinite;
+    }
+    @keyframes fs-pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+    /* Empurra conteúdo para não esconder atrás da barra */
+    body { padding-bottom: 28px !important; }
+    @media (max-width: 768px) {
+        body { padding-bottom: 98px !important; } /* sobrepõe a regra mobile existente */
+        #footer-storage-bar { bottom: 62px; } /* fica acima da barra de nav mobile */
+    }
 </style>
+
+<!-- ── #39: Barra de armazenamento no rodapé ── -->
+<div id="footer-storage-bar" style="display:none;">
+    <span class="fs-label">💾 Armazenamento</span>
+    <div class="fs-track"><div class="fs-fill" id="fs-fill"></div></div>
+    <span class="fs-text" id="fs-text">—</span>
+    <span class="fs-warn" id="fs-warn">⚠️ Quase cheio — conecte ao Google Drive</span>
+</div>
 
 </body>
 </html>
