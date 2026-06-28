@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE - 54_5-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54_10-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -791,21 +791,46 @@
             SimStoria - Legacy Companion
         </h1>
 
-        <div class="mobile-nav-menu">
+        <div class="mobile-nav-menu sidebar-grouped-nav">
             <button class="nav-btn active" id="btn-nav-home" onclick="switchTab('tab-home')">🏠 Início</button>
-            <button class="nav-btn" id="btn-nav-dash" onclick="switchTab('tab-dash')">🎲 Dashboard</button>
-            <button class="nav-btn" id="btn-nav-lab" onclick="switchTab('tab-lab')">🧪 Laboratório</button>
-            <button class="nav-btn" id="btn-nav-gen" onclick="switchTab('tab-gen')">🔮 Personalidade</button>
-            <button class="nav-btn" id="btn-nav-tree" onclick="switchTab('tab-tree')">🌳 Árvore Genealógica</button>
-            <button class="nav-btn" id="btn-nav-ia" onclick="switchTab('tab-ia')">🤖 I.A. e Histórias</button>
-            <button class="nav-btn" id="btn-nav-history" onclick="switchTab('tab-history')">📖 Livro e Metas</button>
-            <button class="nav-btn" id="btn-nav-galeria" onclick="switchTab('tab-galeria')">📸 Galeria de Recordações 🔒</button>
-            <button class="nav-btn" id="btn-nav-laws" onclick="switchTab('tab-laws')">📜 Livro de Regras</button>
-            <button class="nav-btn" id="btn-nav-config" onclick="switchTab('tab-config')">⚙️ Configurações</button>
-            <button class="nav-btn" id="btn-nav-help" onclick="switchTab('tab-help')">📖 Ajuda</button>
-            <button class="nav-btn" id="btn-nav-feedback" onclick="switchTab('tab-feedback')">💬 Enviar Feedback</button>
-            <button class="nav-btn" id="btn-nav-apoio" onclick="switchTab('tab-apoio')" style="color: var(--ts4-green);">💖 Apoie o Projeto</button>
-            <button class="nav-btn" id="btn-nav-sobre" onclick="switchTab('tab-sobre')">ℹ️ Sobre / Atualizações</button>
+
+            <details class="sidebar-group" data-group="jogar" open>
+                <summary class="sidebar-group-head">🎮 Jogar <span class="sidebar-group-arrow">▾</span></summary>
+                <div class="sidebar-group-body">
+                    <button class="nav-btn" id="btn-nav-dash" onclick="switchTab('tab-dash')">🎲 Dashboard</button>
+                    <button class="nav-btn" id="btn-nav-lab" onclick="switchTab('tab-lab')">🧪 Laboratório</button>
+                    <button class="nav-btn" id="btn-nav-ia" onclick="switchTab('tab-ia')">🤖 I.A. e Histórias</button>
+                </div>
+            </details>
+
+            <details class="sidebar-group" data-group="familia" open>
+                <summary class="sidebar-group-head">👨‍👩‍👧 Família <span class="sidebar-group-arrow">▾</span></summary>
+                <div class="sidebar-group-body">
+                    <button class="nav-btn" id="btn-nav-gen" onclick="switchTab('tab-gen')">🔮 Personalidade</button>
+                    <button class="nav-btn" id="btn-nav-tree" onclick="switchTab('tab-tree')">🌳 Árvore Genealógica</button>
+                    <button class="nav-btn" id="btn-nav-history" onclick="switchTab('tab-history')">📖 Livro e Metas</button>
+                    <button class="nav-btn" id="btn-nav-galeria" onclick="switchTab('tab-galeria')">📸 Galeria de Recordações 🔒</button>
+                </div>
+            </details>
+
+            <details class="sidebar-group" data-group="progresso">
+                <summary class="sidebar-group-head">🏆 Progresso <span class="sidebar-group-arrow">▾</span></summary>
+                <div class="sidebar-group-body">
+                    <button class="nav-btn" id="btn-nav-conquistas" onclick="switchTab('tab-conquistas')">🏅 Conquistas & Stats</button>
+                    <button class="nav-btn" id="btn-nav-laws" onclick="switchTab('tab-laws')">📜 Livro de Regras</button>
+                </div>
+            </details>
+
+            <details class="sidebar-group" data-group="sistema">
+                <summary class="sidebar-group-head">⚙️ Sistema <span class="sidebar-group-arrow">▾</span></summary>
+                <div class="sidebar-group-body">
+                    <button class="nav-btn" id="btn-nav-config" onclick="switchTab('tab-config')">⚙️ Configurações</button>
+                    <button class="nav-btn" id="btn-nav-help" onclick="switchTab('tab-help')">📖 Ajuda</button>
+                    <button class="nav-btn" id="btn-nav-feedback" onclick="switchTab('tab-feedback')">💬 Enviar Feedback</button>
+                    <button class="nav-btn" id="btn-nav-apoio" onclick="switchTab('tab-apoio')" style="color: var(--ts4-green);">💖 Apoie o Projeto</button>
+                    <button class="nav-btn" id="btn-nav-sobre" onclick="switchTab('tab-sobre')">ℹ️ Sobre / Atualizações</button>
+                </div>
+            </details>
         </div>
 
 	<button class="mobile-toggle-widgets-btn" onclick="document.getElementById('sidebar-extra-widgets').classList.toggle('active')">
@@ -897,6 +922,12 @@
                         <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Abra o mapa de conexões ("Árvore Genealógica") para gerenciar laços de sangue, cônjuges e linhagens completas.</span>
                     </div>
 
+                    <div class="welcome-card" onclick="document.getElementById('btn-nav-conquistas').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid var(--cozy-gold,#d4af37); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                        <div style="font-size: 36px; margin-bottom: 15px;">🏅</div>
+                        <strong style="font-size: 18px; color: var(--cozy-gold,#d4af37); display: block; margin-bottom: 8px;">Conquistas &amp; Stats</strong>
+                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Veja o Espelho da Família, desbloqueie badges e calcule o score do desafio de legado com base nos seus eventos.</span>
+                    </div>
+
                     <div class="welcome-card" onclick="document.getElementById('btn-nav-feedback').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid #ffcc00; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
                         <div style="font-size: 36px; margin-bottom: 15px;">💬</div>
                         <strong style="font-size: 18px; color: #c79a00; display: block; margin-bottom: 8px;">Enviar Feedback</strong>
@@ -923,12 +954,31 @@
         
         <div id="tab-dash" class="tab-pane">
             <h2>Sorteios do Destino</h2>
-            <div id="espelho-familia-wrap"></div>
-            <div id="badges-wrap"></div>
-            <div id="legacy-wrap"></div>
-            <h3 style="margin-top:24px;">🎲 Roletas</h3>
+            <p style="font-size:13px; color:var(--ts4-subtle-text,#888); margin-bottom:16px; margin-top:-8px;">Use as roletas para gerar eventos, reviravoltas e dilemas. Consulte <strong>🏅 Conquistas & Stats</strong> para ver o progresso da família.</p>
+            <h3 style="margin-top:8px;">🎲 Roletas</h3>
             <div class="card-grid" id="dash-cards"></div>
         </div>
+
+        <!-- ── Nova aba: Conquistas & Stats ─────────────────────────────── -->
+        <div id="tab-conquistas" class="tab-pane">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:4px;">
+                <h2 style="margin:0;">🏅 Conquistas &amp; Stats</h2>
+                <span style="font-size:12px; color:var(--ts4-subtle-text,#888); font-style:italic;">Atualiza automaticamente com base no Livro de Histórias</span>
+            </div>
+            <p style="font-size:13px; color:var(--ts4-subtle-text,#888); margin-bottom:20px; margin-top:4px;">
+                Acompanhe o progresso da família, desbloqueie conquistas e calcule o score do seu desafio de legado — tudo gerado automaticamente a partir dos eventos registrados.
+            </p>
+
+            <!-- Espelho da família -->
+            <div id="espelho-familia-wrap"></div>
+
+            <!-- Badges de conquista -->
+            <div id="badges-wrap"></div>
+
+            <!-- Desafio de legado / score -->
+            <div id="legacy-wrap"></div>
+        </div>
+        <!-- ── Fim: Conquistas & Stats ────────────────────────────────────── -->
 
         <div id="tab-lab" class="tab-pane">
             <h2>🧬 Laboratório: Gerar Base do Sim</h2>
@@ -3104,49 +3154,7 @@
             });
         }
 
-function atualizarIndicadorMemoria() {
-            if (typeof db === 'undefined') return;
-            
-            const chkLocal = document.getElementById('chk-local-save');
-            const container = document.getElementById('memory-tracker');
-            const barra = document.getElementById('memory-bar-fill');
-            const textoPorcentagem = document.getElementById('memory-percent');
-            const aviso = document.getElementById('memory-warning');
-            
-            if (!container || !barra || !textoPorcentagem || !aviso) return;
 
-            // Só exibe se o salvamento local estiver ativado
-            if (chkLocal && chkLocal.checked) {
-                container.style.display = 'block';
-            } else {
-                container.style.display = 'none';
-                return;
-            }
-
-            // Calcula o tamanho em MB
-            const tamanhoBytes = JSON.stringify(db).length;
-            const tamanhoMB = tamanhoBytes / (1024 * 1024);
-            const limiteMaximoMB = 5.0; 
-
-            // Define porcentagem
-            let porcentagem = (tamanhoMB / limiteMaximoMB) * 100;
-            if (porcentagem > 100) porcentagem = 100; 
-
-            textoPorcentagem.innerText = porcentagem.toFixed(1) + '%';
-            barra.style.width = porcentagem + '%';
-
-            // Altera as cores baseado no risco
-            if (tamanhoMB >= 4.5) {
-                barra.style.backgroundColor = '#ff4d4d'; // Alerta: Vermelho
-                aviso.style.display = 'block';
-            } else if (tamanhoMB >= 3.5) {
-                barra.style.backgroundColor = '#fd7e14'; // Atenção: Laranja
-                aviso.style.display = 'none';
-            } else {
-                barra.style.backgroundColor = 'var(--ts4-green)'; // Seguro: Verde
-                aviso.style.display = 'none';
-            }
-        }
 
         function iniciarDB() {
             let visitedBefore = localStorage.getItem('ts4_visited');
@@ -3467,7 +3475,10 @@ function atualizarIndicadorMemoria() {
             currentCloudFileId = null; currentFamilyName = "Família Padrão";
             salvarTudo(); recarregarInterface(); atualizarIndicadorFamiliaAtiva(); showToast("✨ Novo tabuleiro criado!");
             try { if (typeof verificarMetasAuto === 'function') verificarMetasAuto(); } catch(e){}
-            try { if (typeof renderEspelhoFamilia === 'function' && document.getElementById('tab-dash') && document.getElementById('tab-dash').classList.contains('active')) { renderEspelhoFamilia(); renderBadges(); renderDesafioLegado(); } } catch(e){}
+            try { if (typeof renderEspelhoFamilia === 'function' && (
+                    (document.getElementById('tab-dash') && document.getElementById('tab-dash').classList.contains('active')) ||
+                    (document.getElementById('tab-conquistas') && document.getElementById('tab-conquistas').classList.contains('active'))
+                )) { renderEspelhoFamilia(); renderBadges(); renderDesafioLegado(); } } catch(e){}
         }
 
 function salvarTudo() { 
@@ -3596,8 +3607,8 @@ function salvarTudo() {
                 verificarSessaoDrive();
             }
 
-            if(id === 'tab-dash') {
-                try { renderEspelhoFamilia(); renderBadges(); renderDesafioLegado(); } catch(e){ console.warn('espelho/badges', e); }
+            if(id === 'tab-conquistas') {
+                try { renderEspelhoFamilia(); renderBadges(); renderDesafioLegado(); } catch(e){ console.warn('conquistas/badges', e); }
             }
 	}
 // ==========================================
@@ -6829,6 +6840,8 @@ function importarArquivo(event) {
                 if (container) container.style.display = 'none';
                 if (cyContainer) cyContainer.style.display = 'block';
                 if (window.network) { try { window.network.destroy(); } catch(e){} window.network = null; }
+                // Esconde tooltip ao trocar modo
+                try { const t = document.getElementById('ss-tree-tooltip'); if(t) t.style.opacity='0'; } catch(e){}
                 renderFamilyEchoTree(currentTreeLayout);
                 return;
             }
@@ -6869,22 +6882,13 @@ function importarArquivo(event) {
 
             let nodesArray = baseSims.map(s => {
                 let isDead = s.status === 'Ancestral (Morto)';
-                // #33 — tooltip de hover com miniatura + nome completo
-                const _foto = s.foto || (s.fotosFase && (s.fotosFase[s.fase] || Object.values(s.fotosFase).find(Boolean))) || '';
-                const _escNome = (typeof _escapeHtml === 'function') ? _escapeHtml(s.nome || '') : String(s.nome || '');
-                const _causa = (isDead && s.causaMorte) ? `<div style="font-size:11px;color:#888;margin-top:2px;">✝️ ${(typeof _escapeHtml==='function')?_escapeHtml(s.causaMorte):s.causaMorte}</div>` : '';
-                const _imgTag = _foto ? `<img src="${_foto}" alt="" style="width:80px;height:80px;border-radius:10px;object-fit:cover;display:block;margin:0 auto 6px;border:2px solid #d4af37;">` : `<div style="width:80px;height:80px;border-radius:10px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 6px;">👤</div>`;
-                const tooltipEl = document.createElement('div');
-                tooltipEl.style.cssText = 'font-family:Nunito,sans-serif;padding:8px;max-width:160px;text-align:center;';
-                tooltipEl.innerHTML = `${_imgTag}<div style="font-weight:700;font-size:13px;color:#4a3b2a;">${_escNome}</div>${_causa}`;
                 return {
                     id: String(s.id),
                     shape: 'image',
                     image: generateSimCardSVG(s, isDead, hideDead),
                     size: 82,
                     level: geracoes[s.id],
-                    opacity: isDead && hideDead ? 0.2 : 1,
-                    title: tooltipEl
+                    opacity: isDead && hideDead ? 0.2 : 1
                 };
             });
 
@@ -7101,6 +7105,108 @@ let edgesArray = [];
 
             window.network = new vis.Network(container, data, options);
             setTimeout(()=>{ try{ atualizarControlesArvore(); aplicarFiltrosArvore(); }catch(e){} }, 50);
+
+            // ── #33 Tooltip customizado: hoverNode / blurNode ──────────────
+            (function _setupTreeTooltip(net, simsData) {
+                // Cria (ou reutiliza) o elemento de tooltip
+                let ttEl = document.getElementById('ss-tree-tooltip');
+                if (!ttEl) {
+                    ttEl = document.createElement('div');
+                    ttEl.id = 'ss-tree-tooltip';
+                    ttEl.style.cssText = [
+                        'position:fixed',
+                        'z-index:99999',
+                        'pointer-events:none',
+                        'background:#fff',
+                        'border:2px solid #d4af37',
+                        'border-radius:14px',
+                        'padding:10px 12px',
+                        'box-shadow:0 6px 20px rgba(120,90,40,0.22)',
+                        'font-family:Nunito,Quicksand,sans-serif',
+                        'font-size:12px',
+                        'color:#4a3b2a',
+                        'text-align:center',
+                        'max-width:170px',
+                        'min-width:120px',
+                        'opacity:0',
+                        'transition:opacity .18s ease',
+                        'user-select:none'
+                    ].join(';');
+                    document.body.appendChild(ttEl);
+                }
+
+                let _hideTimer = null;
+
+                function _showTip(nodeId, mouseX, mouseY) {
+                    clearTimeout(_hideTimer);
+                    const sim = simsData.find(s => String(s.id) === String(nodeId));
+                    if (!sim) return;
+
+                    const isDead = sim.status === 'Ancestral (Morto)';
+                    const _faseAtual = sim.fase || 'jovem-adulto';
+                    const foto = (sim.img && (
+                        sim.img[_faseAtual] ||
+                        sim.img['jovem-adulto'] ||
+                        sim.img['adulto'] ||
+                        Object.values(sim.img).find(Boolean)
+                    )) || '';
+                    const esc = str => String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+                    const imgHtml = foto
+                        ? `<img src="${foto}" alt="" style="width:82px;height:82px;border-radius:10px;object-fit:cover;display:block;margin:0 auto 7px;border:2px solid #d4af37;">`
+                        : `<div style="width:82px;height:82px;border-radius:10px;background:linear-gradient(135deg,#f4b8c7,#9bc7e4);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 7px;">👤</div>`;
+                    const faseHtml = sim.fase
+                        ? `<div style="font-size:10px;color:#9b7d6b;margin-top:2px;letter-spacing:.3px;text-transform:uppercase;">${esc(sim.fase)}</div>`
+                        : '';
+                    const causaHtml = (isDead && sim.causaMorte)
+                        ? `<div style="font-size:11px;color:#c97064;margin-top:4px;">✝️ ${esc(sim.causaMorte)}</div>`
+                        : (isDead ? `<div style="font-size:11px;color:#9b7d6b;margin-top:4px;">✝️ Ancestral</div>` : '');
+
+                    ttEl.innerHTML = imgHtml
+                        + `<div style="font-weight:800;font-size:13px;color:#4a3b2a;line-height:1.3;">${esc(sim.nome)}</div>`
+                        + faseHtml
+                        + causaHtml;
+
+                    // Posiciona perto do cursor mas dentro da viewport
+                    _placeTip(mouseX, mouseY);
+                    ttEl.style.opacity = '1';
+                }
+
+                function _placeTip(mx, my) {
+                    const W = window.innerWidth, H = window.innerHeight;
+                    const TW = ttEl.offsetWidth  || 170;
+                    const TH = ttEl.offsetHeight || 150;
+                    let x = mx + 16, y = my + 16;
+                    if (x + TW > W - 10) x = mx - TW - 16;
+                    if (y + TH > H - 10) y = my - TH - 16;
+                    ttEl.style.left = Math.max(8, x) + 'px';
+                    ttEl.style.top  = Math.max(8, y) + 'px';
+                }
+
+                function _hideTip() {
+                    ttEl.style.opacity = '0';
+                }
+
+                // Rastreia posição do mouse sobre o container
+                let _lastMX = 0, _lastMY = 0;
+                container.addEventListener('mousemove', e => {
+                    _lastMX = e.clientX; _lastMY = e.clientY;
+                    if (ttEl.style.opacity === '1') _placeTip(_lastMX, _lastMY);
+                });
+
+                net.on('hoverNode', function(p) {
+                    const nid = String(p.node);
+                    if (nid.startsWith('npc_')) return; // não mostra tooltip em NPC
+                    _showTip(nid, _lastMX, _lastMY);
+                });
+                net.on('blurNode', function() {
+                    _hideTimer = setTimeout(_hideTip, 120);
+                });
+                // Esconde ao clicar ou ao sair do container
+                net.on('click', _hideTip);
+                container.addEventListener('mouseleave', _hideTip);
+            })(window.network, baseSims);
+            // ── fim #33 ───────────────────────────────────────────────────
             
             window.network.on("click", function (params) {
                 if (params.nodes.length > 0) {
@@ -7713,6 +7819,91 @@ let edgesArray = [];
                     window.cyTree.center();
                 } catch(e){}
             }, 80);
+
+            // ── #33 Tooltip para Family Echo (Cytoscape modos 6/7/8) ──────────
+            (function _setupCyTooltip() {
+                // Reutiliza (ou cria) o mesmo elemento de tooltip do vis-network
+                let ttEl = document.getElementById('ss-tree-tooltip');
+                if (!ttEl) {
+                    ttEl = document.createElement('div');
+                    ttEl.id = 'ss-tree-tooltip';
+                    ttEl.style.cssText = [
+                        'position:fixed','z-index:99999','pointer-events:none',
+                        'background:#fff','border:2px solid #d4af37','border-radius:14px',
+                        'padding:10px 12px','box-shadow:0 6px 20px rgba(120,90,40,0.22)',
+                        'font-family:Nunito,Quicksand,sans-serif','font-size:12px',
+                        'color:#4a3b2a','text-align:center','max-width:170px','min-width:120px',
+                        'opacity:0','transition:opacity .18s ease','user-select:none'
+                    ].join(';');
+                    document.body.appendChild(ttEl);
+                }
+
+                let _hideTimer = null;
+
+                function _getFoto(sim) {
+                    if (!sim.img) return '';
+                    const fase = sim.fase || 'jovem-adulto';
+                    return sim.img[fase] || sim.img['jovem-adulto'] || sim.img['adulto'] ||
+                        Object.values(sim.img).find(Boolean) || '';
+                }
+
+                function _placeTip(mx, my) {
+                    const W = window.innerWidth, H = window.innerHeight;
+                    const TW = ttEl.offsetWidth  || 170;
+                    const TH = ttEl.offsetHeight || 150;
+                    let x = mx + 16, y = my + 16;
+                    if (x + TW > W - 10) x = mx - TW - 16;
+                    if (y + TH > H - 10) y = my - TH - 16;
+                    ttEl.style.left = Math.max(8, x) + 'px';
+                    ttEl.style.top  = Math.max(8, y) + 'px';
+                }
+
+                function _showTipSim(simId, mx, my) {
+                    clearTimeout(_hideTimer);
+                    const sim = sims.find(s => String(s.id) === String(simId));
+                    if (!sim) return;
+                    const isDead = sim.status === 'Ancestral (Morto)';
+                    const foto = _getFoto(sim);
+                    const esc = str => String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    const imgHtml = foto
+                        ? `<img src="${foto}" alt="" style="width:82px;height:82px;border-radius:10px;object-fit:cover;display:block;margin:0 auto 7px;border:2px solid #d4af37;">`
+                        : `<div style="width:82px;height:82px;border-radius:10px;background:linear-gradient(135deg,#f4b8c7,#9bc7e4);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 7px;">\u{1F464}</div>`;
+                    const faseHtml = sim.fase
+                        ? `<div style="font-size:10px;color:#9b7d6b;margin-top:2px;letter-spacing:.3px;text-transform:uppercase;">${esc(sim.fase)}</div>`
+                        : '';
+                    const causaHtml = (isDead && sim.causaMorte)
+                        ? `<div style="font-size:11px;color:#c97064;margin-top:4px;">\u2020\ufe0f ${esc(sim.causaMorte)}</div>`
+                        : (isDead ? `<div style="font-size:11px;color:#9b7d6b;margin-top:4px;">\u2020\ufe0f Ancestral</div>` : '');
+                    ttEl.innerHTML = imgHtml
+                        + `<div style="font-weight:800;font-size:13px;color:#4a3b2a;line-height:1.3;">${esc(sim.nome)}</div>`
+                        + faseHtml + causaHtml;
+                    _placeTip(mx, my);
+                    ttEl.style.opacity = '1';
+                }
+
+                function _hideTip() { ttEl.style.opacity = '0'; }
+
+                let _lastMX = 0, _lastMY = 0;
+                cyContainer.addEventListener('mousemove', e => {
+                    _lastMX = e.clientX; _lastMY = e.clientY;
+                    if (ttEl.style.opacity === '1') _placeTip(_lastMX, _lastMY);
+                });
+
+                window.cyTree.on('mouseover', 'node[kind = "sim"]', evt => {
+                    const simId = evt.target.data('simId');
+                    if (!simId) return;
+                    const oe = evt.originalEvent;
+                    const mx = oe ? oe.clientX : _lastMX;
+                    const my = oe ? oe.clientY : _lastMY;
+                    _showTipSim(simId, mx, my);
+                });
+                window.cyTree.on('mouseout', 'node[kind = "sim"]', () => {
+                    _hideTimer = setTimeout(_hideTip, 120);
+                });
+                window.cyTree.on('tap', 'node[kind = "sim"]', _hideTip);
+                cyContainer.addEventListener('mouseleave', _hideTip);
+            })();
+            // ── fim #33 Family Echo ───────────────────────────────────────────
         }
 
 
@@ -9210,6 +9401,38 @@ function atualizarIndicadorMemoria() {
         fsFill.style.backgroundColor = corBarra;
         fsText.innerText = tamanhoMB.toFixed(2) + ' MB / ' + LIMITE_MB.toFixed(1) + ' MB utilizados';
         if (fsWarn) fsWarn.style.display = mostrarAviso ? 'inline' : 'none';
+        // Texto compacto quando recolhida
+        if (footerBar.classList.contains('collapsed')) {
+            fsText.innerText = Math.round(porcentagem) + '%';
+        }
+        // Wire-up do toggle (uma vez só)
+        if (!footerBar.dataset.toggleWired) {
+            footerBar.dataset.toggleWired = '1';
+            const STORAGE_KEY = 'ssr_storage_bar_collapsed';
+            const setCollapsed = (col) => {
+                if (col) {
+                    footerBar.classList.add('collapsed');
+                    document.body.classList.add('storage-collapsed');
+                    fsText.innerText = Math.round(porcentagem) + '%';
+                } else {
+                    footerBar.classList.remove('collapsed');
+                    document.body.classList.remove('storage-collapsed');
+                    fsText.innerText = tamanhoMB.toFixed(2) + ' MB / ' + LIMITE_MB.toFixed(1) + ' MB utilizados';
+                }
+                try { localStorage.setItem(STORAGE_KEY, col ? '1' : '0'); } catch(e){}
+            };
+            const btn = document.getElementById('fs-toggle');
+            if (btn) btn.addEventListener('click', (e) => { e.stopPropagation(); setCollapsed(true); });
+            // Clique no chip recolhido expande
+            footerBar.addEventListener('click', (e) => {
+                if (footerBar.classList.contains('collapsed')) setCollapsed(false);
+            });
+            // Estado inicial: localStorage > auto-recolher em mobile
+            let pref = null;
+            try { pref = localStorage.getItem(STORAGE_KEY); } catch(e){}
+            if (pref === '1') setCollapsed(true);
+            else if (pref === null && window.innerWidth <= 768) setCollapsed(true);
+        }
     }
 }
     </script>
@@ -9967,7 +10190,8 @@ function atualizarIndicadorMemoria() {
     #footer-storage-bar {
         position: fixed;
         bottom: 0; left: 0; right: 0;
-        z-index: 9990;
+        /* ↓ z-index abaixo de modais/dropdowns (que usam 1000+) mas acima do conteúdo */
+        z-index: 800;
         height: 28px;
         display: flex;
         align-items: center;
@@ -9982,6 +10206,8 @@ function atualizarIndicadorMemoria() {
         color: #7a6240;
         box-shadow: 0 -2px 8px rgba(120,90,40,.08);
         transition: opacity .3s;
+        /* ↓ Barra é puramente informativa — nunca bloqueia cliques */
+        pointer-events: none;
     }
     body.dark-mode #footer-storage-bar {
         background: rgba(30,30,40,.92);
@@ -10013,11 +10239,65 @@ function atualizarIndicadorMemoria() {
         animation: fs-pulse 2s infinite;
     }
     @keyframes fs-pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
-    /* Empurra conteúdo para não esconder atrás da barra */
-    body { padding-bottom: 28px !important; }
+    /* Empurra conteúdo para não esconder atrás da barra (desktop) */
+    body { padding-bottom: 32px !important; }
     @media (max-width: 768px) {
-        body { padding-bottom: 98px !important; } /* sobrepõe a regra mobile existente */
-        #footer-storage-bar { bottom: 62px; } /* fica acima da barra de nav mobile */
+        /* Mobile: nav fixa (~68px) + storage bar (28px) + folga = 106px */
+        body { padding-bottom: 108px !important; }
+        /* Posiciona a barra acima da nav mobile usando var calculável */
+        #footer-storage-bar {
+            bottom: 68px;   /* altura real da nav mobile */
+            z-index: 9990;  /* acima da nav no mobile para ficar visível */
+        }
+    }
+
+    /* ── Botão minimizar dentro da barra ── */
+    #footer-storage-bar .fs-toggle {
+        pointer-events: auto;
+        background: rgba(120,90,40,.12);
+        border: none;
+        color: inherit;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        line-height: 1;
+        display: flex; align-items: center; justify-content: center;
+        margin-left: auto;
+        transition: background .2s;
+    }
+    #footer-storage-bar .fs-toggle:hover { background: rgba(120,90,40,.28); }
+    body.dark-mode #footer-storage-bar .fs-toggle { background: rgba(255,255,255,.10); }
+    body.dark-mode #footer-storage-bar .fs-toggle:hover { background: rgba(255,255,255,.22); }
+
+    /* ── Modo recolhido: vira um chip pequeno no canto ── */
+    #footer-storage-bar.collapsed {
+        left: auto;
+        right: 12px;
+        bottom: 12px;
+        width: auto;
+        min-width: 0;
+        height: 32px;
+        padding: 0 10px;
+        border-radius: 999px;
+        border-top: none;
+        border: 1px solid rgba(212,175,55,.35);
+        gap: 6px;
+        pointer-events: auto;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,.18);
+    }
+    #footer-storage-bar.collapsed .fs-label,
+    #footer-storage-bar.collapsed .fs-track,
+    #footer-storage-bar.collapsed .fs-warn,
+    #footer-storage-bar.collapsed .fs-toggle { display: none; }
+    #footer-storage-bar.collapsed .fs-text { font-size: 11px; opacity: 1; font-weight: 800; }
+    #footer-storage-bar.collapsed::before { content: "💾"; font-size: 13px; }
+
+    body.storage-collapsed { padding-bottom: 0 !important; }
+    @media (max-width: 768px) {
+        body.storage-collapsed { padding-bottom: 76px !important; }
+        #footer-storage-bar.collapsed { bottom: 76px; right: 10px; }
     }
 </style>
 
@@ -10027,7 +10307,369 @@ function atualizarIndicadorMemoria() {
     <div class="fs-track"><div class="fs-fill" id="fs-fill"></div></div>
     <span class="fs-text" id="fs-text">—</span>
     <span class="fs-warn" id="fs-warn">⚠️ Quase cheio — conecte ao Google Drive</span>
+    <button type="button" class="fs-toggle" id="fs-toggle" title="Minimizar barra" aria-label="Minimizar">✕</button>
 </div>
+
+
+<!-- =============================================================
+     AJUSTES UX #73 #75 #76 #77 — blocos isolados, sem regressão
+     ============================================================= -->
+
+<style data-feature="ux-ajustes-73-75-76-77">
+/* #77 — Sidebar agrupada */
+.sidebar-grouped-nav .sidebar-group { margin: 6px 0; border-radius: 12px; overflow: hidden; }
+.sidebar-grouped-nav .sidebar-group-head {
+    list-style: none; cursor: pointer; user-select: none;
+    padding: 8px 10px; font-size: 12px; font-weight: 700;
+    color: var(--ts4-blue, #4a6fa5); text-transform: uppercase; letter-spacing: 0.5px;
+    background: rgba(155,199,228,0.12);
+    display: flex; align-items: center; justify-content: space-between;
+    border-radius: 10px;
+}
+.sidebar-grouped-nav .sidebar-group-head::-webkit-details-marker { display: none; }
+.sidebar-grouped-nav .sidebar-group[open] > .sidebar-group-head { background: rgba(155,199,228,0.22); }
+.sidebar-grouped-nav .sidebar-group-arrow { transition: transform .18s ease; font-size: 11px; opacity: .7; }
+.sidebar-grouped-nav .sidebar-group[open] > .sidebar-group-head .sidebar-group-arrow { transform: rotate(180deg); }
+.sidebar-grouped-nav .sidebar-group-body { padding: 4px 0 6px 0; display: flex; flex-direction: column; gap: 2px; }
+
+/* #73 — FAB Registrar evento */
+#fab-registrar-evento {
+    position: fixed; right: 22px; bottom: 22px; z-index: 9500;
+    width: 58px; height: 58px; border-radius: 50%; border: none; cursor: pointer;
+    background: linear-gradient(135deg, var(--cozy-accent, #7fb069), var(--cozy-gold-soft, #f0d97a));
+    color: #fff; font-size: 26px; line-height: 58px;
+    box-shadow: 0 6px 18px rgba(120,90,40,0.28), 0 2px 4px rgba(0,0,0,0.12);
+    transition: transform .15s ease, box-shadow .15s ease;
+    display: flex; align-items: center; justify-content: center;
+}
+#fab-registrar-evento:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 10px 22px rgba(120,90,40,0.34); }
+#fab-registrar-evento:active { transform: scale(0.96); }
+@media (max-width: 600px) { #fab-registrar-evento { right: 14px; bottom: 14px; width: 52px; height: 52px; font-size: 22px; } }
+
+#fab-evento-modal {
+    display: none; position: fixed; inset: 0; z-index: 9600;
+    background: rgba(0,0,0,0.45); align-items: center; justify-content: center; padding: 16px;
+}
+#fab-evento-modal.open { display: flex; }
+#fab-evento-modal .fab-card {
+    background: var(--cozy-bg, #fff8e7); color: var(--cozy-ink, #4a3b2a);
+    width: min(440px, 100%); border-radius: 18px; padding: 20px 22px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+    border: 2px solid var(--cozy-gold-soft, #f0d97a);
+}
+#fab-evento-modal h3 { margin: 0 0 12px 0; font-size: 18px; color: var(--cozy-ink, #4a3b2a); }
+#fab-evento-modal label { display:block; font-size: 12px; font-weight: 700; margin: 10px 0 4px; opacity: .8; }
+#fab-evento-modal select, #fab-evento-modal textarea, #fab-evento-modal input[type="text"] {
+    width: 100%; padding: 8px 10px; font-size: 13px;
+    border-radius: 10px; border: 1.5px solid #e6d5a8; background: #fffdf6;
+    font-family: inherit; box-sizing: border-box;
+}
+#fab-evento-modal textarea { min-height: 90px; resize: vertical; }
+#fab-evento-modal .fab-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+#fab-evento-modal .fab-actions button {
+    padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 13px;
+}
+#fab-evento-modal .fab-btn-cancel { background: #eee; color: #555; }
+#fab-evento-modal .fab-btn-save { background: var(--cozy-accent, #7fb069); color: #fff; }
+
+/* #75 — Menu de contexto da árvore */
+#tree-ctxmenu {
+    position: fixed; z-index: 9700; min-width: 220px;
+    background: #fff; border-radius: 12px; padding: 6px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.22); border: 1px solid rgba(0,0,0,0.08);
+    display: none; font-family: inherit;
+}
+#tree-ctxmenu.open { display: block; }
+#tree-ctxmenu .ctx-item {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    padding: 9px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: #333;
+}
+#tree-ctxmenu .ctx-item:hover { background: rgba(127,176,105,0.15); }
+#tree-ctxmenu .ctx-sep { height: 1px; background: rgba(0,0,0,0.07); margin: 4px 2px; }
+#tree-ctxmenu .ctx-title { font-size: 11px; opacity: .6; padding: 4px 12px 6px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+</style>
+
+<!-- #73 FAB -->
+<button id="fab-registrar-evento" type="button" title="Registrar evento no Livro da Família" aria-label="Registrar evento">✍️</button>
+
+<!-- #73 Mini-modal -->
+<div id="fab-evento-modal" role="dialog" aria-modal="true" aria-labelledby="fab-evento-title">
+    <div class="fab-card">
+        <h3 id="fab-evento-title">✍️ Registrar evento</h3>
+        <label for="fab-evento-tag">Categoria</label>
+        <select id="fab-evento-tag">
+            <option value="[OUTRO]">📝 Outro</option>
+            <option value="[NASCIMENTO]">👶 Nascimento</option>
+            <option value="[FASES DE VIDA]">🎂 Fases de vida</option>
+            <option value="[MORTE]">💀 Morte</option>
+            <option value="[CASAMENTO]">💍 Casamento</option>
+            <option value="[DRAMA]">🎭 Drama</option>
+            <option value="[META]">🎯 Meta</option>
+        </select>
+        <label for="fab-evento-sim">Sim vinculado (opcional)</label>
+        <input type="text" id="fab-evento-sim-busca" placeholder="🔍 Buscar Sim..." style="margin-bottom:4px;">
+        <select id="fab-evento-sim"><option value="">— Nenhum —</option></select>
+        <label for="fab-evento-texto">O que aconteceu?</label>
+        <textarea id="fab-evento-texto" placeholder="Descreva o evento..."></textarea>
+        <div class="fab-actions">
+            <button type="button" class="fab-btn-cancel" onclick="fabFecharEvento()">Cancelar</button>
+            <button type="button" class="fab-btn-save" onclick="fabSalvarEvento()">💾 Salvar no Livro</button>
+        </div>
+    </div>
+</div>
+
+<!-- #75 Menu de contexto -->
+<div id="tree-ctxmenu" role="menu"></div>
+
+<script data-feature="ux-ajustes-73-75-76-77">
+(function(){
+    'use strict';
+
+    // ========================================================
+    // #77 — Sidebar agrupada: persistência + auto-expand
+    // ========================================================
+    const SIDEBAR_KEY = 'simstoria.sidebar.groups';
+    function loadSidebarState(){
+        try { return JSON.parse(localStorage.getItem(SIDEBAR_KEY) || '{}'); } catch(e){ return {}; }
+    }
+    function saveSidebarState(s){
+        try { localStorage.setItem(SIDEBAR_KEY, JSON.stringify(s)); } catch(e){}
+    }
+    function initSidebarGroups(){
+        const saved = loadSidebarState();
+        document.querySelectorAll('.sidebar-grouped-nav .sidebar-group').forEach(g => {
+            const key = g.dataset.group;
+            if (key in saved) g.open = !!saved[key];
+            g.addEventListener('toggle', () => {
+                const s = loadSidebarState();
+                s[key] = g.open;
+                saveSidebarState(s);
+            });
+        });
+        // Garante que o grupo que contém a aba ativa fique aberto
+        const activeBtn = document.querySelector('.sidebar-grouped-nav .nav-btn.active');
+        if (activeBtn) {
+            const parent = activeBtn.closest('details.sidebar-group');
+            if (parent && !parent.open) parent.open = true;
+        }
+    }
+
+    // ========================================================
+    // #73 — FAB Registrar evento
+    // ========================================================
+    function fabPopularSims(){
+        const sel = document.getElementById('fab-evento-sim');
+        if (!sel || typeof db === 'undefined') return;
+        const cur = (typeof currentSimId !== 'undefined') ? currentSimId : '';
+        const sims = Array.isArray(db.sims) ? db.sims.slice() : [];
+        sims.sort((a,b) => String(a.nome||'').localeCompare(String(b.nome||'')));
+        sel.innerHTML = '<option value="">— Nenhum —</option>' +
+            sims.map(s => `<option value="${s.id}">${(s.nome||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))}</option>`).join('');
+        if (cur) sel.value = String(cur);
+    }
+    window.fabAbrirEvento = function(){
+        fabPopularSims();
+        const tx = document.getElementById('fab-evento-texto'); if (tx) tx.value = '';
+        const bs = document.getElementById('fab-evento-sim-busca'); if (bs) bs.value = '';
+        document.getElementById('fab-evento-modal').classList.add('open');
+        setTimeout(() => { const t = document.getElementById('fab-evento-texto'); if (t) t.focus(); }, 50);
+    };
+    window.fabFecharEvento = function(){
+        document.getElementById('fab-evento-modal').classList.remove('open');
+    };
+    window.fabSalvarEvento = function(){
+        const tag = document.getElementById('fab-evento-tag').value || '[OUTRO]';
+        const simId = document.getElementById('fab-evento-sim').value || '';
+        const texto = (document.getElementById('fab-evento-texto').value || '').trim();
+        if (!texto) { alert('Escreva o que aconteceu antes de salvar.'); return; }
+        try {
+            const dataStr = new Date().toLocaleDateString('pt-BR');
+            const marcador = (typeof _marcadorSim === 'function') ? _marcadorSim(simId) : (simId ? ` @sim:${simId}` : '');
+            if (typeof db !== 'undefined') {
+                db.historia = (db.historia || '') + `\n[${dataStr}] ${tag} ${texto}${marcador}`;
+                if (typeof salvarTudo === 'function') salvarTudo();
+                if (typeof renderLivroComFiltro === 'function') renderLivroComFiltro();
+                if (typeof showToast === 'function') showToast('✓ Evento registrado no Livro!');
+                else alert('Evento registrado!');
+            }
+            fabFecharEvento();
+        } catch(e) {
+            console.error('[FAB evento] erro ao salvar', e);
+            alert('Não foi possível salvar agora.');
+        }
+    };
+    // Filtro de busca no select
+    document.addEventListener('input', function(e){
+        if (e.target && e.target.id === 'fab-evento-sim-busca') {
+            const q = (e.target.value || '').toLowerCase();
+            const sel = document.getElementById('fab-evento-sim');
+            if (!sel || typeof db === 'undefined') return;
+            const sims = (db.sims||[]).filter(s => (s.nome||'').toLowerCase().includes(q));
+            sel.innerHTML = '<option value="">— Nenhum —</option>' +
+                sims.map(s => `<option value="${s.id}">${(s.nome||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))}</option>`).join('');
+        }
+    });
+    // Fecha clicando fora
+    document.addEventListener('click', function(e){
+        const m = document.getElementById('fab-evento-modal');
+        if (m && m.classList.contains('open') && e.target === m) fabFecharEvento();
+    });
+
+    // ========================================================
+    // #75 — Menu de contexto na árvore
+    // ========================================================
+    const ctxMenu = document.getElementById('tree-ctxmenu');
+    let ctxSimId = null;
+
+    function buildCtxMenu(sim){
+        const morto = sim && sim.status === 'Ancestral (Morto)';
+        ctxMenu.innerHTML = `
+            <div class="ctx-title">${(sim && sim.nome) ? sim.nome.replace(/[<>&]/g, '') : 'Sim'}</div>
+            <button type="button" class="ctx-item" data-act="ver">👤 Ver perfil</button>
+            <button type="button" class="ctx-item" data-act="editar">✏️ Editar</button>
+            <div class="ctx-sep"></div>
+            <button type="button" class="ctx-item" data-act="filho">👶 Adicionar filho</button>
+            <button type="button" class="ctx-item" data-act="conjuge">💍 Adicionar cônjuge</button>
+            <div class="ctx-sep"></div>
+            <button type="button" class="ctx-item" data-act="falecido">${morto ? '🌱 Marcar como vivo' : '🪦 Marcar como falecido'}</button>
+        `;
+    }
+    function openCtxMenu(x, y, simId){
+        if (!simId || typeof db === 'undefined') return;
+        const sim = (db.sims||[]).find(s => String(s.id) === String(simId));
+        if (!sim) return;
+        ctxSimId = simId;
+        buildCtxMenu(sim);
+        ctxMenu.classList.add('open');
+        // Reposiciona se sair da viewport
+        ctxMenu.style.left = '0px'; ctxMenu.style.top = '0px';
+        const r = ctxMenu.getBoundingClientRect();
+        const vw = window.innerWidth, vh = window.innerHeight;
+        ctxMenu.style.left = Math.min(x, vw - r.width - 8) + 'px';
+        ctxMenu.style.top  = Math.min(y, vh - r.height - 8) + 'px';
+    }
+    function closeCtxMenu(){ ctxMenu.classList.remove('open'); ctxSimId = null; }
+
+    ctxMenu.addEventListener('click', function(e){
+        const btn = e.target.closest('.ctx-item'); if (!btn || !ctxSimId) return;
+        const id = ctxSimId; const act = btn.dataset.act;
+        closeCtxMenu();
+        try {
+            if (act === 'ver') {
+                if (typeof abrirPerfil === 'function') abrirPerfil(id);
+            } else if (act === 'editar') {
+                if (typeof abrirPerfil === 'function') {
+                    abrirPerfil(id);
+                    setTimeout(() => { if (typeof toggleEditMode === 'function') toggleEditMode(true); }, 80);
+                }
+            } else if (act === 'filho') {
+                if (typeof abrirPerfil === 'function') abrirPerfil(id);
+                setTimeout(() => { if (typeof adicionarFilhoPerfil === 'function') adicionarFilhoPerfil(); }, 100);
+            } else if (act === 'conjuge') {
+                if (typeof abrirPerfil === 'function') abrirPerfil(id);
+                setTimeout(() => { if (typeof adicionarConjugePerfil === 'function') adicionarConjugePerfil(); }, 100);
+            } else if (act === 'falecido') {
+                const sim = (db.sims||[]).find(s => String(s.id) === String(id));
+                if (!sim) return;
+                const eraMorto = sim.status === 'Ancestral (Morto)';
+                const msg = eraMorto
+                    ? `Marcar ${sim.nome} como VIVO novamente?`
+                    : `Marcar ${sim.nome} como FALECIDO?`;
+                if (!confirm(msg)) return;
+                sim.status = eraMorto ? 'Vivo' : 'Ancestral (Morto)';
+                if (typeof salvarTudo === 'function') salvarTudo();
+                if (typeof renderTree === 'function') renderTree();
+                if (typeof renderGenList === 'function') renderGenList();
+                if (typeof showToast === 'function') showToast(eraMorto ? '🌱 Marcado como vivo' : '🪦 Marcado como falecido');
+            }
+        } catch(err) { console.error('[ctx menu]', err); }
+    });
+
+    document.addEventListener('click', function(e){
+        if (!ctxMenu.contains(e.target)) closeCtxMenu();
+    });
+    document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape' && ctxMenu.classList.contains('open')) { e.preventDefault(); closeCtxMenu(); }
+    });
+
+    function wireCytoscapeCtx(){
+        if (!window.cyTree || window.cyTree.__ctxWired) return;
+        try {
+            window.cyTree.on('cxttap', 'node', function(evt){
+                const id = evt.target.id();
+                const oe = evt.originalEvent;
+                openCtxMenu(oe ? oe.clientX : 100, oe ? oe.clientY : 100, id);
+            });
+            // Bloqueia menu nativo no container
+            const cont = window.cyTree.container && window.cyTree.container();
+            if (cont) cont.addEventListener('contextmenu', e => e.preventDefault());
+            window.cyTree.__ctxWired = true;
+        } catch(err) { console.warn('[ctx menu] cytoscape wiring falhou', err); }
+    }
+    // Polling até cytoscape estar pronto + reconecta em re-render
+    setInterval(wireCytoscapeCtx, 1200);
+
+    // ========================================================
+    // #76 — Atalhos de teclado no modal de perfil
+    // ========================================================
+    function modalPerfilAberto(){
+        const m = document.getElementById('modal-sim');
+        return m && getComputedStyle(m).display !== 'none';
+    }
+    function clickSalvarPerfil(){
+        // tenta o botão de salvar do form de edição visível
+        const candidatos = [
+            document.querySelector('#modal-sim [onclick*="salvarSim"]'),
+        ];
+        const btn = candidatos.find(b => b && b.offsetParent !== null);
+        if (btn) btn.click();
+    }
+    document.addEventListener('keydown', function(e){
+        if (!modalPerfilAberto()) return;
+        // Esc fecha
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            if (typeof fecharModal === 'function') fecharModal();
+            return;
+        }
+        // Ctrl/Cmd+S salva
+        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+            e.preventDefault();
+            clickSalvarPerfil();
+            return;
+        }
+        // Enter confirma — só fora de textarea/select
+        if (e.key === 'Enter' && !e.shiftKey) {
+            const t = e.target;
+            const tag = t && t.tagName;
+            if (tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+            if (t && t.isContentEditable) return;
+            // Só dispara se for um campo de input do modal
+            const dentro = t && document.getElementById('modal-sim') && document.getElementById('modal-sim').contains(t);
+            if (!dentro) return;
+            if (tag === 'INPUT') {
+                e.preventDefault();
+                clickSalvarPerfil();
+            }
+        }
+    }, true);
+
+    // ========================================================
+    // FAB hook + init
+    // ========================================================
+    function init(){
+        initSidebarGroups();
+        const fab = document.getElementById('fab-registrar-evento');
+        if (fab) fab.addEventListener('click', window.fabAbrirEvento);
+        wireCytoscapeCtx();
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
 
 </body>
 </html>
