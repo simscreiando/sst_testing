@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54_10-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54_13-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -758,6 +758,134 @@
     .tree-actions .lbl-full  { display: inline; }
 }
     </style>
+
+    <!-- ====== v55 UI improvements (#85, #91, #101) ====== -->
+    <style id="ui-improvements-v55">
+        /* ---------- #91 Wizard de criação de Sim ---------- */
+        #modal-sim.wizard-active #mode-edit > div.wizard-hidden { display: none !important; }
+        #modal-sim.wizard-active .wizard-bar {
+            display: flex; gap: 8px; align-items: center; justify-content: center;
+            margin: 0 0 14px 0; padding: 10px; border-radius: 12px;
+            background: linear-gradient(135deg, rgba(155,199,228,0.18), rgba(244,184,199,0.18));
+            border: 1px solid rgba(127,176,105,0.25);
+            flex-wrap: wrap;
+        }
+        #modal-sim:not(.wizard-active) .wizard-bar { display: none; }
+        #modal-sim:not(.wizard-active) .wizard-nav { display: none; }
+        .wizard-step-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 999px; font-size: 12px;
+            font-weight: 800; background: rgba(255,255,255,0.6);
+            color: #888; border: 1.5px solid transparent;
+        }
+        .wizard-step-pill.active { background: var(--ts4-blue,#2196f3); color:#fff; border-color: var(--ts4-blue,#2196f3); box-shadow: 0 2px 6px rgba(33,150,243,0.3); }
+        .wizard-step-pill.done   { background: rgba(127,176,105,0.18); color: #4a7a35; border-color: rgba(127,176,105,0.4); }
+        .wizard-step-pill .num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: rgba(0,0,0,0.08); font-size: 11px; font-weight: 900;
+        }
+        .wizard-step-pill.active .num { background: rgba(255,255,255,0.3); }
+        .wizard-nav {
+            display: flex; gap: 10px; justify-content: space-between; align-items: center;
+            margin-top: 12px; padding: 12px; border-top: 1px dashed rgba(0,0,0,0.1);
+        }
+        .wizard-nav button.wz-btn {
+            font-family: inherit; font-weight: 800; font-size: 13px;
+            padding: 10px 18px; border-radius: 12px; border: none; cursor: pointer;
+            min-width: 110px; transition: transform .15s, box-shadow .15s;
+        }
+        .wizard-nav button.wz-btn:hover { transform: translateY(-1px); }
+        .wizard-nav .wz-prev { background: #e9ecef; color: #555; }
+        .wizard-nav .wz-next { background: var(--ts4-blue,#2196f3); color:#fff; }
+        .wizard-nav .wz-save { background: var(--ts4-green,#7fb069); color:#fff; }
+        .wizard-nav .wz-prev:disabled { opacity: .4; cursor: not-allowed; }
+
+        /* ---------- #85 Card "Resumo da partida" na home ---------- */
+        #home-resumo-card {
+            text-align: left; background: var(--ts4-panel);
+            border-radius: 20px; padding: 22px; margin: 0 auto 18px auto;
+            max-width: 900px; border-left: 6px solid var(--ts4-blue,#2196f3);
+            box-shadow: 0 6px 22px rgba(0,0,0,0.06);
+            animation: fadeIn 0.5s ease;
+        }
+        #home-resumo-card .hr-head {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            margin-bottom: 14px; padding-bottom: 12px;
+            border-bottom: 1px dashed rgba(0,0,0,0.08);
+        }
+        #home-resumo-card .hr-title {
+            font-size: 14px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: .5px; color: var(--ts4-blue,#2196f3);
+        }
+        #home-resumo-card .hr-fam {
+            font-size: 18px; font-weight: 900; color: var(--cozy-ink, #333);
+        }
+        #home-resumo-card .hr-gen {
+            margin-left: auto; padding: 4px 12px; border-radius: 999px;
+            background: rgba(212,175,55,.18); color: #8a6c1a;
+            font-size: 12px; font-weight: 800;
+        }
+        #home-resumo-card .hr-grid {
+            display: grid; gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+        #home-resumo-card .hr-item {
+            background: rgba(0,0,0,0.025); border-radius: 12px; padding: 12px 14px;
+            cursor: pointer; transition: transform .15s, box-shadow .15s;
+            border: 1px solid transparent;
+        }
+        #home-resumo-card .hr-item:hover {
+            transform: translateY(-2px); border-color: rgba(127,176,105,0.35);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        #home-resumo-card .hr-lbl {
+            display: block; font-size: 11px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: .4px; color: var(--ts4-subtle-text,#888); margin-bottom: 4px;
+        }
+        #home-resumo-card .hr-val {
+            display: block; font-size: 14px; font-weight: 700;
+            color: var(--cozy-ink,#333); line-height: 1.35;
+        }
+        #home-resumo-card .hr-val .hr-date { font-size: 11px; font-weight: 600; opacity: .7; }
+        #home-resumo-card .hr-empty {
+            font-style: italic; color: var(--ts4-subtle-text,#888); font-weight: 500;
+        }
+        #home-resumo-card .hr-actions { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+        #home-resumo-card .hr-actions button {
+            font-family: inherit; font-size: 12px; font-weight: 800;
+            padding: 8px 14px; border-radius: 10px; border: 1px solid var(--ts4-blue,#2196f3);
+            background: transparent; color: var(--ts4-blue,#2196f3); cursor: pointer;
+        }
+        #home-resumo-card .hr-actions button:hover { background: var(--ts4-blue,#2196f3); color:#fff; }
+
+        /* ---------- #101 Mobile UX (FAB + menu) ---------- */
+        @media (max-width: 768px) {
+            /* Garante FAB no topo, longe do menu de baixo */
+            #fab-registrar-evento {
+                top: 70px !important;
+                bottom: auto !important;
+                right: 14px !important;
+                left: auto !important;
+                position: fixed !important;
+                z-index: 9500;
+            }
+            /* Sidebar mobile: grupos iniciam fechados e ocupam pouco espaço */
+            .sidebar-grouped-nav .sidebar-group { transition: none; }
+            .sidebar-grouped-nav .sidebar-group-head {
+                cursor: pointer; padding: 10px 12px; border-radius: 10px;
+                background: rgba(255,255,255,0.06); list-style: none;
+                font-weight: 800; font-size: 13px;
+                display: flex; align-items: center; gap: 6px;
+            }
+            .sidebar-grouped-nav .sidebar-group-head::-webkit-details-marker { display: none; }
+            .sidebar-grouped-nav .sidebar-group[open] > .sidebar-group-head {
+                background: rgba(155,199,228,0.25);
+            }
+            .sidebar-grouped-nav .sidebar-group-arrow { margin-left: auto; transition: transform .2s; }
+            .sidebar-grouped-nav .sidebar-group[open] .sidebar-group-arrow { transform: rotate(180deg); }
+        }
+    </style>
 </head>
 <body>
 
@@ -1076,16 +1204,162 @@
 
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; align-items:center;">
                 <span style="font-size:12px; font-weight:bold; color:#555;">👨‍👩‍👧 Modos Family Echo:</span>
-                <button id="btn-layout-6" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color:var(--ts4-blue); color:var(--ts4-blue); font-weight:bold;" onclick="setTreeLayout(6)">🏠 Família Organizada</button>
-                <button id="btn-layout-7" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(7)">📦 Núcleos Familiares</button>
-                <button id="btn-layout-8" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(8)">🌐 Legado Completo</button>
+                <!-- #79 — Layout buttons with SVG tooltip previews -->
+                <span class="layout-btn-wrap">
+                    <button id="btn-layout-6" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color:var(--ts4-blue); color:var(--ts4-blue); font-weight:bold;" onclick="setTreeLayout(6)">🏠 Família Organizada</button>
+                    <span class="layout-svg-tip"><svg width="100" height="70" viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="35" y="4" width="30" height="14" rx="4" fill="#7fb069" opacity=".85"/>
+                        <line x1="50" y1="18" x2="20" y2="32" stroke="#d4af37" stroke-width="1.5"/>
+                        <line x1="50" y1="18" x2="50" y2="32" stroke="#d4af37" stroke-width="1.5"/>
+                        <line x1="50" y1="18" x2="80" y2="32" stroke="#d4af37" stroke-width="1.5"/>
+                        <rect x="5"  y="32" width="28" height="13" rx="3" fill="#9bc7e4" opacity=".85"/>
+                        <rect x="36" y="32" width="28" height="13" rx="3" fill="#9bc7e4" opacity=".85"/>
+                        <rect x="67" y="32" width="28" height="13" rx="3" fill="#9bc7e4" opacity=".85"/>
+                        <line x1="19" y1="45" x2="10" y2="57" stroke="#d4af37" stroke-width="1.2"/>
+                        <line x1="19" y1="45" x2="28" y2="57" stroke="#d4af37" stroke-width="1.2"/>
+                        <rect x="4"  y="57" width="13" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
+                        <rect x="19" y="57" width="13" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
+                        <rect x="50" y="57" width="13" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
+                        <line x1="50" y1="45" x2="56" y2="57" stroke="#d4af37" stroke-width="1.2"/>
+                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Hierarquia clássica por geração</div></span>
+                </span>
+                <span class="layout-btn-wrap">
+                    <button id="btn-layout-7" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(7)">📦 Núcleos Familiares</button>
+                    <span class="layout-svg-tip"><svg width="100" height="70" viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="1" y="8" width="42" height="38" rx="6" fill="#f0d97a" opacity=".3" stroke="#d4af37" stroke-width="1"/>
+                        <rect x="57" y="8" width="42" height="38" rx="6" fill="#9bc7e4" opacity=".25" stroke="#9bc7e4" stroke-width="1"/>
+                        <circle cx="14" cy="22" r="7" fill="#7fb069" opacity=".85"/>
+                        <circle cx="30" cy="22" r="7" fill="#7fb069" opacity=".85"/>
+                        <line x1="14" y1="29" x2="22" y2="40" stroke="#d4af37" stroke-width="1.2"/>
+                        <line x1="30" y1="29" x2="22" y2="40" stroke="#d4af37" stroke-width="1.2"/>
+                        <circle cx="22" cy="42" r="5" fill="#f4b8c7" opacity=".9"/>
+                        <circle cx="70" cy="22" r="7" fill="#9bc7e4" opacity=".85"/>
+                        <circle cx="86" cy="22" r="7" fill="#9bc7e4" opacity=".85"/>
+                        <line x1="70" y1="29" x2="78" y2="40" stroke="#9bc7e4" stroke-width="1.2"/>
+                        <line x1="86" y1="29" x2="78" y2="40" stroke="#9bc7e4" stroke-width="1.2"/>
+                        <circle cx="78" cy="42" r="5" fill="#f4b8c7" opacity=".9"/>
+                        <line x1="26" y1="42" x2="74" y2="42" stroke="#aaa" stroke-width="1" stroke-dasharray="3,2"/>
+                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Grupos por núcleo familiar</div></span>
+                </span>
+                <span class="layout-btn-wrap">
+                    <button id="btn-layout-8" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(8)">🌐 Legado Completo</button>
+                    <span class="layout-svg-tip"><svg width="100" height="70" viewBox="0 0 100 70" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="35" r="6" fill="#d4af37" opacity=".9"/>
+                        <circle cx="20" cy="15" r="5" fill="#7fb069" opacity=".8"/>
+                        <circle cx="80" cy="15" r="5" fill="#7fb069" opacity=".8"/>
+                        <circle cx="10" cy="50" r="5" fill="#9bc7e4" opacity=".8"/>
+                        <circle cx="90" cy="50" r="5" fill="#9bc7e4" opacity=".8"/>
+                        <circle cx="35" cy="62" r="5" fill="#f4b8c7" opacity=".8"/>
+                        <circle cx="65" cy="62" r="5" fill="#f4b8c7" opacity=".8"/>
+                        <circle cx="50" cy="8"  r="4" fill="#7fb069" opacity=".7"/>
+                        <line x1="50" y1="29" x2="20" y2="20" stroke="#aaa" stroke-width="1"/>
+                        <line x1="50" y1="29" x2="80" y2="20" stroke="#aaa" stroke-width="1"/>
+                        <line x1="50" y1="29" x2="50" y2="12" stroke="#aaa" stroke-width="1"/>
+                        <line x1="50" y1="41" x2="10" y2="45" stroke="#aaa" stroke-width="1"/>
+                        <line x1="50" y1="41" x2="90" y2="45" stroke="#aaa" stroke-width="1"/>
+                        <line x1="50" y1="41" x2="35" y2="57" stroke="#aaa" stroke-width="1"/>
+                        <line x1="50" y1="41" x2="65" y2="57" stroke="#aaa" stroke-width="1"/>
+                        <line x1="20" y1="20" x2="10" y2="45" stroke="#ddd" stroke-width=".8"/>
+                        <line x1="80" y1="20" x2="90" y2="45" stroke="#ddd" stroke-width=".8"/>
+                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Todas as gerações interligadas</div></span>
+                </span>
                 <span style="width:100%; height:1px; background:#eee; margin:4px 0;"></span>
                 <span style="font-size:12px; font-weight:bold; color:#555;">🌳 Formato da Árvore:</span>
-                <button id="btn-layout-1" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(1)">Tradicional (Topo→Base)</button>
-                <button id="btn-layout-2" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(2)">Horizontal (Esq→Dir)</button>
-                <button id="btn-layout-3" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(3)">Livre (Física)</button>
-                <button id="btn-layout-4" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(4)">Radial (Circular)</button>
-                <button id="btn-layout-5" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color: #9B59B6; color: #9B59B6;" onclick="setTreeLayout(5)">👁️ Linhagem Principal (Focado)</button>
+                <span class="layout-btn-wrap">
+                    <button id="btn-layout-1" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(1)">Tradicional (Topo→Base)</button>
+                    <span class="layout-svg-tip"><svg width="90" height="65" viewBox="0 0 90 65" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="30" y="2" width="30" height="13" rx="3" fill="#7fb069" opacity=".85"/>
+                        <line x1="45" y1="15" x2="22" y2="28" stroke="#aaa" stroke-width="1.5"/>
+                        <line x1="45" y1="15" x2="68" y2="28" stroke="#aaa" stroke-width="1.5"/>
+                        <rect x="8"  y="28" width="28" height="12" rx="3" fill="#9bc7e4" opacity=".8"/>
+                        <rect x="54" y="28" width="28" height="12" rx="3" fill="#9bc7e4" opacity=".8"/>
+                        <line x1="22" y1="40" x2="15" y2="52" stroke="#aaa" stroke-width="1.2"/>
+                        <line x1="22" y1="40" x2="30" y2="52" stroke="#aaa" stroke-width="1.2"/>
+                        <rect x="7"  y="52" width="17" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
+                        <rect x="22" y="52" width="17" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
+                        <text x="45" y="63" text-anchor="middle" font-size="7" fill="#888">↓ hierarquia</text>
+                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Árvore de cima para baixo</div></span>
+                </span>
+                <span class="layout-btn-wrap">
+                    <button id="btn-layout-2" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(2)">Horizontal (Esq→Dir)</button>
+                    <span class="layout-svg-tip"><svg width="90" height="65" viewBox="0 0 90 65" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="24" width="22" height="16" rx="3" fill="#7fb069" opacity=".85"/>
+                        <line x1="24" y1="32" x2="36" y2="16" stroke="#aaa" stroke-width="1.5"/>
+                        <line x1="24" y1="32" x2="36" y2="48" stroke="#aaa" stroke-width="1.5"/>
+                        <rect x="36" y="8"  width="22" height="16" rx="3" fill="#9bc7e4" opacity=".8"/>
+                        <rect x="36" y="40" width="22" height="16" rx="3" fill="#9bc7e4" opacity=".8"/>
+                        <line x1="58" y1="16" x2="68" y2="10" stroke="#aaa" stroke-width="1.2"/>
+                        <line x1="58" y1="16" x2="68" y2="22" stroke="#aaa" stroke-width="1.2"/>
+                        <rect x="68" y="5"  width="18" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
+                        <rect x="68" y="17" width="18" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
+                        <text x="45" y="63" text-anchor="middle" font-size="7" fill="#888">→ da esquerda</text>
+                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Árvore da esquerda p/ direita</div></span>
+                </span>
+                <span class="layout-btn-wrap">
+                    <button id="btn-layout-3" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(3)">Livre (Física)</button>
+                    <span class="layout-svg-tip"><svg width="90" height="65" viewBox="0 0 90 65" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="45" cy="32" r="7" fill="#d4af37" opacity=".85"/>
+                        <circle cx="18" cy="18" r="6" fill="#7fb069" opacity=".8"/>
+                        <circle cx="70" cy="12" r="6" fill="#9bc7e4" opacity=".8"/>
+                        <circle cx="75" cy="50" r="6" fill="#f4b8c7" opacity=".8"/>
+                        <circle cx="15" cy="52" r="6" fill="#9bc7e4" opacity=".8"/>
+                        <circle cx="55" cy="58" r="5" fill="#7fb069" opacity=".7"/>
+                        <line x1="45" y1="32" x2="18" y2="18" stroke="#bbb" stroke-width="1"/>
+                        <line x1="45" y1="32" x2="70" y2="12" stroke="#bbb" stroke-width="1"/>
+                        <line x1="45" y1="32" x2="75" y2="50" stroke="#bbb" stroke-width="1"/>
+                        <line x1="45" y1="32" x2="15" y2="52" stroke="#bbb" stroke-width="1"/>
+                        <line x1="45" y1="32" x2="55" y2="58" stroke="#bbb" stroke-width="1"/>
+                        <line x1="18" y1="18" x2="15" y2="52" stroke="#ddd" stroke-width=".8"/>
+                        <text x="45" y="9" text-anchor="middle" font-size="7" fill="#888">posição livre</text>
+                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Nós se posicionam livremente</div></span>
+                </span>
+                <span class="layout-btn-wrap">
+                    <button id="btn-layout-4" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(4)">Radial (Circular)</button>
+                    <span class="layout-svg-tip"><svg width="90" height="70" viewBox="0 0 90 70" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="45" cy="35" r="7" fill="#d4af37" opacity=".9"/>
+                        <circle cx="45" cy="8"  r="6" fill="#7fb069" opacity=".8"/>
+                        <circle cx="69" cy="21" r="6" fill="#7fb069" opacity=".8"/>
+                        <circle cx="69" cy="49" r="6" fill="#7fb069" opacity=".8"/>
+                        <circle cx="45" cy="62" r="6" fill="#7fb069" opacity=".8"/>
+                        <circle cx="21" cy="49" r="6" fill="#7fb069" opacity=".8"/>
+                        <circle cx="21" cy="21" r="6" fill="#7fb069" opacity=".8"/>
+                        <line x1="45" y1="35" x2="45" y2="14"  stroke="#aaa" stroke-width="1"/>
+                        <line x1="45" y1="35" x2="64" y2="25"  stroke="#aaa" stroke-width="1"/>
+                        <line x1="45" y1="35" x2="64" y2="45"  stroke="#aaa" stroke-width="1"/>
+                        <line x1="45" y1="35" x2="45" y2="56"  stroke="#aaa" stroke-width="1"/>
+                        <line x1="45" y1="35" x2="26" y2="45"  stroke="#aaa" stroke-width="1"/>
+                        <line x1="45" y1="35" x2="26" y2="25"  stroke="#aaa" stroke-width="1"/>
+                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Nós em círculo ao redor</div></span>
+                </span>
+                <span class="layout-btn-wrap">
+                    <button id="btn-layout-5" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color: #9B59B6; color: #9B59B6;" onclick="setTreeLayout(5)">👁️ Linhagem Principal (Focado)</button>
+                    <span class="layout-svg-tip"><svg width="100" height="65" viewBox="0 0 100 65" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="1"  y="25" width="18" height="13" rx="3" fill="#9B59B6" opacity=".9"/>
+                        <line x1="19" y1="31" x2="26" y2="31" stroke="#9B59B6" stroke-width="2"/>
+                        <rect x="26" y="25" width="18" height="13" rx="3" fill="#9B59B6" opacity=".9"/>
+                        <line x1="44" y1="31" x2="51" y2="31" stroke="#9B59B6" stroke-width="2"/>
+                        <rect x="51" y="25" width="18" height="13" rx="3" fill="#9B59B6" opacity=".9"/>
+                        <line x1="69" y1="31" x2="76" y2="31" stroke="#9B59B6" stroke-width="2"/>
+                        <rect x="76" y="25" width="18" height="13" rx="3" fill="#9B59B6" opacity=".9"/>
+                        <circle cx="10" cy="12" r="4" fill="#ccc" opacity=".6"/>
+                        <circle cx="35" cy="12" r="4" fill="#ccc" opacity=".6"/>
+                        <circle cx="60" cy="12" r="4" fill="#ccc" opacity=".6"/>
+                        <circle cx="85" cy="12" r="4" fill="#ccc" opacity=".6"/>
+                        <line x1="10" y1="16" x2="10" y2="25" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
+                        <line x1="35" y1="16" x2="35" y2="25" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
+                        <line x1="60" y1="16" x2="60" y2="25" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
+                        <line x1="85" y1="16" x2="85" y2="25" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
+                        <circle cx="10" cy="51" r="4" fill="#ccc" opacity=".6"/>
+                        <circle cx="35" cy="51" r="4" fill="#ccc" opacity=".6"/>
+                        <circle cx="60" cy="51" r="4" fill="#ccc" opacity=".6"/>
+                        <circle cx="85" cy="51" r="4" fill="#ccc" opacity=".6"/>
+                        <line x1="10" y1="38" x2="10" y2="47" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
+                        <line x1="35" y1="38" x2="35" y2="47" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
+                        <line x1="60" y1="38" x2="60" y2="47" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
+                        <line x1="85" y1="38" x2="85" y2="47" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
+                        <text x="50" y="63" text-anchor="middle" font-size="7" fill="#9B59B6">linha do herdeiro</text>
+                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Destaque no caminho principal</div></span>
+                </span>
             </div>
 
         </div><div id="tab-ia" class="tab-pane">
@@ -1450,6 +1724,13 @@
         🚀 Sempre adicionar capturas e prints automaticamente à Galeria de Recordações
     </label>
 </div>
+
+                <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">👨‍👩‍👧‍👦 FAMÍLIA DE EXEMPLO (DEMO)</div>
+                <p style="font-size: 12px; color: var(--ts4-subtle-text); margin-bottom:10px;">Carregue a família Goth pré-populada para explorar o SimStoria ou para usar como base de uma nova saga.</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn-main btn-sec" style="margin:0; flex:1;" onclick="mostrarOnboarding()">🏠 Ver guia de boas-vindas</button>
+                    <button class="btn-main btn-sec" style="margin:0; flex:1; border-color:#d4af37; color:#a0781a;" onclick="if(confirm('Carregar a família Goth? Sims existentes serão substituídos.')) carregarFamiliaGoth()">👨‍👩‍👧‍👦 Carregar Família Goth</button>
+                </div>
 
                 <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🔄 BACKUP MANUAL (OFFLINE)</div>
                 <p style="font-size: 12px; color: var(--ts4-subtle-text);">Para quem não deseja conectar no Google ou salvar no navegador.</p>
@@ -4686,6 +4967,54 @@ if (fase === 'recem_nascido') {
                     <td style="padding:4px 8px; text-align:center; color:#888;">× ${p.p}</td>
                     <td style="padding:4px 8px; text-align:right; font-weight:700; color:${(p.n*p.p)>=0?'#7fb069':'#c97064'};">${p.n*p.p}</td>
                 </tr>`;
+            const milestones = [
+                { pts: 10,  emoji: '🌱', label: 'Fundadores' },
+                { pts: 25,  emoji: '🏡', label: 'Família Estabelecida' },
+                { pts: 50,  emoji: '⭐', label: 'Legado Crescendo' },
+                { pts: 75,  emoji: '🏆', label: 'Dinastia Sólida' },
+                { pts: 100, emoji: '👑', label: 'Legado Épico' },
+            ];
+            const maxScore = 120;
+            const clampedTotal = Math.max(0, Math.min(total, maxScore));
+            const pct = Math.round((clampedTotal / maxScore) * 100);
+            const reached = milestones.filter(m => total >= m.pts);
+            const nextMilestone = milestones.find(m => total < m.pts);
+            const scoreColor = total >= 75 ? '#d4af37' : total >= 50 ? '#7fb069' : total >= 25 ? '#9bc7e4' : total >= 10 ? '#888' : '#c97064';
+            const barGradient = total >= 75
+                ? 'linear-gradient(90deg, #9bc7e4 0%, #7fb069 40%, #d4af37 100%)'
+                : total >= 50
+                ? 'linear-gradient(90deg, #9bc7e4 0%, #7fb069 100%)'
+                : 'linear-gradient(90deg, #9bc7e4 0%, #9bc7e4 100%)';
+
+            const progressHtml = `
+            <div style="margin-bottom:16px; background: linear-gradient(135deg,#fffaee,#fff8e0); border:1.5px solid #f0d97a; border-radius:14px; padding:14px 16px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <div style="font-size:13px; font-weight:800; color:#4a3b2a;">🏆 Score do Legado</div>
+                    <div style="font-size:24px; font-weight:900; color:${scoreColor}; letter-spacing:-0.5px;">${total} pts</div>
+                </div>
+                <!-- Barra de progresso -->
+                <div style="position:relative; height:18px; background:#f0ead6; border-radius:9px; overflow:visible; margin-bottom:6px; box-shadow:inset 0 1px 3px rgba(0,0,0,.1);">
+                    <div style="height:100%; width:${pct}%; background:${barGradient}; border-radius:9px; transition:width .4s ease; min-width:${total > 0 ? 4 : 0}px; position:relative;">
+                        ${pct > 8 ? `<span style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.3);">${pct}%</span>` : ''}
+                    </div>
+                    <!-- Marcos visuais na barra -->
+                    ${milestones.map(m => {
+                        const mPct = Math.min(Math.round((m.pts / maxScore) * 100), 100);
+                        const mReached = total >= m.pts;
+                        return `<div title="${m.emoji} ${m.label} (${m.pts} pts)" style="position:absolute;top:-3px;left:${mPct}%;transform:translateX(-50%);width:4px;height:24px;background:${mReached ? '#d4af37' : '#ccc'};border-radius:2px;z-index:2;"></div>`;
+                    }).join('')}
+                </div>
+                <!-- Etiquetas de marcos -->
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+                    ${milestones.map(m => {
+                        const mReached = total >= m.pts;
+                        return `<div style="display:flex;align-items:center;gap:3px;font-size:10px;padding:2px 7px;border-radius:99px;background:${mReached ? '#fff3c0' : '#f5f0e8'};border:1px solid ${mReached ? '#d4af37' : '#ddd'};color:${mReached ? '#7a5c00' : '#aaa'};font-weight:${mReached ? '700' : '400'};">${mReached ? m.emoji : '○'} ${m.label} (${m.pts})</div>`;
+                    }).join('')}
+                </div>
+                ${reached.length > 0 ? `<div style="margin-top:8px;font-size:11px;color:#7fb069;font-weight:700;">✅ Conquistado: ${reached[reached.length-1].emoji} ${reached[reached.length-1].label}</div>` : ''}
+                ${nextMilestone ? `<div style="margin-top:4px;font-size:11px;color:#888;">→ Próximo marco: <strong>${nextMilestone.emoji} ${nextMilestone.label}</strong> em ${nextMilestone.pts - total} pts</div>` : `<div style="margin-top:4px;font-size:11px;color:#d4af37;font-weight:700;">👑 Score máximo atingido! Legado épico!</div>`}
+            </div>`;
+
             wrap.innerHTML = `
                 <div style="background:#fff; border:1.5px solid #f0d97a; border-radius:18px; padding:16px; margin-bottom:18px;">
                     <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
@@ -4696,6 +5025,7 @@ if (fase === 'recem_nascido') {
                             </select>
                         </div>
                     </div>
+                    ${progressHtml}
                     <div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
                         ${num('porGeracao','+ por geração')}
                         ${num('porCasamento','+ por casamento')}
@@ -10333,8 +10663,45 @@ function atualizarIndicadorMemoria() {
 .sidebar-grouped-nav .sidebar-group-body { padding: 4px 0 6px 0; display: flex; flex-direction: column; gap: 2px; }
 
 /* #73 — FAB Registrar evento */
+/* #79 — Tooltips SVG para botões de modo de layout */
+.layout-btn-wrap {
+    position: relative;
+    display: inline-block;
+}
+.layout-svg-tip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff8e7;
+    border: 1.5px solid var(--cozy-gold, #d4af37);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    z-index: 9990;
+    white-space: nowrap;
+    pointer-events: none;
+}
+.layout-svg-tip svg {
+    display: block;
+}
+.layout-svg-tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--cozy-gold, #d4af37);
+}
+.layout-btn-wrap:hover .layout-svg-tip {
+    display: block;
+}
+
+/* #100 — FAB movido para canto superior para não sobrepor barra de armazenamento */
 #fab-registrar-evento {
-    position: fixed; right: 22px; bottom: 22px; z-index: 9500;
+    position: fixed; right: 22px; top: 80px; z-index: 9500;
     width: 58px; height: 58px; border-radius: 50%; border: none; cursor: pointer;
     background: linear-gradient(135deg, var(--cozy-accent, #7fb069), var(--cozy-gold-soft, #f0d97a));
     color: #fff; font-size: 26px; line-height: 58px;
@@ -10344,7 +10711,7 @@ function atualizarIndicadorMemoria() {
 }
 #fab-registrar-evento:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 10px 22px rgba(120,90,40,0.34); }
 #fab-registrar-evento:active { transform: scale(0.96); }
-@media (max-width: 600px) { #fab-registrar-evento { right: 14px; bottom: 14px; width: 52px; height: 52px; font-size: 22px; } }
+@media (max-width: 600px) { #fab-registrar-evento { right: 14px; top: 70px; width: 52px; height: 52px; font-size: 22px; } }
 
 #fab-evento-modal {
     display: none; position: fixed; inset: 0; z-index: 9600;
@@ -10671,5 +11038,872 @@ function atualizarIndicadorMemoria() {
 })();
 </script>
 
+<!-- =====================================================================
+     #92 — Menu de vínculo por arraste na árvore
+     ===================================================================== -->
+<div id="drag-link-menu" style="
+    display:none; position:fixed; z-index:99999;
+    background:#fffdf6; border:2px solid var(--cozy-gold,#d4af37);
+    border-radius:16px; padding:14px 18px; min-width:210px;
+    box-shadow:0 8px 28px rgba(120,90,40,0.22);
+    font-family:'Nunito','Quicksand',sans-serif; font-size:13px;
+    color:#4a3b2a; animation: fadeIn .18s ease;">
+  <div id="drag-link-title" style="font-weight:800; font-size:14px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+    🔗 Criar vínculo
+  </div>
+  <div id="drag-link-names" style="font-size:11px; color:#9b7d6b; margin-bottom:12px; background:#fff8e7; border-radius:8px; padding:6px 10px;"></div>
+  <button onclick="applyDragLink('conjuge')" style="width:100%;margin-bottom:7px;padding:9px 0;border-radius:11px;border:1.5px solid #e83e8c;background:#fff0f6;color:#e83e8c;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+    💍 Definir como Cônjuge
+  </button>
+  <button onclick="applyDragLink('filho')" style="width:100%;margin-bottom:7px;padding:9px 0;border-radius:11px;border:1.5px solid #0079C1;background:#f0f7ff;color:#0079C1;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+    👶 Definir como Filho(a)
+  </button>
+  <button onclick="applyDragLink('pai')" style="width:100%;margin-bottom:7px;padding:9px 0;border-radius:11px;border:1.5px solid #7fb069;background:#f0fff4;color:#3a7d44;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+    👨‍👩 Definir como Pai/Mãe
+  </button>
+  <button onclick="applyDragLink('irmao')" style="width:100%;margin-bottom:7px;padding:9px 0;border-radius:11px;border:1.5px solid #FF8C00;background:#fff8f0;color:#c46800;font-weight:700;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+    🤝 Definir como Irmão(ã)
+  </button>
+  <button onclick="closeDragLinkMenu()" style="width:100%;padding:7px 0;border-radius:10px;border:1px solid #e0d5be;background:#fafafa;color:#888;font-weight:600;font-size:11px;cursor:pointer;">
+    ✕ Cancelar
+  </button>
+</div>
+
+<!-- =====================================================================
+     #97 — Onboarding interativo com família de exemplo
+     ===================================================================== -->
+<div id="onboarding-overlay" style="
+    display:none; position:fixed; inset:0; z-index:100000;
+    background:rgba(30,20,10,.72); backdrop-filter:blur(6px);
+    align-items:center; justify-content:center;">
+  <div style="
+      background:#fffdf6; border-radius:24px; max-width:640px; width:94%;
+      padding:32px 30px 28px; box-shadow:0 20px 60px rgba(80,50,10,.32);
+      font-family:'Nunito','Quicksand',sans-serif; color:#4a3b2a;
+      max-height:90vh; overflow-y:auto; position:relative;">
+
+    <!-- Step 1: boas-vindas -->
+    <div class="ob-step" id="ob-step-1">
+      <div style="text-align:center; margin-bottom:18px;">
+        <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png" alt="SimStoria" style="width:110px; margin-bottom:6px;">
+        <h2 style="font-family:'Fredoka','Quicksand',sans-serif; font-size:26px; color:#0079C1; margin:0 0 6px;">Bem-vindo ao SimStoria! 🌟</h2>
+        <p style="font-size:13px; color:#7a6a54; margin:0 0 18px; line-height:1.6;">
+          Aqui você registra e visualiza o legado genealógico dos seus Sims.<br>
+          Como quer começar?
+        </p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px;">
+        <button onclick="carregarFamiliaGoth()" style="
+            padding:18px 12px; border-radius:16px; border:2.5px solid #d4af37;
+            background:linear-gradient(135deg,#fff8e7,#fffdf6); cursor:pointer;
+            font-family:'Fredoka','Quicksand',sans-serif; font-size:14px; font-weight:700;
+            color:#4a3b2a; display:flex; flex-direction:column; align-items:center; gap:8px;
+            box-shadow:0 4px 12px rgba(120,90,40,.12); transition:.15s;">
+          <span style="font-size:32px;">👨‍👩‍👧‍👦</span>
+          <span>Começar com família<br><strong style="color:#0079C1;">Goth (Demo)</strong></span>
+          <span style="font-size:10px; color:#9b7d6b; font-weight:400;">Explore com dados prontos + guia</span>
+        </button>
+        <button onclick="fecharOnboarding()" style="
+            padding:18px 12px; border-radius:16px; border:2.5px solid #0079C1;
+            background:linear-gradient(135deg,#e8f4ff,#f5f9ff); cursor:pointer;
+            font-family:'Fredoka','Quicksand',sans-serif; font-size:14px; font-weight:700;
+            color:#0079C1; display:flex; flex-direction:column; align-items:center; gap:8px;
+            box-shadow:0 4px 12px rgba(0,121,193,.10); transition:.15s;">
+          <span style="font-size:32px;">✏️</span>
+          <span>Criar minha<br><strong>própria família</strong></span>
+          <span style="font-size:10px; color:#5a8fbf; font-weight:400;">Comece do zero com seus Sims</span>
+        </button>
+      </div>
+
+      <p style="text-align:center; font-size:11px; color:#bbb; margin:0;">Você pode carregar a família demo depois em Configurações</p>
+    </div>
+
+    <!-- Step 2: guia pós-demo -->
+    <div class="ob-step" id="ob-step-2" style="display:none;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+        <span style="font-size:28px;">🎉</span>
+        <div>
+          <h3 style="font-family:'Fredoka',sans-serif; margin:0; color:#0079C1; font-size:20px;">Família Goth carregada!</h3>
+          <p style="margin:0; font-size:12px; color:#9b7d6b;">Veja o que você pode fazer no SimStoria</p>
+        </div>
+      </div>
+
+      <div id="ob-guide-steps" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+        <div class="ob-guide-item" style="background:#e8f4ff; border-radius:12px; padding:12px 14px; border-left:4px solid #0079C1;">
+          <strong>🌳 Árvore Genealógica</strong>
+          <p style="margin:4px 0 0; font-size:12px; color:#4a6a8a; line-height:1.5;">Clique na aba <strong>Legado Familiar</strong> para ver os Goth conectados. Clique num card para abrir o perfil completo.</p>
+        </div>
+        <div class="ob-guide-item" style="background:#fff8e7; border-radius:12px; padding:12px 14px; border-left:4px solid #d4af37;">
+          <strong>🔗 Arrastar para vincular</strong>
+          <p style="margin:4px 0 0; font-size:12px; color:#7a6030; line-height:1.5;">Na árvore, arraste o card de um Sim <em>sobre</em> outro e solte para criar vínculos — cônjuge, filho(a), pai/mãe ou irmão(ã).</p>
+        </div>
+        <div class="ob-guide-item" style="background:#f0fff4; border-radius:12px; padding:12px 14px; border-left:4px solid #7fb069;">
+          <strong>➕ Adicionar Sims</strong>
+          <p style="margin:4px 0 0; font-size:12px; color:#2d6a40; line-height:1.5;">Clique em <strong>+ Novo Sim</strong> ou vá em <strong>Lista de Sims</strong> para cadastrar novos personagens e expandir o legado.</p>
+        </div>
+        <div class="ob-guide-item" style="background:#fce4ec; border-radius:12px; padding:12px 14px; border-left:4px solid #e91e8c;">
+          <strong>📖 Livro da Família</strong>
+          <p style="margin:4px 0 0; font-size:12px; color:#8a1a4a; line-height:1.5;">Em <strong>Registrar Eventos</strong> você narra os dramas, conquistas e momentos do legado dos Goth.</p>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button onclick="fecharOnboarding(); setTimeout(()=>{ document.getElementById('btn-nav-tree')?.click(); },200);" style="
+            flex:1; padding:12px; border-radius:12px; border:none;
+            background:#0079C1; color:#fff; font-weight:800; font-size:13px;
+            font-family:'Fredoka',sans-serif; cursor:pointer;">
+          🌳 Ver Árvore dos Goth
+        </button>
+        <button onclick="fecharOnboarding()" style="
+            flex:0 0 auto; padding:12px 16px; border-radius:12px;
+            border:1.5px solid #ccc; background:#fff; color:#888;
+            font-size:12px; cursor:pointer;">
+          Explorar sozinho
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* #92 */
+#drag-link-menu button:hover { filter:brightness(.95); transform:translateY(-1px); }
+
+/* #97 */
+#onboarding-overlay.active { display:flex !important; }
+.ob-guide-item strong { font-size:13px; }
+</style>
+
+<script>
+// =====================================================================
+// #92 — Drag-to-link: menu de vínculo por arraste na árvore (vis-network)
+// =====================================================================
+(function() {
+    // Estado global da operação de arraste
+    window._dragLinkState = { fromId: null, toId: null, active: false };
+
+    window.closeDragLinkMenu = function() {
+        const m = document.getElementById('drag-link-menu');
+        if (m) m.style.display = 'none';
+        window._dragLinkState = { fromId: null, toId: null, active: false };
+    };
+
+    window.openDragLinkMenu = function(fromId, toId, x, y) {
+        const st = window._dragLinkState;
+        st.fromId = fromId;
+        st.toId   = toId;
+        const m = document.getElementById('drag-link-menu');
+        if (!m) return;
+
+        const fromSim = (db.sims||[]).find(s => String(s.id) === String(fromId));
+        const toSim   = (db.sims||[]).find(s => String(s.id) === String(toId));
+        if (!fromSim || !toSim) return;
+
+        const names = document.getElementById('drag-link-names');
+        if (names) names.textContent = `"${fromSim.nome}" → "${toSim.nome}"`;
+
+        const W = window.innerWidth, H = window.innerHeight;
+        let px = x + 14, py = y + 14;
+        m.style.display = 'block';
+        const mw = m.offsetWidth || 220, mh = m.offsetHeight || 240;
+        if (px + mw > W - 10) px = x - mw - 14;
+        if (py + mh > H - 10) py = y - mh - 14;
+        m.style.left = Math.max(6, px) + 'px';
+        m.style.top  = Math.max(6, py) + 'px';
+    };
+
+    window.applyDragLink = function(tipo) {
+        const st = window._dragLinkState;
+        const fromId = String(st.fromId || '');
+        const toId   = String(st.toId   || '');
+        closeDragLinkMenu();
+
+        if (!fromId || !toId || fromId === toId) return;
+        const fromSim = (db.sims||[]).find(s => String(s.id) === fromId);
+        const toSim   = (db.sims||[]).find(s => String(s.id) === toId);
+        if (!fromSim || !toSim) return;
+
+        if (tipo === 'conjuge') {
+            // Define cônjuge nos dois Sims
+            fromSim.spouse = toId;
+            toSim.spouse   = fromId;
+            if (!fromSim.relStatus || fromSim.relStatus === 'solteiro') fromSim.relStatus = 'casado';
+            if (!toSim.relStatus   || toSim.relStatus   === 'solteiro') toSim.relStatus   = 'casado';
+            if (typeof showToast === 'function') showToast(`💍 ${fromSim.nome} e ${toSim.nome} agora são cônjuges!`);
+        } else if (tipo === 'filho') {
+            // fromSim é o filho; toSim é o pai/mãe
+            if (!fromSim.p1 || String(fromSim.p1) === '') {
+                fromSim.p1 = toId;
+            } else if (!fromSim.p2 || String(fromSim.p2) === '') {
+                fromSim.p2 = toId;
+            } else {
+                if (typeof showToast === 'function') showToast(`⚠️ ${fromSim.nome} já tem dois progenitores definidos.`, 'warn');
+                return;
+            }
+            if (typeof showToast === 'function') showToast(`👶 ${fromSim.nome} agora é filho(a) de ${toSim.nome}!`);
+        } else if (tipo === 'pai') {
+            // fromSim é pai/mãe; toSim é o filho
+            if (!toSim.p1 || String(toSim.p1) === '') {
+                toSim.p1 = fromId;
+            } else if (!toSim.p2 || String(toSim.p2) === '') {
+                toSim.p2 = fromId;
+            } else {
+                if (typeof showToast === 'function') showToast(`⚠️ ${toSim.nome} já tem dois progenitores definidos.`, 'warn');
+                return;
+            }
+            if (typeof showToast === 'function') showToast(`👨‍👩 ${fromSim.nome} agora é pai/mãe de ${toSim.nome}!`);
+        } else if (tipo === 'irmao') {
+            // Adiciona ao array irmaos de ambos
+            if (!fromSim.irmaos) fromSim.irmaos = [];
+            if (!toSim.irmaos)   toSim.irmaos   = [];
+            if (!fromSim.irmaos.includes(toId))   fromSim.irmaos.push(toId);
+            if (!toSim.irmaos.includes(fromId))   toSim.irmaos.push(fromId);
+            if (typeof showToast === 'function') showToast(`🤝 ${fromSim.nome} e ${toSim.nome} agora são irmãos!`);
+        }
+
+        if (typeof salvarTudo === 'function') salvarTudo();
+        if (typeof renderTree === 'function') renderTree();
+        if (typeof renderGenList === 'function') renderGenList();
+    };
+
+    // Fecha ao clicar fora
+    document.addEventListener('mousedown', function(e) {
+        const m = document.getElementById('drag-link-menu');
+        if (m && m.style.display !== 'none' && !m.contains(e.target)) {
+            closeDragLinkMenu();
+        }
+    });
+
+    // ── Conecta ao vis-network (polling + re-inject a cada renderTree) ──
+    let _dragNet = null, _dragNetWired = false;
+
+    function wireVisDragLink() {
+        const net = window.network;
+        if (!net || net === _dragNet) return;
+        _dragNet = net;
+        _dragNetWired = false;
+
+        let _dragFromId = null;
+
+        net.on('dragStart', function(params) {
+            if (!params.nodes || params.nodes.length === 0) return;
+            const nid = String(params.nodes[0]);
+            if (nid.startsWith('npc_')) return;
+            _dragFromId = nid;
+        });
+
+        net.on('dragEnd', function(params) {
+            if (!_dragFromId) return;
+            const fromId = _dragFromId;
+            _dragFromId = null;
+
+            // Descobre qual nó está sob o ponto de soltura
+            const canvasPos = params.pointer && params.pointer.canvas;
+            if (!canvasPos) return;
+            const overNode = net.getNodeAt(params.pointer.DOM);
+            if (!overNode) return;
+            const toNid = String(overNode);
+            if (toNid.startsWith('npc_') || toNid === fromId) return;
+
+            // Converte para simId puro (sem prefixo 'sim_')
+            const fromSimId = fromId.startsWith('sim_') ? fromId.slice(4) : fromId;
+            const toSimId   = toNid.startsWith('sim_') ? toNid.slice(4)   : toNid;
+
+            // Só abre o menu se ambos forem Sims reais
+            const f = (db.sims||[]).find(s => String(s.id) === fromSimId);
+            const t = (db.sims||[]).find(s => String(s.id) === toSimId);
+            if (!f || !t) return;
+
+            const domPos = params.pointer && params.pointer.DOM;
+            const rect = net.canvas.frame.canvas.getBoundingClientRect();
+            const screenX = rect.left + (domPos ? domPos.x : 0);
+            const screenY = rect.top  + (domPos ? domPos.y : 0);
+
+            openDragLinkMenu(fromSimId, toSimId, screenX, screenY);
+        });
+
+        _dragNetWired = true;
+    }
+
+    setInterval(wireVisDragLink, 1000);
+
+    // ── Conecta ao Cytoscape (polling) ──────────────────────────────────
+    let _cyDragWired = null;
+
+    function wireCytoDragLink() {
+        const cy = window.cyTree;
+        if (!cy || cy === _cyDragWired) return;
+        _cyDragWired = cy;
+
+        let _cyFromId = null, _cyDragging = false;
+
+        cy.on('grab', 'node', function(evt) {
+            const nid = evt.target.id();
+            // IDs nos modos 7/8 têm @uk ou #uk — extrai simId
+            const simId = nid.split('@')[0].split('#')[0];
+            if ((db.sims||[]).find(s => String(s.id) === simId)) {
+                _cyFromId = simId;
+                _cyDragging = true;
+            }
+        });
+
+        cy.on('free', 'node', function(evt) {
+            if (!_cyDragging || !_cyFromId) return;
+            _cyDragging = false;
+            const fromId = _cyFromId;
+            _cyFromId = null;
+
+            // Verifica nós em sobreposição
+            const droppedNode = evt.target;
+            const pos = droppedNode.renderedPosition();
+            const container = cy.container();
+            const rect = container.getBoundingClientRect();
+            const screenX = rect.left + pos.x;
+            const screenY = rect.top  + pos.y;
+
+            // Procura nó mais próximo que não seja o próprio
+            let closestId = null, minDist = 120;
+            cy.nodes().forEach(function(n) {
+                if (n.id() === droppedNode.id()) return;
+                const np = n.renderedPosition();
+                const dx = np.x - pos.x, dy = np.y - pos.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < minDist) { minDist = dist; closestId = n.id(); }
+            });
+
+            if (!closestId) return;
+            const toSimId = closestId.split('@')[0].split('#')[0];
+            const f = (db.sims||[]).find(s => String(s.id) === fromId);
+            const t = (db.sims||[]).find(s => String(s.id) === toSimId);
+            if (!f || !t || fromId === toSimId) return;
+
+            openDragLinkMenu(fromId, toSimId, screenX, screenY);
+        });
+    }
+
+    setInterval(wireCytoDragLink, 1000);
+
+})();
+
+// =====================================================================
+// #97 — Onboarding interativo com família Goth de exemplo
+// =====================================================================
+(function() {
+
+    // Família Goth demo
+    const GOTH_FAMILY = [
+        {
+            id: 'goth_01', nome: 'Mortimer Goth', fase: 'adulto', status: 'Vivo',
+            spouse: 'goth_02', relStatus: 'casado',
+            tracos: 'Gênio, Bookworm, Introvertido',
+            aspiracao: 'Conhecimento Renascentista',
+            extra: 'Patriarca da família Goth. Pesquisador e bibliófilo dedicado.',
+            geracaoManual: '1', irmaos: [], historico_relacionamentos: [],
+            oculto: 'humano'
+        },
+        {
+            id: 'goth_02', nome: 'Bella Goth', fase: 'adulto', status: 'Vivo',
+            spouse: 'goth_01', relStatus: 'casado',
+            tracos: 'Carismático, Perfeccionista, Sociável',
+            aspiracao: 'Celebridade Popular',
+            extra: 'Matriarca da família. Conhecida em todo o bairro por sua beleza e charme.',
+            geracaoManual: '1', irmaos: [], historico_relacionamentos: [],
+            oculto: 'humano'
+        },
+        {
+            id: 'goth_03', nome: 'Cassandra Goth', fase: 'adolescente', status: 'Vivo',
+            p1: 'goth_01', p2: 'goth_02',
+            tracos: 'Caprichoso, Criativo, Melancólico',
+            aspiracao: 'Mestre das Artes',
+            extra: 'Filha mais velha dos Goth. Artista sensível e sonhadora.',
+            geracaoManual: '2', irmaos: ['goth_04'], historico_relacionamentos: [],
+            oculto: 'humano'
+        },
+        {
+            id: 'goth_04', nome: 'Alexander Goth', fase: 'crianca', status: 'Vivo',
+            p1: 'goth_01', p2: 'goth_02',
+            tracos: 'Gênio, Introvertido',
+            aspiracao: 'Cientista Louco',
+            extra: 'O filho caçula dos Goth. Curioso e apaixonado por ciência.',
+            geracaoManual: '2', irmaos: ['goth_03'], historico_relacionamentos: [],
+            oculto: 'humano'
+        }
+    ];
+
+    window.carregarFamiliaGoth = function() {
+        // Verifica se já existem Sims (confirma sobrescrever)
+        if ((db.sims||[]).length > 0) {
+            if (!confirm('⚠️ Isso substituirá os Sims atuais pela família Goth (demo).\nContinuar?')) return;
+        }
+        db.sims = JSON.parse(JSON.stringify(GOTH_FAMILY));
+        if (typeof salvarTudo === 'function') salvarTudo();
+        if (typeof renderGenList === 'function') renderGenList();
+        if (typeof renderTree === 'function') renderTree();
+        // Avança para step 2 do onboarding
+        document.getElementById('ob-step-1').style.display = 'none';
+        document.getElementById('ob-step-2').style.display = '';
+    };
+
+    window.fecharOnboarding = function() {
+        const ov = document.getElementById('onboarding-overlay');
+        if (ov) ov.style.display = 'none';
+        localStorage.setItem('ss_onboarding_seen', '1');
+    };
+
+    window.mostrarOnboarding = function() {
+        // Reseta para step 1
+        const s1 = document.getElementById('ob-step-1');
+        const s2 = document.getElementById('ob-step-2');
+        if (s1) s1.style.display = '';
+        if (s2) s2.style.display = 'none';
+        const ov = document.getElementById('onboarding-overlay');
+        if (ov) ov.style.display = 'flex';
+    };
+
+    // Exibe o onboarding automaticamente na primeira vez ou quando não há Sims
+    function checkOnboarding() {
+        const visto = localStorage.getItem('ss_onboarding_seen');
+        const temSims = (db.sims||[]).length > 0;
+        if (!temSims && !visto) {
+            setTimeout(mostrarOnboarding, 500);
+        }
+    }
+
+    // Aguarda o DB estar pronto
+    function waitAndCheck() {
+        if (typeof db !== 'undefined' && typeof iniciarDB !== 'undefined') {
+            checkOnboarding();
+        } else {
+            setTimeout(waitAndCheck, 300);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(waitAndCheck, 800); });
+    } else {
+        setTimeout(waitAndCheck, 800);
+    }
+
+    // Também verifica quando a árvore é renderizada com 0 Sims (botão de demo na própria árvore)
+    const _origRender = window.renderTree;
+    // Hook suave: injetado após o script principal estar pronto
+    setTimeout(function() {
+        const prevRender = window.renderTree;
+        if (prevRender) {
+            window.renderTree = function() {
+                prevRender.apply(this, arguments);
+                // Se ainda sem Sims, mostra botão de demo inline
+                setTimeout(function() {
+                    const container = document.getElementById('tree-display');
+                    const cyContainer = document.getElementById('tree-cy');
+                    const vazio = (db.sims||[]).length === 0;
+                    // Injeta botão de demo nas mensagens de vazio
+                    [container, cyContainer].forEach(function(el) {
+                        if (!el) return;
+                        const pEmpty = el.querySelector('p');
+                        if (pEmpty && vazio && !el.querySelector('.btn-demo-inline')) {
+                            const btn = document.createElement('button');
+                            btn.className = 'btn-demo-inline btn-main';
+                            btn.textContent = '🏠 Carregar família Goth (Demo)';
+                            btn.style.cssText = 'margin-top:12px;padding:10px 22px;border-radius:12px;background:#0079C1;color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:700;';
+                            btn.onclick = function() { mostrarOnboarding(); };
+                            pEmpty.insertAdjacentElement('afterend', btn);
+                        }
+                    });
+                }, 80);
+            };
+        }
+    }, 1200);
+
+})();
+</script>
+
+<!-- ====== v55 UI improvements (#85, #91, #101) ====== -->
+<script id="ui-improvements-v55">
+(function(){
+    'use strict';
+    var isMobile = function(){ return window.matchMedia('(max-width: 768px)').matches; };
+
+    // ---------------------------------------------------------------
+    // #91 — Wizard de criação de Sim em 3 etapas
+    // ---------------------------------------------------------------
+    var Wizard = (function(){
+        var current = 1;
+        var STEPS = 3;
+        var stepLabels = ['Identidade','Família','Personalidade'];
+        var stepIcons = ['👤','🌳','✨'];
+
+        function modal(){ return document.getElementById('modal-sim'); }
+        function modeEdit(){ return document.getElementById('mode-edit'); }
+
+        function sectionChildren(){
+            // Apenas os <div> de seção (não os botões de ação no final)
+            var me = modeEdit(); if (!me) return [];
+            var out = [];
+            for (var i=0;i<me.children.length;i++){
+                var el = me.children[i];
+                if (el.tagName !== 'DIV') continue;
+                if (el.classList.contains('wizard-bar')) continue;
+                if (el.classList.contains('wizard-nav')) continue;
+                // botões de ação: display:flex inline com botão SALVAR/EXCLUIR
+                var hasSalvar = el.querySelector('[onclick*="salvarSim"]');
+                if (hasSalvar) continue;
+                out.push(el);
+            }
+            return out;
+        }
+
+        function assignSteps(){
+            var ch = sectionChildren();
+            // Mapa: 0->1 (identidade), 1->2 (família/ascendência), 2->2 (relacionamentos), 3->3 (personalidade)
+            var map = [1,2,2,3];
+            ch.forEach(function(el, idx){
+                var s = map[idx] || 3;
+                el.setAttribute('data-wizard-step', String(s));
+            });
+        }
+
+        function ensureBars(){
+            var me = modeEdit(); if (!me) return;
+            if (!me.querySelector('.wizard-bar')){
+                var bar = document.createElement('div');
+                bar.className = 'wizard-bar';
+                bar.innerHTML = stepLabels.map(function(lbl,i){
+                    return '<span class="wizard-step-pill" data-step="'+(i+1)+'"><span class="num">'+(i+1)+'</span>'+stepIcons[i]+' '+lbl+'</span>';
+                }).join('<span style="opacity:.4">›</span>');
+                me.insertBefore(bar, me.firstChild);
+            }
+            if (!me.querySelector('.wizard-nav')){
+                var nav = document.createElement('div');
+                nav.className = 'wizard-nav';
+                nav.innerHTML =
+                    '<button type="button" class="wz-btn wz-prev">‹ Voltar</button>'+
+                    '<span style="font-size:11px; color:#888;">Etapa <b class="wz-cur">1</b> de '+STEPS+'</span>'+
+                    '<button type="button" class="wz-btn wz-next">Próximo ›</button>';
+                // inserir antes do bloco de botões SALVAR/EXCLUIR
+                var ch = sectionChildren();
+                var anchor = ch.length ? ch[ch.length-1].nextSibling : null;
+                if (anchor) me.insertBefore(nav, anchor); else me.appendChild(nav);
+                nav.querySelector('.wz-prev').addEventListener('click', function(){ goTo(current-1); });
+                nav.querySelector('.wz-next').addEventListener('click', function(){
+                    if (current === STEPS) {
+                        // disparar salvar
+                        try { if (typeof salvarSim === 'function') salvarSim(); } catch(e){}
+                    } else {
+                        if (validateStep(current)) goTo(current+1);
+                    }
+                });
+            }
+        }
+
+        function validateStep(s){
+            if (s !== 1) return true;
+            var nome = (document.getElementById('e-nome')||{}).value;
+            if (!nome || !nome.trim()){
+                try { if (typeof showToast === 'function') showToast('Dê um nome ao seu Sim para continuar 🙂'); else alert('Informe um nome.'); } catch(e){ alert('Informe um nome.'); }
+                var inp = document.getElementById('e-nome'); if (inp) inp.focus();
+                return false;
+            }
+            return true;
+        }
+
+        function goTo(s){
+            if (s < 1) s = 1; if (s > STEPS) s = STEPS;
+            current = s;
+            var ch = sectionChildren();
+            ch.forEach(function(el){
+                var st = parseInt(el.getAttribute('data-wizard-step')||'0',10);
+                if (st === s) el.classList.remove('wizard-hidden');
+                else el.classList.add('wizard-hidden');
+            });
+            var me = modeEdit();
+            var pills = me.querySelectorAll('.wizard-step-pill');
+            pills.forEach(function(p){
+                var ps = parseInt(p.getAttribute('data-step'),10);
+                p.classList.toggle('active', ps === s);
+                p.classList.toggle('done', ps < s);
+            });
+            var cur = me.querySelector('.wz-cur'); if (cur) cur.textContent = String(s);
+            var prev = me.querySelector('.wz-prev'); if (prev) prev.disabled = (s===1);
+            var next = me.querySelector('.wz-next');
+            if (next) next.innerHTML = (s===STEPS) ? '💾 Salvar Sim' : 'Próximo ›';
+            if (next) next.classList.toggle('wz-save', s===STEPS);
+            if (next) next.classList.toggle('wz-next', s!==STEPS);
+            // Scroll para o topo do modal
+            try { me.scrollIntoView({behavior:'smooth', block:'start'}); } catch(e){}
+        }
+
+        function enable(){
+            try {
+                ensureBars();
+                assignSteps();
+                modal().classList.add('wizard-active');
+                goTo(1);
+            } catch(e){ console.warn('[wizard] falha ao habilitar, mantendo form padrão', e); disable(); }
+        }
+        function disable(){
+            try {
+                var m = modal(); if (m) m.classList.remove('wizard-active');
+                var ch = sectionChildren();
+                ch.forEach(function(el){ el.classList.remove('wizard-hidden'); });
+            } catch(e){}
+        }
+
+        return { enable: enable, disable: disable };
+    })();
+
+    // Wrap abrirNovoSim para ativar wizard ao CRIAR novo Sim
+    function wrapAbrirNovoSim(){
+        if (typeof window.abrirNovoSim !== 'function') return false;
+        if (window.__wizardWrapped) return true;
+        var orig = window.abrirNovoSim;
+        window.abrirNovoSim = function(){
+            var r = orig.apply(this, arguments);
+            try { Wizard.enable(); } catch(e){ console.warn(e); }
+            return r;
+        };
+        // Quando o usuário EDITA um Sim existente (toggleEditMode true) desliga wizard
+        if (typeof window.toggleEditMode === 'function'){
+            var origToggle = window.toggleEditMode;
+            window.toggleEditMode = function(on){
+                var r = origToggle.apply(this, arguments);
+                try { if (on) Wizard.disable(); } catch(e){}
+                return r;
+            };
+        }
+        // Fechar modal: garante limpeza
+        if (typeof window.fecharModal === 'function'){
+            var origFech = window.fecharModal;
+            window.fecharModal = function(){ try { Wizard.disable(); } catch(e){} return origFech.apply(this, arguments); };
+        }
+        window.__wizardWrapped = true;
+        return true;
+    }
+
+    // ---------------------------------------------------------------
+    // #85 — Resumo da partida na home
+    // ---------------------------------------------------------------
+    var Resumo = (function(){
+        function findUltimaEntradaLivro(){
+            try {
+                if (typeof parseLivroEntries === 'function' && typeof db !== 'undefined' && db && db.historia){
+                    var arr = parseLivroEntries(db.historia) || [];
+                    if (arr.length) return arr[arr.length-1];
+                }
+                if (typeof db !== 'undefined' && db && db.historia){
+                    var linhas = String(db.historia).split('\n').filter(function(l){return l.trim();});
+                    if (linhas.length){
+                        var ult = linhas[linhas.length-1];
+                        return { texto: ult.replace(/^\[[^\]]+\]\s*\[[^\]]+\]\s*/,'').slice(0,140), dataStr: '' };
+                    }
+                }
+            } catch(e){}
+            return null;
+        }
+        function findProximaMeta(){
+            try {
+                if (typeof db !== 'undefined' && db && Array.isArray(db.metas_pendentes) && db.metas_pendentes.length){
+                    var m = db.metas_pendentes[0];
+                    var t = (typeof m === 'string') ? m : (m && (m.texto || m.title || '')) || '';
+                    return t ? { texto: t } : null;
+                }
+            } catch(e){}
+            return null;
+        }
+        function geracaoAtual(){
+            try {
+                if (typeof db !== 'undefined' && db && Array.isArray(db.sims) && db.sims.length){
+                    var max = 0;
+                    db.sims.forEach(function(s){
+                        var g = parseInt(s && (s.geracao || s.generation) || 0, 10);
+                        if (g > max) max = g;
+                    });
+                    return max || 1;
+                }
+            } catch(e){}
+            return null;
+        }
+        function familiaNome(){
+            try {
+                if (typeof currentFamilyName === 'string' && currentFamilyName && currentFamilyName !== 'Família Padrão') return currentFamilyName;
+            } catch(e){}
+            return null;
+        }
+        function totalSims(){
+            try { return (typeof db !== 'undefined' && db && Array.isArray(db.sims)) ? db.sims.length : 0; } catch(e){ return 0; }
+        }
+
+        function clickGoTab(tabId, btnId){
+            try {
+                var b = btnId && document.getElementById(btnId);
+                if (b) { b.click(); return; }
+                if (typeof switchTab === 'function') switchTab(tabId);
+            } catch(e){}
+        }
+
+        function render(){
+            var home = document.getElementById('tab-home'); if (!home) return;
+            var card = document.getElementById('home-resumo-card');
+            if (!card){
+                card = document.createElement('div');
+                card.id = 'home-resumo-card';
+                // inserir como primeiro filho do tab-home (acima do bloco existente)
+                home.insertBefore(card, home.firstChild);
+            }
+            var fam = familiaNome();
+            var gen = geracaoAtual();
+            var nSims = totalSims();
+            var ult = findUltimaEntradaLivro();
+            var meta = findProximaMeta();
+
+            if (!fam && nSims === 0){
+                card.innerHTML =
+                    '<div class="hr-head"><span class="hr-title">📌 Resumo da partida</span></div>'+
+                    '<p class="hr-empty" style="margin:0;">Você ainda não começou um legado. Crie sua primeira família e adicione um Sim para ver aqui um resumo do estado atual.</p>'+
+                    '<div class="hr-actions"><button type="button" id="hr-criar-fam">✨ Criar família</button><button type="button" id="hr-criar-sim">+ Novo Sim</button></div>';
+                var b1 = card.querySelector('#hr-criar-fam'); if (b1) b1.onclick = function(){ try { if (typeof criarNovaFamilia==='function') criarNovaFamilia(); } catch(e){} };
+                var b2 = card.querySelector('#hr-criar-sim'); if (b2) b2.onclick = function(){ try { if (typeof abrirNovoSim==='function') abrirNovoSim(); } catch(e){} };
+                return;
+            }
+
+            var ultHtml = ult
+                ? '<span class="hr-val">'+escapeHtml(String(ult.texto||'').slice(0,120))+(String(ult.texto||'').length>120?'…':'')+(ult.dataStr?' <span class="hr-date">('+escapeHtml(ult.dataStr)+')</span>':'')+'</span>'
+                : '<span class="hr-empty">Nenhuma entrada ainda — registre o primeiro evento no Livro.</span>';
+            var metaHtml = meta
+                ? '<span class="hr-val">🎯 '+escapeHtml(String(meta.texto||'').slice(0,120))+(String(meta.texto||'').length>120?'…':'')+'</span>'
+                : '<span class="hr-empty">Nenhuma meta pendente — defina uma na aba Livro &amp; Metas.</span>';
+
+            card.innerHTML =
+                '<div class="hr-head">'+
+                    '<span class="hr-title">📌 Resumo da partida</span>'+
+                    '<span class="hr-fam">'+escapeHtml(fam || 'Família Padrão')+'</span>'+
+                    (gen ? '<span class="hr-gen">🧬 Geração '+gen+'</span>' : '')+
+                '</div>'+
+                '<div class="hr-grid">'+
+                    '<div class="hr-item" data-go="livro"><span class="hr-lbl">📖 Última entrada do Livro</span>'+ultHtml+'</div>'+
+                    '<div class="hr-item" data-go="metas"><span class="hr-lbl">🎯 Próxima meta pendente</span>'+metaHtml+'</div>'+
+                    '<div class="hr-item" data-go="tree"><span class="hr-lbl">👨‍👩‍👧 Sims cadastrados</span><span class="hr-val">'+nSims+' Sim'+(nSims===1?'':'s')+' no legado</span></div>'+
+                '</div>'+
+                '<div class="hr-actions">'+
+                    '<button type="button" id="hr-go-livro">📖 Abrir Livro</button>'+
+                    '<button type="button" id="hr-go-tree">🌳 Ver árvore</button>'+
+                    '<button type="button" id="hr-novo-sim">+ Novo Sim</button>'+
+                '</div>';
+
+            card.querySelectorAll('.hr-item').forEach(function(it){
+                it.addEventListener('click', function(){
+                    var g = it.getAttribute('data-go');
+                    if (g === 'livro' || g === 'metas') clickGoTab('tab-history','btn-nav-history');
+                    else if (g === 'tree') clickGoTab('tab-tree','btn-nav-tree');
+                });
+            });
+            var gl = card.querySelector('#hr-go-livro'); if (gl) gl.onclick = function(){ clickGoTab('tab-history','btn-nav-history'); };
+            var gt = card.querySelector('#hr-go-tree'); if (gt) gt.onclick = function(){ clickGoTab('tab-tree','btn-nav-tree'); };
+            var ns = card.querySelector('#hr-novo-sim'); if (ns) ns.onclick = function(){ try { if (typeof abrirNovoSim==='function') abrirNovoSim(); } catch(e){} };
+        }
+
+        function escapeHtml(s){
+            return String(s).replace(/[&<>"']/g, function(c){
+                return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+            });
+        }
+
+        return { render: render };
+    })();
+
+    // ---------------------------------------------------------------
+    // #101 — Mobile UX (sidebar accordion + FAB)
+    // ---------------------------------------------------------------
+    function setupMobileNav(){
+        var navWrap = document.querySelector('.sidebar-grouped-nav'); if (!navWrap) return;
+        if (navWrap.__mobileSetup) return; navWrap.__mobileSetup = true;
+
+        function closeAllDetails(){
+            navWrap.querySelectorAll('details.sidebar-group').forEach(function(d){ d.open = false; });
+        }
+        function applyMobileState(){
+            if (isMobile()) closeAllDetails();
+            // Também colapsa o painel de widgets extras (Conexão & Famílias) ao iniciar
+            var extras = document.getElementById('sidebar-extra-widgets');
+            if (extras && isMobile()) extras.classList.remove('active');
+        }
+
+        // 1) Inicializa fechado em mobile
+        applyMobileState();
+
+        // 2) Clicar num grupo: fecha os outros (accordion exclusivo, só em mobile)
+        navWrap.querySelectorAll('details.sidebar-group').forEach(function(det){
+            det.addEventListener('toggle', function(){
+                if (!isMobile()) return;
+                if (det.open){
+                    navWrap.querySelectorAll('details.sidebar-group').forEach(function(o){
+                        if (o !== det) o.open = false;
+                    });
+                }
+            });
+        });
+
+        // 3) Clicar num nav-btn: fecha todos os grupos (em mobile)
+        navWrap.addEventListener('click', function(ev){
+            var t = ev.target;
+            while (t && t !== navWrap){
+                if (t.classList && t.classList.contains('nav-btn')){
+                    if (isMobile()){
+                        // pequeno delay pra não brigar com o switchTab
+                        setTimeout(closeAllDetails, 50);
+                    }
+                    return;
+                }
+                t = t.parentNode;
+            }
+        });
+
+        // Reaplica quando muda viewport
+        window.addEventListener('resize', function(){
+            if (isMobile()) {
+                // não força fechar a cada resize — só garante que widgets estejam ok
+            }
+        });
+    }
+
+    // ---------------------------------------------------------------
+    // Boot
+    // ---------------------------------------------------------------
+    function boot(){
+        var tries = 0;
+        var iv = setInterval(function(){
+            tries++;
+            var ok = wrapAbrirNovoSim();
+            try { Resumo.render(); } catch(e){}
+            try { setupMobileNav(); } catch(e){}
+            if (ok || tries > 40) clearInterval(iv);
+        }, 250);
+
+        // Re-render do resumo quando voltar pra home ou após salvar
+        document.addEventListener('click', function(ev){
+            var t = ev.target;
+            if (!t) return;
+            var id = t.id || (t.closest ? (t.closest('[id]')||{}).id : '');
+            if (id === 'btn-nav-home') setTimeout(function(){ try{Resumo.render();}catch(e){} }, 60);
+        }, true);
+
+        // Hook em salvarTudo para refrescar resumo
+        var hookSalvar = setInterval(function(){
+            if (typeof window.salvarTudo === 'function' && !window.__resumoHookSalvar){
+                window.__resumoHookSalvar = true;
+                var orig = window.salvarTudo;
+                window.salvarTudo = function(){ var r = orig.apply(this, arguments); try { Resumo.render(); } catch(e){} return r; };
+                clearInterval(hookSalvar);
+            }
+        }, 400);
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+})();
+</script>
+
 </body>
 </html>
+
