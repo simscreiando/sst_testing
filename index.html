@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-20-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-21-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1187,9 +1187,12 @@
             </div>
             
             <div id="tree-container-wrapper" style="position: relative;">
-                <div id="tree-legend" style="position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.85); padding: 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); font-size: 11px; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.05); backdrop-filter: blur(5px);">
-                    <strong style="color:var(--ts4-blue); display:block; margin-bottom:8px; font-size:12px; text-transform:uppercase;">Legenda de Conexões</strong>
-                    <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:center;">
+                <div id="tree-legend" style="position: absolute; top: 15px; left: 15px; background: rgba(255,255,255,0.85); padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.1); font-size: 11px; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.05); backdrop-filter: blur(5px); max-width: 340px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+                        <strong style="color:var(--ts4-blue); font-size:12px; text-transform:uppercase;">Legenda de Conexões</strong>
+                        <button id="tree-legend-toggle" type="button" title="Ocultar/mostrar legenda" style="background:transparent; border:1px solid rgba(0,0,0,0.15); border-radius:8px; padding:2px 8px; font-size:11px; cursor:pointer; color:#4a3b2a;">▾ Ocultar</button>
+                    </div>
+                    <div id="tree-legend-body" style="display:flex; flex-wrap:wrap; gap:15px; align-items:center;">
                         <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:3px; background:#0079C1;"></div> Pais e Filhos</div>
                         <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:3px; background:#7CD700;"></div> Casados</div>
                         <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:2px; background:#FF4D4D; border-bottom: 2px dashed #FF4D4D;"></div> Separados</div>
@@ -1199,6 +1202,39 @@
                         <div style="display:flex; align-items:center; gap:5px;"><div style="width:20px; height:0; border-bottom: 2px dashed #aaaacc;"></div> Progenitor NPC</div>
                     </div>
                 </div>
+                <script>
+                (function(){
+                    function _applyLegendState(){
+                        const body = document.getElementById('tree-legend-body');
+                        const btn  = document.getElementById('tree-legend-toggle');
+                        const lg   = document.getElementById('tree-legend');
+                        if (!body || !btn || !lg) return;
+                        let st = 'expanded';
+                        try { st = localStorage.getItem('simstoria.tree.legend') || 'expanded'; } catch(_) {}
+                        if (st === 'collapsed') {
+                            body.style.display = 'none';
+                            btn.textContent = '▸ Mostrar';
+                            lg.style.padding = '6px 10px';
+                        } else {
+                            body.style.display = 'flex';
+                            btn.textContent = '▾ Ocultar';
+                            lg.style.padding = '10px 12px';
+                        }
+                    }
+                    document.addEventListener('click', function(e){
+                        if (e.target && e.target.id === 'tree-legend-toggle') {
+                            let st = 'expanded';
+                            try { st = localStorage.getItem('simstoria.tree.legend') || 'expanded'; } catch(_) {}
+                            const novo = (st === 'collapsed') ? 'expanded' : 'collapsed';
+                            try { localStorage.setItem('simstoria.tree.legend', novo); } catch(_) {}
+                            _applyLegendState();
+                        }
+                    });
+                    // Reaplica sempre que a árvore for renderizada
+                    window._applyTreeLegendState = _applyLegendState;
+                    document.addEventListener('DOMContentLoaded', _applyLegendState);
+                })();
+                </script>
 
                 <div id="tree-display" class="tree-container"></div>
                 <div id="tree-cy" class="tree-container" style="display:none;"></div>
@@ -7879,7 +7915,10 @@ let edgesArray = [];
                 if (u.type === 'couple') {
                     const [aId, bId] = u.parents;
                     const aKey = nodeIdFor(aId, u.key), bKey = nodeIdFor(bId, u.key);
-                    if (simPos[aKey] && simPos[bKey]) {
+                    // 💍/💔/🕊️ apenas quando existe relação de cônjuge real (evita "casal" só por co-parentalidade)
+                    const aTemSpouseB = byId[aId] && String(byId[aId].spouse) === String(bId);
+                    const bTemSpouseA = byId[bId] && String(byId[bId].spouse) === String(aId);
+                    if (simPos[aKey] && simPos[bKey] && (aTemSpouseB || bTemSpouseA)) {
                         let color = '#7CD700', dashed = 0, emoji = '💍';
                         const rel = (byId[aId] && byId[aId].spouse === bId) ? byId[aId].relStatus
                                   : (byId[bId] && byId[bId].spouse === aId) ? byId[bId].relStatus : null;
@@ -7939,6 +7978,52 @@ let edgesArray = [];
                     });
                 }
             });
+
+            // ── #110 EXTRA: arestas diretas p1→filho e p2→filho (com seta) ──
+            //   Reproduz o comportamento do v53 (vis-network) — cada filho
+            //   fica visivelmente ligado aos DOIS pais quando ambos existem.
+            (function _direct_parent_child(){
+                const emittedDP = new Set();
+                sims.forEach(child => {
+                    const cid = String(child.id);
+                    [child.p1, child.p2].forEach((pid, slot) => {
+                        if (!pid) return;
+                        const pKey = String(pid);
+                        if (!byId[pKey]) return;
+                        // encontra 1 nó do pai e 1 nó do filho já posicionados
+                        const parentNode = Object.keys(simPos).find(k => simPos[k].realId === pKey);
+                        const childNode  = Object.keys(simPos).find(k => simPos[k].realId === cid);
+                        if (!parentNode || !childNode) return;
+                        const eid = 'e_dp_' + pKey + '_' + cid + '_' + slot;
+                        if (emittedDP.has(eid)) return;
+                        emittedDP.add(eid);
+                        elements.push({ data: { id: eid, source: parentNode, target: childNode, kind: 'directParent' } });
+                    });
+                });
+            })();
+
+            // ── #111 EXTRA: irmãos declarados (sim.irmaos[]) ──
+            //   Recupera o comportamento do v53: quando dois sims estão
+            //   explicitamente marcados como irmãos (mas podem não ter pais
+            //   em comum na base), desenha uma linha laranja entre eles.
+            (function _sibling_links(){
+                const emittedSL = new Set();
+                sims.forEach(s => {
+                    const list = Array.isArray(s.irmaos) ? s.irmaos : [];
+                    list.forEach(otherId => {
+                        const a = String(s.id), b = String(otherId);
+                        if (a === b) return;
+                        if (!byId[b]) return;
+                        const key = [a,b].sort().join('|');
+                        if (emittedSL.has(key)) return;
+                        emittedSL.add(key);
+                        const aNode = Object.keys(simPos).find(k => simPos[k].realId === a);
+                        const bNode = Object.keys(simPos).find(k => simPos[k].realId === b);
+                        if (!aNode || !bNode) return;
+                        elements.push({ data: { id: 'e_sl_' + key.replace('|','_'), source: aNode, target: bNode, kind: 'siblingLink' } });
+                    });
+                });
+            })();
 
             // Nós NPC para Cytoscape (progenitores fora da família)
             // — evita sobreposição entre NPCs e compartilha NPC entre irmãos da mesma unidade familiar
@@ -8113,10 +8198,22 @@ let edgesArray = [];
                         'width': 2, 'line-color': '#aaaacc', 'line-style': 'dashed',
                         'curve-style': 'taxi', 'taxi-direction': 'downward',
                         'target-arrow-shape': 'none'
+                    }},
+                    { selector: 'edge[kind = "directParent"]', style: {
+                        'width': 2, 'line-color': '#0079C1', 'line-opacity': 0.75,
+                        'curve-style': 'taxi', 'taxi-direction': 'downward',
+                        'taxi-turn': 30, 'taxi-turn-min-distance': 6,
+                        'target-arrow-shape': 'triangle', 'target-arrow-color': '#0079C1', 'arrow-scale': 0.9
+                    }},
+                    { selector: 'edge[kind = "siblingLink"]', style: {
+                        'width': 2.5, 'line-color': '#FF8C00', 'line-opacity': 0.85,
+                        'curve-style': 'unbundled-bezier', 'control-point-distances': [30], 'control-point-weights': [0.5],
+                        'target-arrow-shape': 'none'
                     }}
                 ],
                 layout: { name: 'preset', fit: true, padding: 60 }
             });
+            try { if (typeof window._applyTreeLegendState === 'function') window._applyTreeLegendState(); } catch(_) {}
 
             setTimeout(()=>{ try{ atualizarControlesArvore(); aplicarFiltrosArvore(); }catch(e){} }, 50);
             window.cyTree.on('tap', 'node[kind = "sim"]', evt => {
@@ -11974,6 +12071,9 @@ function atualizarIndicadorMemoria() {
             while (chaves.length > 3) {
                 localStorage.removeItem(chaves.shift());
             }
+            // Novo backup: limpa o "dispensado" para que o botão volte a aparecer
+            try { localStorage.removeItem('simstoria.undo.dismissed'); } catch(_) {}
+            try { if (typeof atualizarBotaoUndo === 'function') atualizarBotaoUndo(); } catch(_) {}
         } catch(e) { console.warn('Backup pré-import falhou:', e); }
     }
 
@@ -12713,13 +12813,22 @@ function atualizarIndicadorMemoria() {
         const sB = (db.sims||[]).find(s => String(s.id) === String(idB));
         if (!sA || !sB) return 'skip';
 
+        // Helper local: adiciona linha ao Livro da Família com marcador de sim
+        const _dataStr = new Date().toLocaleDateString('pt-BR');
+        const _mk = (id) => (typeof _marcadorSim === 'function') ? _marcadorSim(id) : (id ? ` {{SIM:${id}}}` : '');
+        function _logLivro(linha) {
+            try {
+                db.historia = (db.historia || '') + `\n[${_dataStr}] ${linha} [MOD-IMPORT]`;
+            } catch(_) {}
+        }
+
         if (rel.kind === 'parent') {
             // sim_id_1 = pai/mãe; sim_id_2 = filho(a)
             const pai = String(sA.id);
             const paisAtuais = [String(sB.p1||''), String(sB.p2||'')];
             if (paisAtuais.indexOf(pai) >= 0) return 'skip';
-            if (!sB.p1) { sB.p1 = pai; return 'ok'; }
-            if (!sB.p2) { sB.p2 = pai; return 'ok'; }
+            if (!sB.p1) { sB.p1 = pai; _logLivro(`[NASCIMENTO] 👶 ${sA.nome||'?'} reconhecido(a) como pai/mãe de ${sB.nome||'?'}.${_mk(sB.id)}${_mk(sA.id)}`); return 'ok'; }
+            if (!sB.p2) { sB.p2 = pai; _logLivro(`[NASCIMENTO] 👶 ${sA.nome||'?'} reconhecido(a) como pai/mãe de ${sB.nome||'?'}.${_mk(sB.id)}${_mk(sA.id)}`); return 'ok'; }
             return 'skip'; // conflito
         }
         if (rel.kind === 'casado' || rel.kind === 'namoro') {
@@ -12728,13 +12837,20 @@ function atualizarIndicadorMemoria() {
             sB.spouse = String(sA.id);
             const st = rel.kind === 'casado' ? 'casado' : 'namorado';
             sA.relStatus = st; sB.relStatus = st;
+            if (rel.kind === 'casado') {
+                _logLivro(`[CASAMENTO] 💍 ${sA.nome||'?'} e ${sB.nome||'?'} se casaram!${_mk(sA.id)}${_mk(sB.id)}`);
+            } else {
+                _logLivro(`[ROMANCE] 💞 ${sA.nome||'?'} e ${sB.nome||'?'} começaram a namorar.${_mk(sA.id)}${_mk(sB.id)}`);
+            }
             return 'ok';
         }
         if (rel.kind === 'irmao') {
             sA.irmaos = Array.isArray(sA.irmaos) ? sA.irmaos : [];
             sB.irmaos = Array.isArray(sB.irmaos) ? sB.irmaos : [];
+            const jaEra = sA.irmaos.indexOf(String(sB.id)) >= 0 && sB.irmaos.indexOf(String(sA.id)) >= 0;
             if (sA.irmaos.indexOf(String(sB.id)) < 0) sA.irmaos.push(String(sB.id));
             if (sB.irmaos.indexOf(String(sA.id)) < 0) sB.irmaos.push(String(sA.id));
+            if (!jaEra) _logLivro(`[FAMÍLIA] 👫 ${sA.nome||'?'} e ${sB.nome||'?'} são irmãos.${_mk(sA.id)}${_mk(sB.id)}`);
             return 'ok';
         }
         return 'skip';
@@ -12743,6 +12859,9 @@ function atualizarIndicadorMemoria() {
     // Após aplicar pais, deduz irmãos entre sims que compartilham pelo menos um progenitor.
     function _inferirIrmaosPorPais() {
         const sims = db.sims || [];
+        const _dataStr = new Date().toLocaleDateString('pt-BR');
+        const _mk = (id) => (typeof _marcadorSim === 'function') ? _marcadorSim(id) : (id ? ` {{SIM:${id}}}` : '');
+        const jaLogado = new Set();
         sims.forEach(a => {
             if (!a.p1 && !a.p2) return;
             sims.forEach(b => {
@@ -12751,7 +12870,17 @@ function atualizarIndicadorMemoria() {
                              || (a.p2 && (a.p2 === b.p1 || a.p2 === b.p2));
                 if (!compart) return;
                 a.irmaos = Array.isArray(a.irmaos) ? a.irmaos : [];
-                if (a.irmaos.indexOf(String(b.id)) < 0) a.irmaos.push(String(b.id));
+                const novo = a.irmaos.indexOf(String(b.id)) < 0;
+                if (novo) a.irmaos.push(String(b.id));
+                // Loga apenas UMA vez por par (menor id primeiro), e apenas se par realmente novo
+                const par = [String(a.id), String(b.id)].sort().join('|');
+                if (novo && !jaLogado.has(par)) {
+                    jaLogado.add(par);
+                    try {
+                        db.historia = (db.historia || '') +
+                            `\n[${_dataStr}] [FAMÍLIA] 👫 ${a.nome||'?'} e ${b.nome||'?'} são irmãos (via pais em comum).${_mk(a.id)}${_mk(b.id)} [MOD-IMPORT]`;
+                    } catch(_) {}
+                }
             });
         });
     }
@@ -12989,6 +13118,7 @@ function atualizarIndicadorMemoria() {
         try { renderTree && renderTree(); } catch(e){}
         try { renderGenList && renderGenList(); } catch(e){}
         try { renderIaSimList && renderIaSimList(); } catch(e){}
+        try { renderLivroComFiltro && renderLivroComFiltro(); } catch(e){}
 
         fecharModalImportMod();
         let msg = '✅ Importação concluída — ' + nNovos + ' novo(s), ' + nAtualizados + ' atualizado(s), ' + nIgnorados + ' ignorado(s).';
@@ -13010,10 +13140,18 @@ function atualizarIndicadorMemoria() {
   #btn-undo-import {
     position: fixed; bottom: 18px; left: 18px; z-index: 9400;
     background: #fff; border: 2px solid var(--cozy-gold, #d4af37); color: #4a3b2a;
-    border-radius: 22px; padding: 8px 14px; font-size: 12px; font-weight: 700;
+    border-radius: 22px; padding: 8px 14px 8px 14px; font-size: 12px; font-weight: 700;
     cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.14); display: none;
+    align-items: center; gap: 8px;
   }
   #btn-undo-import:hover { background: #fff8e0; }
+  #btn-undo-import-dismiss {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(120,90,40,0.08); color: #7a5a1a; font-size: 12px; font-weight: 800;
+    border: none; cursor: pointer; margin-left: 4px; line-height: 1;
+  }
+  #btn-undo-import-dismiss:hover { background: rgba(255,77,77,0.18); color: #b22; }
   .roleta-create-card {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     background: linear-gradient(135deg, rgba(212,175,55,0.10), rgba(127,176,105,0.10));
@@ -13040,7 +13178,7 @@ function atualizarIndicadorMemoria() {
 </style>
 
 <button id="fab-collapse-toggle" type="button" title="Retrair/expandir FAB" aria-label="Retrair FAB">−</button>
-<button id="btn-undo-import" type="button" title="Desfazer última importação de dados do mod">↩ Desfazer importação</button>
+<div id="btn-undo-import" title="Desfazer última importação de dados do mod"><span id="btn-undo-import-label" style="cursor:pointer;">↩ Desfazer importação</span><span id="btn-undo-import-dismiss" role="button" tabindex="0" title="Dispensar (não desfaz nada)" aria-label="Fechar">✕</span></div>
 
 <!-- Modal criar roleta (dashboard) — 2 passos: nome -> opções -->
 <div id="modal-nova-roleta" style="display:none; position:fixed; inset:0; z-index:9800; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:16px;">
@@ -13152,10 +13290,18 @@ function atualizarIndicadorMemoria() {
   function _listarBackups(){
     return Object.keys(localStorage).filter(k => k.startsWith('db_backup_pre_import_')).sort();
   }
+  function _ultimoBackupTs(){
+    const bks = _listarBackups();
+    if (!bks.length) return 0;
+    return Number(bks[bks.length-1].replace('db_backup_pre_import_','')) || 0;
+  }
   function atualizarBotaoUndo(){
     const btn = document.getElementById('btn-undo-import');
     if (!btn) return;
-    btn.style.display = _listarBackups().length ? 'block' : 'none';
+    const ultima = _ultimoBackupTs();
+    let dismissed = 0;
+    try { dismissed = Number(localStorage.getItem('simstoria.undo.dismissed')||0) || 0; } catch(_) {}
+    btn.style.display = (ultima && ultima > dismissed) ? 'inline-flex' : 'none';
   }
   window.desfazerUltimaImportacao = function(){
     const bks = _listarBackups();
@@ -13191,9 +13337,21 @@ function atualizarIndicadorMemoria() {
       alert('Falha ao restaurar backup: ' + (e && e.message ? e.message : e));
     }
   };
-  document.getElementById('btn-undo-import').addEventListener('click', window.desfazerUltimaImportacao);
-  // Verifica periodicamente
-  setInterval(atualizarBotaoUndo, 2000);
+  (function(){
+    const lbl = document.getElementById('btn-undo-import-label');
+    const dis = document.getElementById('btn-undo-import-dismiss');
+    if (lbl) lbl.addEventListener('click', function(e){ e.stopPropagation(); window.desfazerUltimaImportacao(); });
+    function _dispensar(e){
+      e && e.stopPropagation();
+      try { localStorage.setItem('simstoria.undo.dismissed', String(_ultimoBackupTs() || Date.now())); } catch(_) {}
+      const btn = document.getElementById('btn-undo-import'); if (btn) btn.style.display = 'none';
+    }
+    if (dis) {
+      dis.addEventListener('click', _dispensar);
+      dis.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _dispensar(e); } });
+    }
+  })();
+  // Só verifica na carga; depois, apenas após backup/undo (chamado explicitamente).
 
   // =====================================================
   // #6 — Card "Crie sua nova roleta" no Dashboard
