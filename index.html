@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-19-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-20-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -3357,30 +3357,79 @@
         function autenticarGoogle() {
             if(CLIENT_ID.includes('SEU_CLIENT_ID')) return alert("Configure seu Client ID");
             if (typeof google === 'undefined') return alert("API não carregou.");
-            if(!tokenClient) {
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: CLIENT_ID, scope: SCOPES,
-                    callback: (tokenResponse) => {
-                        if (tokenResponse && tokenResponse.access_token) {
-                            accessToken = tokenResponse.access_token;
-                            tokenExpiryTime = Date.now() + (3500 * 1000); // ~58 min antes de expirar
-                            document.getElementById('google-status').innerText = "Status: 🟢 Conectado à Nuvem!";
-                            document.getElementById('btn-login-google').innerText = "G Trocar Conta Google";
-                            document.getElementById('btn-save-cloud').style.display = 'block';
-                            atualizarListaFamilias();
-                            iniciarAutoSave();
-                            atualizarBotaoGaleria();
-                            ocultarBannerExpirado();
-                            atualizarIndicadorFamiliaAtiva();
-                            hasUnsavedChanges = false;
-                            showToast("Autenticado!");
-                            // Buscar perfil para boas-vindas personalizadas (não-bloqueante)
-                            obterPerfilGoogle().then(() => atualizarBoasVindas()).catch(()=>{});
-                        }
-                    },
-                });
-            }
-            tokenClient.requestAccessToken({prompt: 'consent'});
+            _garantirTokenClient();
+            // Consent explícito só na primeira vez ou quando o usuário clica em "trocar conta".
+            const jaAutorizado = localStorage.getItem('ts4_google_autorizado') === 'true';
+            tokenClient.requestAccessToken({ prompt: jaAutorizado ? '' : 'consent' });
+        }
+
+        // Cria (uma vez) o tokenClient GIS. Callback centraliza o sucesso do
+        // login — usado tanto pelo clique manual quanto pela retomada silenciosa.
+        function _garantirTokenClient() {
+            if (tokenClient) return;
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID, scope: SCOPES,
+                callback: (tokenResponse) => {
+                    if (tokenResponse && tokenResponse.access_token) {
+                        accessToken = tokenResponse.access_token;
+                        tokenExpiryTime = Date.now() + (3500 * 1000); // ~58 min antes de expirar
+                        try { localStorage.setItem('ts4_google_autorizado', 'true'); } catch(e){}
+                        const st = document.getElementById('google-status');
+                        if (st) st.innerText = "Status: 🟢 Conectado à Nuvem!";
+                        const btn = document.getElementById('btn-login-google');
+                        if (btn) btn.innerText = "G Trocar Conta Google";
+                        const btnSave = document.getElementById('btn-save-cloud');
+                        if (btnSave) btnSave.style.display = 'block';
+                        try { atualizarListaFamilias(); } catch(e){}
+                        try { iniciarAutoSave(); } catch(e){}
+                        try { atualizarBotaoGaleria(); } catch(e){}
+                        try { ocultarBannerExpirado(); } catch(e){}
+                        try { atualizarIndicadorFamiliaAtiva(); } catch(e){}
+                        hasUnsavedChanges = false;
+                        showToast("Autenticado!");
+                        // Buscar perfil para boas-vindas personalizadas (não-bloqueante)
+                        try { obterPerfilGoogle().then(() => atualizarBoasVindas()).catch(()=>{}); } catch(e){}
+                        _agendarRefreshTokenSilencioso();
+                    }
+                },
+                error_callback: (err) => {
+                    // Se a retomada silenciosa falhar (usuário revogou ou bloqueou popup),
+                    // não incomoda — deixa o botão manual disponível.
+                    console.warn('GIS token flow:', err && err.type);
+                }
+            });
+        }
+
+        // Reautentica silenciosamente ~2 min antes de expirar. Só funciona se o
+        // usuário já consentiu antes — sem consent, cai silenciosamente e o
+        // botão "G Login" volta a aparecer.
+        let _refreshTokenTimer = null;
+        function _agendarRefreshTokenSilencioso() {
+            if (_refreshTokenTimer) clearTimeout(_refreshTokenTimer);
+            if (!tokenExpiryTime) return;
+            const msAte = tokenExpiryTime - Date.now() - 2*60*1000; // 2min antes
+            if (msAte <= 0) return;
+            _refreshTokenTimer = setTimeout(() => {
+                try {
+                    if (tokenClient) tokenClient.requestAccessToken({ prompt: '' });
+                } catch(e) { console.warn('refresh silencioso falhou:', e); }
+            }, msAte);
+        }
+
+        // Chamado no boot: se o usuário já autorizou o app antes, tenta reobter
+        // o token sem popup nem consent. Se der certo, a página fica "🟢
+        // Conectada" sem clique.
+        function _tentarLoginSilenciosoGoogle() {
+            try {
+                if (localStorage.getItem('ts4_google_autorizado') !== 'true') return;
+                if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+                    // GIS ainda não carregou — tenta de novo em breve
+                    setTimeout(_tentarLoginSilenciosoGoogle, 400);
+                    return;
+                }
+                _garantirTokenClient();
+                tokenClient.requestAccessToken({ prompt: '' });
+            } catch(e) { console.warn('login silencioso Google falhou:', e); }
         }
 
         function iniciarAutoSave() {
@@ -5053,9 +5102,31 @@ if (fase === 'recem_nascido') {
             const rArea = document.getElementById('config-roulettes-area');
             rArea.innerHTML = Object.keys(db.config).filter(key => key !== 'treeBgMode' && key !== 'treeBgCustom').map(key => {
                 const isCustom = !DEFAULT_ROULETTES.includes(key);
-                const btnDeletar = isCustom ? `<button class="btn-main" style="width:auto; margin:0; background:#ff4d4d; padding: 5px 10px; font-size: 11px;" onclick="deletarRoleta('${key}')">Excluir Roleta</button>` : '';
-                return `<div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 5px;"><strong style="text-transform:capitalize">Roleta: ${key}</strong>${btnDeletar}</div><div class="tag-list">${db.config[key].map((v, i) => `<div class="tag">${v} <span onclick="removeRoul('${key}',${i})" style="color:red; cursor:pointer">×</span></div>`).join('')}</div><div style="display:flex; gap:5px;"><input type="text" id="in-r-${key}" placeholder="Nova opção..." style="flex:1;"><button class="btn-main" onclick="addRoul('${key}')" style="width:40px; margin:0; background:var(--ts4-green)">+</button></div></div>`
+                const btnDeletar = isCustom ? `<button class="btn-main" style="width:auto; margin:0; background:#ff4d4d; padding: 5px 10px; font-size: 11px;" onclick="event.preventDefault();event.stopPropagation();deletarRoleta('${key}')">Excluir Roleta</button>` : '';
+                const opcoes = db.config[key] || [];
+                const aberta = localStorage.getItem('ts4_roleta_expandida_' + key) === '1';
+                return `<details class="roleta-config-details" data-roleta="${key}" ${aberta ? 'open' : ''} style="margin-bottom:10px; border:1px solid var(--ts4-border,#e0dccb); border-radius:10px; background:var(--ts4-secondary-bg,#fff8ec); overflow:hidden;">
+                    <summary style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; list-style:none; font-weight:700; color:var(--ts4-text,#4a3b2a);">
+                        <span><span class="roleta-arrow" style="display:inline-block; transition:transform .2s; margin-right:6px;">▶</span><span style="text-transform:capitalize">Roleta: ${key}</span> <span style="font-size:11px; font-weight:600; color:var(--ts4-subtle-text,#888); margin-left:6px;">(${opcoes.length} opç${opcoes.length===1?'ão':'ões'})</span></span>
+                        <span style="display:flex; gap:6px; align-items:center;">${btnDeletar}</span>
+                    </summary>
+                    <div style="padding:8px 14px 12px 14px; border-top:1px dashed var(--ts4-border,#e0dccb);">
+                        <div class="tag-list">${opcoes.map((v, i) => `<div class="tag">${v} <span onclick="removeRoul('${key}',${i})" style="color:red; cursor:pointer">×</span></div>`).join('')}</div>
+                        <div style="display:flex; gap:5px; margin-top:6px;"><input type="text" id="in-r-${key}" placeholder="Nova opção..." style="flex:1;"><button class="btn-main" onclick="addRoul('${key}')" style="width:40px; margin:0; background:var(--ts4-green)">+</button></div>
+                    </div>
+                </details>`;
             }).join('');
+            // Persistir estado aberto/fechado por roleta
+            rArea.querySelectorAll('details.roleta-config-details').forEach(d => {
+                const k = d.getAttribute('data-roleta');
+                const arrow = d.querySelector('.roleta-arrow');
+                const refleteSeta = () => { if (arrow) arrow.style.transform = d.open ? 'rotate(90deg)' : 'rotate(0deg)'; };
+                refleteSeta();
+                d.addEventListener('toggle', () => {
+                    try { localStorage.setItem('ts4_roleta_expandida_' + k, d.open ? '1' : '0'); } catch(e){}
+                    refleteSeta();
+                });
+            });
             
             renderReactionAudioConfig();
         }
@@ -7625,6 +7696,118 @@ let edgesArray = [];
             }
 
             // ============================================================
+            // 6.5 SNAP DE LAYOUT — mantém a promessa "esposa ao lado do esposo
+            // na mesma linha da geração; filho único centralizado abaixo".
+            //
+            // Sem esse passo, quando um cônjuge vem de uma unidade colocada
+            // por um caminho diferente (fallback de "unidades não colocadas"),
+            // o Y dele pode divergir do parceiro; e um filho único herda o X
+            // dos "items" (que centraliza o bloco, não o pai) — o que dá a
+            // impressão de "linha quebrada".
+            // ============================================================
+            try {
+                // 1) Determina a geração de cada Sim real (0 = topo).
+                const geracaoDe = {};
+                const cacheGer = {};
+                const computaGer = (id, visit) => {
+                    id = String(id);
+                    if (cacheGer[id] !== undefined) return cacheGer[id];
+                    visit = visit || new Set();
+                    if (visit.has(id)) return 0;
+                    visit.add(id);
+                    const s = byId[id];
+                    if (!s) return 0;
+                    let g = 0;
+                    if (s.p1 && byId[String(s.p1)]) g = Math.max(g, computaGer(s.p1, visit) + 1);
+                    if (s.p2 && byId[String(s.p2)]) g = Math.max(g, computaGer(s.p2, visit) + 1);
+                    cacheGer[id] = g;
+                    return g;
+                };
+                sims.forEach(s => { geracaoDe[String(s.id)] = computaGer(s.id); });
+                // Cônjuges: normaliza pela maior geração do par (evita casal em linhas diferentes)
+                let mudou = true, guard = 0;
+                while (mudou && guard < 5) {
+                    mudou = false; guard++;
+                    sims.forEach(s => {
+                        if (!s.spouse) return;
+                        const a = geracaoDe[String(s.id)] || 0;
+                        const b = geracaoDe[String(s.spouse)] || 0;
+                        const g = Math.max(a, b);
+                        if (a !== g) { geracaoDe[String(s.id)] = g; mudou = true; }
+                        if (b !== g) { geracaoDe[String(s.spouse)] = g; mudou = true; }
+                    });
+                }
+
+                // 2) Y-alvo por geração = min(Y) dos nós dessa geração
+                //    (mantém a árvore o mais compacta possível, sem alterar a ordem geral).
+                const yMinGer = {};
+                Object.entries(simPos).forEach(([nodeId, pos]) => {
+                    const rid = pos.realId || nodeId.split(/[@#]/)[0];
+                    const g = geracaoDe[String(rid)];
+                    if (g === undefined) return;
+                    if (yMinGer[g] === undefined || pos.y < yMinGer[g]) yMinGer[g] = pos.y;
+                });
+                // Garante que gerações mais novas ficam abaixo de gerações mais velhas.
+                const gersOrd = Object.keys(yMinGer).map(Number).sort((a,b)=>a-b);
+                for (let i = 1; i < gersOrd.length; i++) {
+                    const gAtual = gersOrd[i], gAnt = gersOrd[i-1];
+                    const minPermitido = yMinGer[gAnt] + NODE_H + V_GAP;
+                    if (yMinGer[gAtual] < minPermitido) yMinGer[gAtual] = minPermitido;
+                }
+                // 3) Snap Y em todos os simPos
+                Object.entries(simPos).forEach(([nodeId, pos]) => {
+                    const rid = pos.realId || nodeId.split(/[@#]/)[0];
+                    const g = geracaoDe[String(rid)];
+                    if (g !== undefined && yMinGer[g] !== undefined) pos.y = yMinGer[g];
+                });
+                // Snap Y dos unions (fica na mesma linha do casal)
+                Object.entries(unionPos).forEach(([uk, pos]) => {
+                    const u = units[uk];
+                    if (!u) return;
+                    const g = Math.max.apply(null, u.parents.map(p => geracaoDe[String(p)] || 0));
+                    if (yMinGer[g] !== undefined) pos.y = yMinGer[g];
+                });
+                // Snap Y das sibling bars (metade do caminho até a próxima geração)
+                Object.entries(sibBarPos).forEach(([uk, pos]) => {
+                    const u = units[uk];
+                    if (!u) return;
+                    const gPai = Math.max.apply(null, u.parents.map(p => geracaoDe[String(p)] || 0));
+                    const gFilho = gPai + 1;
+                    if (yMinGer[gPai] !== undefined && yMinGer[gFilho] !== undefined) {
+                        pos.y = yMinGer[gPai] + (yMinGer[gFilho] - yMinGer[gPai]) / 2;
+                    }
+                });
+
+                // 4) Casais lado a lado no mesmo Y (garantia extra)
+                Object.values(units).forEach(u => {
+                    if (u.type !== 'couple') return;
+                    const [aId, bId] = u.parents;
+                    const aKey = nodeIdFor(aId, u.key), bKey = nodeIdFor(bId, u.key);
+                    const pa = simPos[aKey], pb = simPos[bKey], pu = unionPos[u.key];
+                    if (!pa || !pb || !pu) return;
+                    // Y idêntico ao union
+                    pa.y = pu.y; pb.y = pu.y;
+                    // X simétrico em torno do union (mantém o centro atual)
+                    const cx = pu.x;
+                    pa.x = cx - (NODE_W + COUPLE_GAP) / 2;
+                    pb.x = cx + (NODE_W + COUPLE_GAP) / 2;
+                });
+
+                // 5) Filho único: centraliza X abaixo do pai/união
+                Object.values(units).forEach(u => {
+                    if (u.children.length !== 1) return;
+                    if (sibBarPos[u.key]) return; // já tem barra de irmandade
+                    const cid = u.children[0];
+                    const ck = nodeIdFor(cid, u.key);
+                    const pc = simPos[ck];
+                    if (!pc) return;
+                    const pu = unionPos[u.key];
+                    if (!pu) return;
+                    pc.x = pu.x;
+                });
+            } catch(e) { console.warn('snap layout árvore falhou (ignorado):', e); }
+
+            // ============================================================
             // 7. Elementos Cytoscape
             // ============================================================
             const elements = [];
@@ -9374,6 +9557,10 @@ window.onload = function() {
     setInterval(() => {
         verificarSessaoDrive();
     }, 120000);
+
+    // Reautenticação silenciosa no Google (se o usuário já consentiu antes).
+    // Mantém "🟢 Conectado" após F5 sem exigir novo clique.
+    try { _tentarLoginSilenciosoGoogle && _tentarLoginSilenciosoGoogle(); } catch(e){}
 
     // Item 20: carregar perfil salvo + atualizar boas-vindas
     try {
@@ -11685,6 +11872,27 @@ function atualizarIndicadorMemoria() {
 
         <p id="import-mod-resumo" style="margin:0 0 12px 0; font-size:13px; color:var(--ts4-subtle-text, #666);">Análise concluída! Confira o que mudou no seu save.</p>
 
+        <!-- Barra de pesquisa (funciona em todos os passos) -->
+        <div style="position:relative; margin:0 0 10px 0;">
+            <input type="text" id="import-mod-search"
+                placeholder="🔍 Buscar Sim por nome ou sobrenome..."
+                autocomplete="off"
+                style="width:100%; padding:9px 34px 9px 12px; box-sizing:border-box;
+                       border:1.5px solid var(--ts4-border, #e0dccb); border-radius:10px;
+                       background:var(--ts4-secondary-bg, #fff8ec); font-size:13px;
+                       color:var(--ts4-text, #4a3b2a); outline:none;">
+            <button type="button" id="import-mod-search-clear"
+                onclick="(function(){var i=document.getElementById('import-mod-search');i.value='';i.dispatchEvent(new Event('input'));i.focus();})();"
+                title="Limpar busca"
+                style="position:absolute; right:6px; top:50%; transform:translateY(-50%);
+                       background:transparent; border:none; font-size:16px; cursor:pointer;
+                       color:var(--ts4-subtle-text,#888); display:none;">✖</button>
+            <div id="import-mod-search-empty" style="display:none; padding:14px; text-align:center;
+                 font-size:12px; color:var(--ts4-subtle-text,#888); font-style:italic;">
+                Nenhum Sim encontrado com esse nome. 🌱
+            </div>
+        </div>
+
         <!-- ================= PASSO 1 ================= -->
         <div id="import-mod-step1">
             <!-- Abas -->
@@ -11774,7 +11982,7 @@ function atualizarIndicadorMemoria() {
         { key:'nome',       label:'Nome',            from: m => m.nome || '' },
         { key:'sobrenome',  label:'Sobrenome',       from: m => m.sobrenome || '' },
         { key:'genero',     label:'Gênero',          from: m => m.genero || '' },
-        { key:'estagio',    label:'Estágio de Vida', from: m => m.estagio_vida || '' },
+        { key:'fase',       label:'Fase da Vida',    from: m => _normalizarFase(m.estagio_vida || '') },
         { key:'tipoSim',    label:'Tipo de Sim',     from: m => m.tipo_sim || '' },
         { key:'carreira',   label:'Carreira',        from: m => m.carreira || '' },
         { key:'aspiracao',  label:'Aspiração',       from: m => m.aspiracao_atual || '' },
@@ -11785,6 +11993,31 @@ function atualizarIndicadorMemoria() {
         { key:'tracos',     label:'Traços',          from: m => _tracosLimpos(m.tracos), tipo:'tracos' },
         { key:'extra',      label:'Notas Extras (do jogo)', from: m => _outrasInfoLimpas(m.outras_informacoes), tipo:'extra' },
     ];
+
+    // Mapeia o "estagio_vida" bruto vindo do mod (em português com acentos e
+    // espaços) para o slug interno usado em sim.fase (kebab-case, sem acento).
+    // Sem isso, importar uma "Criança" grava "Criança" no campo e o <select>
+    // da UI cai no default "jovem-adulto" — a fase nunca muda de verdade.
+    function _normalizarFase(str) {
+        if (str == null) return '';
+        const s = String(str)
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
+            .toLowerCase().trim()
+            .replace(/\s+/g, '-');
+        const alias = {
+            'bebe-de-colo':'bebe-colo', 'bebe-colo':'bebe-colo',
+            'infant':'bebe-colo',
+            'bebe':'bebe', 'toddler':'bebe',
+            'crianca':'crianca', 'child':'crianca',
+            'adolescente':'adolescente', 'teen':'adolescente',
+            'jovem-adulto':'jovem-adulto', 'young-adult':'jovem-adulto',
+            'adulto':'adulto', 'adult':'adulto',
+            'idoso':'idoso', 'elder':'idoso',
+        };
+        return alias[s] || s;
+    }
+    // expõe para outras funções (importarArquivo etc.)
+    try { window._normalizarFase = _normalizarFase; } catch(e){}
 
     function _tracosLimpos(arr) {
         if (!Array.isArray(arr)) return '';
@@ -12031,6 +12264,7 @@ function atualizarIndicadorMemoria() {
             b.style.fontWeight = ativo ? '700' : '600';
             b.style.color = ativo ? 'var(--ts4-text,#4a3b2a)' : 'var(--ts4-subtle-text,#888)';
         });
+        try { window._reaplicarBuscaImportMod && window._reaplicarBuscaImportMod(); } catch(e){}
     };
 
     // ---------- PASSO 2: escolher campos dos Sims ⚡Atualizados marcados ----------
@@ -12216,6 +12450,8 @@ function atualizarIndicadorMemoria() {
         if (n === 1) { set(b1,on); set(b2,off); set(b3,off); }
         else if (n === 2) { set(b1,done); set(b2,on); set(b3,off); }
         else { set(b1,done); set(b2,done); set(b3,on); }
+        // Reaplica a busca corrente ao novo conteúdo renderizado.
+        try { window._reaplicarBuscaImportMod && window._reaplicarBuscaImportMod(); } catch(e){}
     }
 
     function _temRelacionamentosParaRevisar() {
@@ -12527,11 +12763,87 @@ function atualizarIndicadorMemoria() {
         trocarAbaImportMod('novidades');
         _mostrarPasso(1);
         document.getElementById('modal-import-mod').style.display = 'block';
+        _iniciarBuscaImportMod();
     };
 
     window.fecharModalImportMod = function() {
         document.getElementById('modal-import-mod').style.display = 'none';
         window._importModState = null;
+        const inp = document.getElementById('import-mod-search');
+        if (inp) inp.value = '';
+        const empty = document.getElementById('import-mod-search-empty');
+        if (empty) empty.style.display = 'none';
+        const clr = document.getElementById('import-mod-search-clear');
+        if (clr) clr.style.display = 'none';
+    };
+
+    // ---------------------------------------------------------------
+    // BARRA DE PESQUISA — funciona nos 3 passos, sem alterar renders.
+    // Estratégia: percorre containers-alvo e usa o textContent de cada
+    // "linha de Sim" para comparar contra o termo (normalizado).
+    // ---------------------------------------------------------------
+    function _normStr(s) {
+        return String(s == null ? '' : s)
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase().trim();
+    }
+
+    function _linhasImportModVisiveis() {
+        // Retorna array de {row, texto} para cada linha de Sim visível na tela.
+        const linhas = [];
+        // Passo 1 — novidades (cada <div> filho direto que representa 1 Sim)
+        const nov = document.getElementById('import-mod-aba-novidades');
+        if (nov && nov.offsetParent !== null) {
+            nov.querySelectorAll(':scope > div').forEach(row => {
+                // ignora cabeçalhos (usam só <strong> sem checkbox)
+                if (row.querySelector('input[type="checkbox"]')) linhas.push({ row, texto: row.textContent });
+            });
+        }
+        // Passo 1 — inalterados
+        const ina = document.getElementById('import-mod-aba-inalterados');
+        if (ina && ina.offsetParent !== null) {
+            ina.querySelectorAll(':scope > label').forEach(row => linhas.push({ row, texto: row.textContent }));
+        }
+        // Passo 2 — cada Sim é um <details>
+        const p2 = document.getElementById('import-mod-step2-body');
+        if (p2) p2.querySelectorAll(':scope > details').forEach(row => linhas.push({ row, texto: row.querySelector('summary')?.textContent || '' }));
+        // Passo 3 — vínculos: um <label> por relação; agrupados em <details>
+        const p3 = document.getElementById('import-mod-step3-body');
+        if (p3) p3.querySelectorAll('details > label').forEach(row => linhas.push({ row, texto: row.textContent }));
+        return linhas;
+    }
+
+    function _aplicarBuscaImportMod() {
+        const inp = document.getElementById('import-mod-search');
+        const empty = document.getElementById('import-mod-search-empty');
+        const clr = document.getElementById('import-mod-search-clear');
+        if (!inp) return;
+        const termo = _normStr(inp.value);
+        if (clr) clr.style.display = termo ? '' : 'none';
+        const linhas = _linhasImportModVisiveis();
+        let visiveis = 0;
+        linhas.forEach(({ row, texto }) => {
+            if (!termo) {
+                row.style.display = '';
+                visiveis++;
+            } else {
+                const bate = _normStr(texto).indexOf(termo) !== -1;
+                row.style.display = bate ? '' : 'none';
+                if (bate) visiveis++;
+            }
+        });
+        if (empty) empty.style.display = (termo && visiveis === 0) ? '' : 'none';
+    }
+
+    function _iniciarBuscaImportMod() {
+        const inp = document.getElementById('import-mod-search');
+        if (!inp || inp._ss_bound) return;
+        inp._ss_bound = true;
+        inp.addEventListener('input', _aplicarBuscaImportMod);
+    }
+    // Reaplica o filtro ao trocar passo/aba (as linhas são re-renderizadas).
+    window._reaplicarBuscaImportMod = function() {
+        try { _aplicarBuscaImportMod(); } catch(e){}
     };
 
     // Aplica um Sim do mod nos campos do Sim do site (só campos escolhidos)
