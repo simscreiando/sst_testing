@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-55-15-MOD - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-17-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- vis-network removido: árvore genealógica usa apenas Cytoscape agora -->
+    <script>window.vis = { DataSet: function(){ return { add:()=>{}, update:()=>{}, remove:()=>{}, get:()=>[], length:0 }; }, Network: function(){ return { on:()=>{}, destroy:()=>{}, fit:()=>{}, setOptions:()=>{}, getSelectedNodes:()=>[], selectNodes:()=>{}, canvas:{ frame:{ canvas:{ toDataURL:()=>'' , getBoundingClientRect:()=>({left:0,top:0}) } } } }; } };</script>
     <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
@@ -1264,103 +1265,8 @@
                         <line x1="80" y1="20" x2="90" y2="45" stroke="#ddd" stroke-width=".8"/>
                     </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Todas as gerações interligadas</div></span>
                 </span>
-                <span style="width:100%; height:1px; background:#eee; margin:4px 0;"></span>
-                <span style="font-size:12px; font-weight:bold; color:#555;">🌳 Formato da Árvore:</span>
-                <span class="layout-btn-wrap">
-                    <button id="btn-layout-1" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(1)">Tradicional (Topo→Base)</button>
-                    <span class="layout-svg-tip"><svg width="90" height="65" viewBox="0 0 90 65" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="30" y="2" width="30" height="13" rx="3" fill="#7fb069" opacity=".85"/>
-                        <line x1="45" y1="15" x2="22" y2="28" stroke="#aaa" stroke-width="1.5"/>
-                        <line x1="45" y1="15" x2="68" y2="28" stroke="#aaa" stroke-width="1.5"/>
-                        <rect x="8"  y="28" width="28" height="12" rx="3" fill="#9bc7e4" opacity=".8"/>
-                        <rect x="54" y="28" width="28" height="12" rx="3" fill="#9bc7e4" opacity=".8"/>
-                        <line x1="22" y1="40" x2="15" y2="52" stroke="#aaa" stroke-width="1.2"/>
-                        <line x1="22" y1="40" x2="30" y2="52" stroke="#aaa" stroke-width="1.2"/>
-                        <rect x="7"  y="52" width="17" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
-                        <rect x="22" y="52" width="17" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
-                        <text x="45" y="63" text-anchor="middle" font-size="7" fill="#888">↓ hierarquia</text>
-                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Árvore de cima para baixo</div></span>
-                </span>
-                <span class="layout-btn-wrap">
-                    <button id="btn-layout-2" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(2)">Horizontal (Esq→Dir)</button>
-                    <span class="layout-svg-tip"><svg width="90" height="65" viewBox="0 0 90 65" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="2" y="24" width="22" height="16" rx="3" fill="#7fb069" opacity=".85"/>
-                        <line x1="24" y1="32" x2="36" y2="16" stroke="#aaa" stroke-width="1.5"/>
-                        <line x1="24" y1="32" x2="36" y2="48" stroke="#aaa" stroke-width="1.5"/>
-                        <rect x="36" y="8"  width="22" height="16" rx="3" fill="#9bc7e4" opacity=".8"/>
-                        <rect x="36" y="40" width="22" height="16" rx="3" fill="#9bc7e4" opacity=".8"/>
-                        <line x1="58" y1="16" x2="68" y2="10" stroke="#aaa" stroke-width="1.2"/>
-                        <line x1="58" y1="16" x2="68" y2="22" stroke="#aaa" stroke-width="1.2"/>
-                        <rect x="68" y="5"  width="18" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
-                        <rect x="68" y="17" width="18" height="10" rx="2" fill="#f4b8c7" opacity=".8"/>
-                        <text x="45" y="63" text-anchor="middle" font-size="7" fill="#888">→ da esquerda</text>
-                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Árvore da esquerda p/ direita</div></span>
-                </span>
-                <span class="layout-btn-wrap">
-                    <button id="btn-layout-3" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(3)">Livre (Física)</button>
-                    <span class="layout-svg-tip"><svg width="90" height="65" viewBox="0 0 90 65" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="45" cy="32" r="7" fill="#d4af37" opacity=".85"/>
-                        <circle cx="18" cy="18" r="6" fill="#7fb069" opacity=".8"/>
-                        <circle cx="70" cy="12" r="6" fill="#9bc7e4" opacity=".8"/>
-                        <circle cx="75" cy="50" r="6" fill="#f4b8c7" opacity=".8"/>
-                        <circle cx="15" cy="52" r="6" fill="#9bc7e4" opacity=".8"/>
-                        <circle cx="55" cy="58" r="5" fill="#7fb069" opacity=".7"/>
-                        <line x1="45" y1="32" x2="18" y2="18" stroke="#bbb" stroke-width="1"/>
-                        <line x1="45" y1="32" x2="70" y2="12" stroke="#bbb" stroke-width="1"/>
-                        <line x1="45" y1="32" x2="75" y2="50" stroke="#bbb" stroke-width="1"/>
-                        <line x1="45" y1="32" x2="15" y2="52" stroke="#bbb" stroke-width="1"/>
-                        <line x1="45" y1="32" x2="55" y2="58" stroke="#bbb" stroke-width="1"/>
-                        <line x1="18" y1="18" x2="15" y2="52" stroke="#ddd" stroke-width=".8"/>
-                        <text x="45" y="9" text-anchor="middle" font-size="7" fill="#888">posição livre</text>
-                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Nós se posicionam livremente</div></span>
-                </span>
-                <span class="layout-btn-wrap">
-                    <button id="btn-layout-4" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(4)">Radial (Circular)</button>
-                    <span class="layout-svg-tip"><svg width="90" height="70" viewBox="0 0 90 70" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="45" cy="35" r="7" fill="#d4af37" opacity=".9"/>
-                        <circle cx="45" cy="8"  r="6" fill="#7fb069" opacity=".8"/>
-                        <circle cx="69" cy="21" r="6" fill="#7fb069" opacity=".8"/>
-                        <circle cx="69" cy="49" r="6" fill="#7fb069" opacity=".8"/>
-                        <circle cx="45" cy="62" r="6" fill="#7fb069" opacity=".8"/>
-                        <circle cx="21" cy="49" r="6" fill="#7fb069" opacity=".8"/>
-                        <circle cx="21" cy="21" r="6" fill="#7fb069" opacity=".8"/>
-                        <line x1="45" y1="35" x2="45" y2="14"  stroke="#aaa" stroke-width="1"/>
-                        <line x1="45" y1="35" x2="64" y2="25"  stroke="#aaa" stroke-width="1"/>
-                        <line x1="45" y1="35" x2="64" y2="45"  stroke="#aaa" stroke-width="1"/>
-                        <line x1="45" y1="35" x2="45" y2="56"  stroke="#aaa" stroke-width="1"/>
-                        <line x1="45" y1="35" x2="26" y2="45"  stroke="#aaa" stroke-width="1"/>
-                        <line x1="45" y1="35" x2="26" y2="25"  stroke="#aaa" stroke-width="1"/>
-                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Nós em círculo ao redor</div></span>
-                </span>
-                <span class="layout-btn-wrap">
-                    <button id="btn-layout-5" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color: #9B59B6; color: #9B59B6;" onclick="setTreeLayout(5)">👁️ Linhagem Principal (Focado)</button>
-                    <span class="layout-svg-tip"><svg width="100" height="65" viewBox="0 0 100 65" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="1"  y="25" width="18" height="13" rx="3" fill="#9B59B6" opacity=".9"/>
-                        <line x1="19" y1="31" x2="26" y2="31" stroke="#9B59B6" stroke-width="2"/>
-                        <rect x="26" y="25" width="18" height="13" rx="3" fill="#9B59B6" opacity=".9"/>
-                        <line x1="44" y1="31" x2="51" y2="31" stroke="#9B59B6" stroke-width="2"/>
-                        <rect x="51" y="25" width="18" height="13" rx="3" fill="#9B59B6" opacity=".9"/>
-                        <line x1="69" y1="31" x2="76" y2="31" stroke="#9B59B6" stroke-width="2"/>
-                        <rect x="76" y="25" width="18" height="13" rx="3" fill="#9B59B6" opacity=".9"/>
-                        <circle cx="10" cy="12" r="4" fill="#ccc" opacity=".6"/>
-                        <circle cx="35" cy="12" r="4" fill="#ccc" opacity=".6"/>
-                        <circle cx="60" cy="12" r="4" fill="#ccc" opacity=".6"/>
-                        <circle cx="85" cy="12" r="4" fill="#ccc" opacity=".6"/>
-                        <line x1="10" y1="16" x2="10" y2="25" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
-                        <line x1="35" y1="16" x2="35" y2="25" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
-                        <line x1="60" y1="16" x2="60" y2="25" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
-                        <line x1="85" y1="16" x2="85" y2="25" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
-                        <circle cx="10" cy="51" r="4" fill="#ccc" opacity=".6"/>
-                        <circle cx="35" cy="51" r="4" fill="#ccc" opacity=".6"/>
-                        <circle cx="60" cy="51" r="4" fill="#ccc" opacity=".6"/>
-                        <circle cx="85" cy="51" r="4" fill="#ccc" opacity=".6"/>
-                        <line x1="10" y1="38" x2="10" y2="47" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
-                        <line x1="35" y1="38" x2="35" y2="47" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
-                        <line x1="60" y1="38" x2="60" y2="47" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
-                        <line x1="85" y1="38" x2="85" y2="47" stroke="#ccc" stroke-width=".8" stroke-dasharray="2,2"/>
-                        <text x="50" y="63" text-anchor="middle" font-size="7" fill="#9B59B6">linha do herdeiro</text>
-                    </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Destaque no caminho principal</div></span>
-                </span>
+                <!-- Modos 1-5 (vis-network) removidos: agora só usamos os modos Family Echo (Cytoscape) acima. -->
+
             </div>
 
         </div><div id="tab-ia" class="tab-pane">
@@ -1417,73 +1323,68 @@
 
         <div id="tab-history" class="tab-pane">
             <div class="panel">
-                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:15px; flex-wrap: wrap; gap:8px;">
-                    <h2 style="margin:0;">📖 O Livro da Família</h2>
+                <!-- Linha 1: título + ações -->
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom:12px; flex-wrap: wrap; gap:8px;">
+                    <div>
+                        <h2 style="margin:0;">📖 O Livro da Família</h2>
+                        <p style="font-size:12px; color:#888; margin:2px 0 0 0;">Registre eventos marcantes e acompanhe suas metas de legado.</p>
+                    </div>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="btn-main" style="width:auto; margin:0; padding:10px 18px; background:linear-gradient(135deg, #1a1a2e, #16213e); font-size:13px; letter-spacing:0.5px;" onclick="abrirApresentacao()">🎬 Modo Apresentação</button>
-                        <button class="btn-main" style="width:auto; margin:0; padding:10px 20px; background:var(--ts4-green);" onclick="exportarHistoria()">📥 Exportar Lore (TXT)</button>
+                        <button class="btn-main" style="width:auto; margin:0; padding:9px 16px; background:linear-gradient(135deg, #1a1a2e, #16213e); font-size:12px; letter-spacing:0.5px;" onclick="abrirApresentacao()">🎬 Apresentação</button>
+                        <button class="btn-main" style="width:auto; margin:0; padding:9px 16px; background:var(--ts4-green); font-size:12px;" onclick="exportarHistoria()">📥 Exportar TXT</button>
                     </div>
                 </div>
-                
-                <div style="display:flex; gap:10px; margin-bottom:5px; flex-wrap:wrap; align-items:center;">
-                    <div style="flex:1; min-width:180px;">
-                        <input type="text" id="nova-historia-manual" placeholder="Escreva algo que aconteceu no jogo...">
-                    </div>
-                    
-                    <div style="display:flex; align-items:center; gap:5px;">
-                        <label style="font-size:12px; color:#555; white-space:nowrap; margin:0;">🏷️ Tag:</label>
-                        <select id="sel-tag-historia" style="width:auto; padding:8px; margin:0;">
-                            <option value="[GERAL]">[GERAL]</option>
-                            <option value="[NASCIMENTO]">👶 NASCIMENTO</option>
-                            <option value="[FASES DE VIDA]">🎂 ANIVERSÁRIO/CRESCIMENTO</option>
-                            <option value="[MORTE]">💀 MORTE</option>
-                            <option value="[CASAMENTO]">💍 CASAMENTO</option>
-                            <option value="[SEPARAÇÃO]">💔 SEPARAÇÃO</option>
-                            <option value="[DRAMA]">🔥 DRAMA/ESCÂNDALO</option>
-                            <option value="[CONQUISTA]">🏆 CONQUISTA</option>
-                            <option value="[CARREIRA]">💼 CARREIRA</option>
-                            <option value="[RELACIONAMENTOS]">💞 RELACIONAMENTOS</option>
-                        </select>
-                    </div>
 
-                    <div style="display:flex; align-items:flex-start; gap:5px;">
-                        <label style="font-size:12px; color:#555; white-space:nowrap; margin:0; padding-top:9px;">👤 Sim:</label>
-                        <div style="display:flex; flex-direction:column; gap:3px;">
-                            <input type="text" id="busca-sel-sim-historia" placeholder="🔍 Buscar Sim..." oninput="filtrarSelectSims('busca-sel-sim-historia','sel-sim-historia')" style="font-size:11px; padding:5px 8px; border-radius:8px; border:1.5px solid #e6d5a8; background:#fffdf6; width:160px;">
-                            <select id="sel-sim-historia" style="width:auto; padding:8px; margin:0;" data-empty-label="(Nenhum)">
+                <!-- Linha 2: novo registro (colapsável para reduzir densidade) -->
+                <details style="margin-bottom:10px; background:#fffdf6; border:1.5px solid #e6d5a8; border-radius:10px; padding:8px 12px;">
+                    <summary style="font-size:13px; font-weight:700; color:var(--ts4-blue); cursor:pointer; list-style:none;">➕ Novo registro no Livro</summary>
+                    <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:flex-end;">
+                        <div style="flex:1; min-width:180px;">
+                            <input type="text" id="nova-historia-manual" placeholder="Escreva algo que aconteceu no jogo..." style="margin:0;">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <label style="font-size:11px; color:#555; white-space:nowrap; margin:0;">🏷️</label>
+                            <select id="sel-tag-historia" style="width:auto; padding:8px; margin:0; font-size:12px;">
+                                <option value="[GERAL]">[GERAL]</option>
+                                <option value="[NASCIMENTO]">👶 NASCIMENTO</option>
+                                <option value="[FASES DE VIDA]">🎂 FASE</option>
+                                <option value="[MORTE]">💀 MORTE</option>
+                                <option value="[CASAMENTO]">💍 CASAMENTO</option>
+                                <option value="[SEPARAÇÃO]">💔 SEPARAÇÃO</option>
+                                <option value="[DRAMA]">🔥 DRAMA</option>
+                                <option value="[CONQUISTA]">🏆 CONQUISTA</option>
+                                <option value="[CARREIRA]">💼 CARREIRA</option>
+                                <option value="[RELACIONAMENTOS]">💞 RELAÇÕES</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <label style="font-size:11px; color:#555; white-space:nowrap; margin:0;">👤</label>
+                            <select id="sel-tag-historia-hidden-wrapper" style="display:none;"></select>
+                            <input type="text" id="busca-sel-sim-historia" placeholder="🔍 Sim..." oninput="filtrarSelectSims('busca-sel-sim-historia','sel-sim-historia')" style="font-size:11px; padding:6px 8px; border-radius:8px; border:1.5px solid #e6d5a8; background:#fff; width:120px; margin:0;">
+                            <select id="sel-sim-historia" style="width:auto; padding:8px; margin:0; font-size:12px;" data-empty-label="(Nenhum)">
                                 <option value="">(Nenhum)</option>
                             </select>
                         </div>
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <label style="font-size:11px; color:#555; white-space:nowrap; margin:0;">📅</label>
+                            <input type="date" id="data-historia-manual" style="width:130px; padding:7px; margin:0; font-size:12px;" value="">
+                        </div>
+                        <button class="btn-main" style="width:auto; margin:0; padding:9px 16px; font-size:12px;" onclick="addHistoriaManual()">Registrar</button>
                     </div>
+                </details>
 
-                    <div style="display:flex; align-items:center; gap:5px;">
-                        <label style="font-size:12px; color:#555; white-space:nowrap; margin:0;">📅 Data:</label>
-                        <input type="date" id="data-historia-manual" style="width:130px; padding:8px; margin:0;" value="">
-                    </div>
-                    <button class="btn-main" style="width:100px; margin:0;" onclick="addHistoriaManual()">Registrar</button>
-                </div>
-                
-                <div style="margin-bottom: 8px; display:flex; gap:6px; align-items:flex-start; flex-wrap:wrap;">
-                    <span style="font-size:12px; font-weight:bold; color:var(--ts4-blue); align-self:center;">👤 Filtrar por Sim:</span>
-                    <div style="display:flex; flex-direction:column; gap:3px;">
-                        <input type="text" id="busca-filtro-sim-livro" placeholder="🔍 Buscar Sim..." oninput="filtrarSelectSims('busca-filtro-sim-livro','filtro-sim-livro')" style="font-size:11px; padding:5px 8px; border-radius:8px; border:1.5px solid #e6d5a8; background:#fffdf6; width:160px;">
-                        <select id="filtro-sim-livro" style="width:auto; padding:6px; margin:0;" onchange="filtrarLivroPorSim(this.value)" data-empty-label="(Todos os Sims)">
-                            <option value="">(Todos os Sims)</option>
-                        </select>
-                    </div>
-                    <button class="filter-btn" onclick="limparFiltroSimLivro()" style="font-size:11px; align-self:center;">Limpar</button>
+                <!-- Linha 3: barra de busca unificada (texto + Sim) -->
+                <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; align-items:center;">
+                    <input type="search" id="busca-texto-livro" placeholder="🔎 Buscar no livro..." oninput="filtrarLivroPorTexto(this.value)" style="flex:1; min-width:180px; font-size:12px; padding:7px 10px; border-radius:8px; border:1.5px solid #e6d5a8; background:#fffdf6; margin:0;">
+                    <input type="text" id="busca-filtro-sim-livro" placeholder="🔍 Filtrar por Sim..." oninput="filtrarSelectSims('busca-filtro-sim-livro','filtro-sim-livro')" style="font-size:12px; padding:7px 10px; border-radius:8px; border:1.5px solid #e6d5a8; background:#fffdf6; width:150px; margin:0;">
+                    <select id="filtro-sim-livro" style="width:auto; padding:7px; margin:0; font-size:12px;" onchange="filtrarLivroPorSim(this.value)" data-empty-label="(Todos os Sims)">
+                        <option value="">(Todos os Sims)</option>
+                    </select>
+                    <button class="filter-btn" onclick="limparFiltroSimLivro(); limparBuscaTextoLivro();" style="font-size:11px;">✕ Limpar</button>
                 </div>
 
-                <!-- #57 — Busca por texto livre no Livro da Família -->
-                <div style="margin-bottom: 8px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
-                    <span style="font-size:12px; font-weight:bold; color:var(--ts4-blue);">🔎 Buscar texto:</span>
-                    <input type="search" id="busca-texto-livro" placeholder="Digite uma palavra-chave..." oninput="filtrarLivroPorTexto(this.value)" style="flex:1; min-width:200px; max-width:320px; font-size:12px; padding:6px 10px; border-radius:8px; border:1.5px solid #e6d5a8; background:#fffdf6;">
-                    <button class="filter-btn" onclick="limparBuscaTextoLivro()" style="font-size:11px;">Limpar</button>
-                </div>
-
-
+                <!-- Linha 4: chips de filtro por tag -->
                 <div style="margin-bottom: 10px; display:flex; gap:5px; align-items:center; flex-wrap:wrap;">
-                    <span style="font-size:12px; font-weight:bold; color:var(--ts4-blue);">Filtros:</span>
                     <button class="filter-btn active" onclick="filtrarLivro('TODOS', this)">Todos</button>
                     <button class="filter-btn" onclick="filtrarLivro('NASCIMENTO', this)">Nascimentos</button>
                     <button class="filter-btn" onclick="filtrarLivro('FASES DE VIDA', this)">Fases</button>
@@ -1498,29 +1399,30 @@
                     <div id="filtros-tags-custom" style="display:contents;"></div>
                 </div>
 
-                <div style="margin-bottom:12px; background:#f0f7ff; border-radius:10px; padding:10px; border-left:3px solid var(--ts4-blue);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="toggleGerenciadorTags()">
-                        <strong style="font-size:12px; color:var(--ts4-blue);">🏷️ Gerenciar Tags Customizadas</strong>
-                        <span id="icon-gerenciador-tags" style="color:var(--ts4-blue);">▼</span>
-                    </div>
-                    <div id="painel-gerenciador-tags" style="margin-top:10px; display:none;">
-                        <p style="font-size:11px; color:#666; margin:0 0 8px 0;">Crie suas próprias tags para organizar eventos do Livro da Família por fases granulares (ex: [ARC1], [VIAGEM], [ESCOLA]).</p>
+                <!-- Gerenciador de tags custom -->
+                <details style="margin-bottom:12px; background:#f0f7ff; border-radius:10px; padding:8px 12px; border-left:3px solid var(--ts4-blue);">
+                    <summary style="font-size:12px; font-weight:700; color:var(--ts4-blue); cursor:pointer; list-style:none;">🏷️ Gerenciar tags customizadas</summary>
+                    <div style="margin-top:10px;">
+                        <p style="font-size:11px; color:#666; margin:0 0 8px 0;">Crie suas próprias tags para organizar eventos por fases granulares (ex: [ARC1], [VIAGEM], [ESCOLA]).</p>
                         <div id="lista-tags-custom-config" style="margin-bottom:8px;"></div>
                         <div style="display:flex; gap:8px;">
                             <input type="text" id="nova-tag-custom" placeholder="Nome da nova tag (ex: VIAGEM)..." style="flex:1; text-transform:uppercase;">
                             <button class="btn-main" style="width:auto; margin:0; padding:8px 14px; background:var(--ts4-blue); font-size:12px;" onclick="adicionarTagCustom()">+ Criar Tag</button>
                         </div>
                     </div>
-                </div>
+                </details>
+
 
                 <div id="timeline-history" style="height:400px; padding: 15px; overflow-y: auto; background:#fffdfa; border: 1px solid #ddd; border-radius: 8px;"></div>
 
                 <hr style="margin: 30px 0; border: 1px solid #eee;">
 
-                <h2 style="margin-top:0;">🎯 Metas do Legado</h2>
-                <p style="font-size:12px; color:#666; margin:0 0 8px 0;">📚 Organize em camadas: <strong>Save</strong> (globais), <strong>Geração</strong> (ex: G2 deve ter 3 filhos) ou <strong>Sim</strong> (ex: Bella deve se formar).</p>
-                <div style="display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap;">
-                    <input type="text" id="nova-meta" placeholder="Ex: Dominar a habilidade de Culinária Gourmet..." style="flex:1; min-width:220px;">
+                <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:6px; margin-top:0;">
+                    <h2 style="margin:0;">🎯 Metas do Legado</h2>
+                    <span style="font-size:11px; color:#888;">Camadas: 🌍 Save · 🧬 Geração · 👤 Sim  ·  ⭐ priorizar · ✏️ editar · 🏳️ desistir</span>
+                </div>
+                <div style="display:flex; gap:8px; margin:10px 0 12px 0; flex-wrap:wrap; align-items:center;">
+                    <input type="text" id="nova-meta" placeholder="Ex: Dominar a habilidade de Culinária Gourmet..." style="flex:1; min-width:220px; margin:0;">
                     <select id="nova-meta-escopo" onchange="onMudarEscopoMeta()" style="width:130px; margin:0; font-size:12px;">
                         <option value="save">🌍 Save (global)</option>
                         <option value="geracao">🧬 Por Geração</option>
@@ -1528,13 +1430,10 @@
                     </select>
                     <select id="nova-meta-geracao" style="width:110px; margin:0; font-size:12px; display:none;">
                     </select>
-                    <div style="display:flex; flex-direction:column; gap:2px; width:200px;">
-                        <input type="text" id="busca-nova-meta-sim" placeholder="🔍 Buscar Sim..." oninput="filtrarSelectSims('busca-nova-meta-sim','nova-meta-sim')" style="font-size:11px; padding:5px 8px; border-radius:8px; border:1px solid #ccc;">
-                        <select id="nova-meta-sim" style="margin:0;" data-empty-label="— Sem Sim vinculado —"><option value="">— Sem Sim vinculado —</option></select>
-                    </div>
-                    <button class="btn-main" style="width:150px; margin:0; background:var(--ts4-blue);" onclick="addMeta()">Adicionar Meta</button>
+                    <input type="text" id="busca-nova-meta-sim" placeholder="🔍 Sim (opcional)..." oninput="filtrarSelectSims('busca-nova-meta-sim','nova-meta-sim')" style="font-size:11px; padding:6px 8px; border-radius:8px; border:1px solid #ccc; width:140px; margin:0;">
+                    <select id="nova-meta-sim" style="margin:0; width:150px; font-size:12px;" data-empty-label="— Sem Sim —"><option value="">— Sem Sim —</option></select>
+                    <button class="btn-main" style="width:auto; margin:0; padding:9px 16px; background:var(--ts4-blue); font-size:12px;" onclick="addMeta()">+ Meta</button>
                 </div>
-                <p style="font-size:11px; color:#888; margin:0 0 12px 0;">💡 Vincular a um Sim é opcional. Use ⭐ para priorizar, ✏️ para editar, 🏳️ para desistir.</p>
                 <div id="lista-metas"></div>
 
             </div>
@@ -3319,6 +3218,7 @@
 
 
         let db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS };
+        window.db = db; const _syncDb = () => { window.db = db; };
 
         /**
          * migrarConfigWheels — Mescla o config salvo com os defaults atuais.
@@ -3416,7 +3316,7 @@
                 localStorage.setItem('ts4_visited', 'true');
             } else if (allowLocalSave) {
                 let saved = JSON.parse(localStorage.getItem('ts4_companion_data'));
-                if (saved) db = saved;
+                if (saved) db = saved; _syncDb();
             }
             sincronizarBanco();
             recarregarInterface();
@@ -3568,7 +3468,7 @@
                     if(id === currentCloudFileId) {
                         currentCloudFileId = null;
                         currentFamilyName = "Família Padrão";
-                        db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS };
+                        db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS }; _syncDb();
                         salvarTudo(); recarregarInterface();
                     }
                     atualizarListaFamilias();
@@ -3586,7 +3486,7 @@
                 if(res.ok) {
                     let cloudDb = await res.json();
                     if(cloudDb) {
-                        db = cloudDb; 
+                        db = cloudDb;  _syncDb();
                         sincronizarBanco();
                         currentCloudFileId = id; currentFamilyName = nome.replace('.json', '');
                         localStorage.setItem('ts4_current_family_id', id); localStorage.setItem('ts4_current_family_name', currentFamilyName);
@@ -3702,7 +3602,7 @@
                 }
                 let cloudDb = await res.json();
                 if (cloudDb) {
-                    db = cloudDb;
+                    db = cloudDb; _syncDb();
                     sincronizarBanco();
                     currentCloudFileId = fileId;
                     currentFamilyName = nome;
@@ -3724,7 +3624,7 @@
 
         function criarNovaFamilia() {
             if(!confirm("Criar nova família substituirá o progresso não salvo na nuvem. Continuar?")) return;
-            db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS, galeria: { albuns: [{ id: "album-geral", nome: "Álbum de Capturas", desc: "Cards e prints gerados automaticamente" }], fotos: [] } };
+            db = { sims: [], historia: "", regras: "", metas_pendentes: [], config: JSON.parse(JSON.stringify(DEFAULT_CONFIG_WHEELS)), custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] }, reactionAudio: AUDIO_DEFAULTS, galeria: { albuns: [{ id: "album-geral", nome: "Álbum de Capturas", desc: "Cards e prints gerados automaticamente" }], fotos: [] } }; _syncDb();
             currentCloudFileId = null; currentFamilyName = "Família Padrão";
             salvarTudo(); recarregarInterface(); atualizarIndicadorFamiliaAtiva(); showToast("✨ Novo tabuleiro criado!");
             try { if (typeof verificarMetasAuto === 'function') verificarMetasAuto(); } catch(e){}
@@ -3798,7 +3698,7 @@ function salvarTudo() {
                 custom: { tracos: [], carreiras: [], aspiracoes: [], tags: [] },
                 reactionAudio: AUDIO_DEFAULTS,
                 galeria: { albuns: [], fotos: [] }
-            };
+            }; _syncDb();
             currentCloudFileId = null;
             currentFamilyName = "Família Padrão";
             allowLocalSave = false;
@@ -6676,7 +6576,7 @@ function importarArquivo(event) {
             dados.sims.forEach(s => {
                 if (!s.historico_relacionamentos) s.historico_relacionamentos = [];
             });
-            db = dados;
+            db = dados; _syncDb();
             salvarTudo();
             renderTree();
             renderGenList();
@@ -7073,26 +6973,18 @@ function importarArquivo(event) {
             const container = document.getElementById('tree-display');
             const cyContainer = document.getElementById('tree-cy');
 
-            // Dispatcher: modos 6/7/8 usam o novo renderer Family Echo (Cytoscape)
-            if (currentTreeLayout >= 6 && currentTreeLayout <= 8) {
-                if (container) container.style.display = 'none';
-                if (cyContainer) cyContainer.style.display = 'block';
-                if (window.network) { try { window.network.destroy(); } catch(e){} window.network = null; }
-                // Esconde tooltip ao trocar modo
-                try { const t = document.getElementById('ss-tree-tooltip'); if(t) t.style.opacity='0'; } catch(e){}
-                renderFamilyEchoTree(currentTreeLayout);
-                return;
-            }
-            // Modos 1-5 voltam ao vis-network original
-            if (cyContainer) cyContainer.style.display = 'none';
-            if (container) container.style.display = '';
-            if (window.cyTree) { try { window.cyTree.destroy(); } catch(e){} window.cyTree = null; }
+            // Sempre Cytoscape (Family Echo). Se um modo antigo (1-5) estiver setado, cai no 6.
+            if (!(currentTreeLayout >= 6 && currentTreeLayout <= 8)) currentTreeLayout = 6;
+            if (container) container.style.display = 'none';
+            if (cyContainer) cyContainer.style.display = 'block';
+            if (window.network) { try { window.network.destroy(); } catch(e){} window.network = null; }
+            try { const t = document.getElementById('ss-tree-tooltip'); if(t) t.style.opacity='0'; } catch(e){}
+            renderFamilyEchoTree(currentTreeLayout);
+            return;
+            // === Código vis-network abaixo desativado (mantido apenas para referência) ===
+            // eslint-disable-next-line no-unreachable
+            if (false) {
 
-            if (db.sims.length === 0) { 
-                container.innerHTML = '<p style="color:#888; text-align:center; padding-top:20px;">Nenhum Sim criado ainda. Adicione o seu primeiro Sim para começar o legado.</p>'; 
-                window.network = null;
-                return; 
-            }
 
             let geracoes = calcularNiveisDeGeracao();
             
@@ -7460,7 +7352,9 @@ let edgesArray = [];
                     if (db.sims.find(x => String(x.id) === String(simIdLimpo))) abrirPerfil(simIdLimpo);
                 }
             });
+            } // fim if(false) do bloco vis-network legado
         }
+
 
         // ============================================================
         // RENDERER FAMILY ECHO — modos 6/7/8 baseados em FamilyUnits
@@ -11194,58 +11088,8 @@ function atualizarIndicadorMemoria() {
         }
     });
 
-    // ── Conecta ao vis-network (polling + re-inject a cada renderTree) ──
-    let _dragNet = null, _dragNetWired = false;
+    // ── vis-network drag-to-link removido (usamos apenas Cytoscape) ──
 
-    function wireVisDragLink() {
-        const net = window.network;
-        if (!net || net === _dragNet) return;
-        _dragNet = net;
-        _dragNetWired = false;
-
-        let _dragFromId = null;
-
-        net.on('dragStart', function(params) {
-            if (!params.nodes || params.nodes.length === 0) return;
-            const nid = String(params.nodes[0]);
-            if (nid.startsWith('npc_')) return;
-            _dragFromId = nid;
-        });
-
-        net.on('dragEnd', function(params) {
-            if (!_dragFromId) return;
-            const fromId = _dragFromId;
-            _dragFromId = null;
-
-            // Descobre qual nó está sob o ponto de soltura
-            const canvasPos = params.pointer && params.pointer.canvas;
-            if (!canvasPos) return;
-            const overNode = net.getNodeAt(params.pointer.DOM);
-            if (!overNode) return;
-            const toNid = String(overNode);
-            if (toNid.startsWith('npc_') || toNid === fromId) return;
-
-            // Converte para simId puro (sem prefixo 'sim_')
-            const fromSimId = fromId.startsWith('sim_') ? fromId.slice(4) : fromId;
-            const toSimId   = toNid.startsWith('sim_') ? toNid.slice(4)   : toNid;
-
-            // Só abre o menu se ambos forem Sims reais
-            const f = (db.sims||[]).find(s => String(s.id) === fromSimId);
-            const t = (db.sims||[]).find(s => String(s.id) === toSimId);
-            if (!f || !t) return;
-
-            const domPos = params.pointer && params.pointer.DOM;
-            const rect = net.canvas.frame.canvas.getBoundingClientRect();
-            const screenX = rect.left + (domPos ? domPos.x : 0);
-            const screenY = rect.top  + (domPos ? domPos.y : 0);
-
-            openDragLinkMenu(fromSimId, toSimId, screenX, screenY);
-        });
-
-        _dragNetWired = true;
-    }
-
-    setInterval(wireVisDragLink, 1000);
 
     // ── Conecta ao Cytoscape (polling) ──────────────────────────────────
     let _cyDragWired = null;
@@ -12130,27 +11974,86 @@ function atualizarIndicadorMemoria() {
         st.selecao = { atualizadosMarcados, vinculosMarcados };
 
         document.getElementById('import-mod-resumo').textContent =
-            'Passo 2 de 2 — Escolha quais campos atualizar em cada Sim.';
+            'Passo 2 de 2 — Escolha quais informações trazer para cada Sim.';
 
         let html = '';
 
-        // Resumo read-only dos ✨novos / vínculos escolhidos
+        // ---------- Bloco: ✨ Novos Sims / 🔗 Vinculados a existente ----------
         if (vinculosMarcados.length) {
-            let criar = 0, vincular = 0;
-            vinculosMarcados.forEach(v => { if (v.escolha === '__novo__') criar++; else vincular++; });
-            html += '<div style="background:#eaffea; border:1px solid var(--cozy-accent,#7fb069); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:12px; color:#2b5a2b;">'
-                + '✨ <strong>Novos Sims:</strong> ' + criar + ' serão criados · ' + vincular + ' serão vinculados a Sims existentes (todos os campos do jogo serão preenchidos).'
-                + '</div>';
+            html += '<div style="margin:0 0 8px 0; font-size:12px; color:#2b5a2b;"><strong>✨ Novos Sims e 🔗 vínculos — marque quais campos do mod trazer.</strong></div>';
+            vinculosMarcados.forEach(v => {
+                const item = diff.semVinculo[v.idx];
+                const m = item.modSim;
+                const nomeMod = _escapeHtml(((m.nome||'') + ' ' + (m.sobrenome||'')).trim() || '(sem nome)');
+
+                if (v.escolha === '__novo__') {
+                    // Sim novo: lista todos os CAMPOS que o mod traz com valor
+                    let subitens = '';
+                    let qtd = 0;
+                    CAMPOS.forEach(c => {
+                        const val = c.from(m);
+                        const strVal = _norm(val);
+                        if (strVal === '') return;
+                        qtd++;
+                        subitens += ''
+                            + '<label style="display:flex; align-items:flex-start; gap:8px; padding:4px 0; font-size:12px; cursor:pointer;">'
+                            +   '<input type="checkbox" checked data-import-novo="' + v.idx + ':' + c.key + '" style="margin-top:2px;">'
+                            +   '<span><strong>' + _escapeHtml(c.label) + ':</strong> <span style="color:#070;">' + _escapeHtml(strVal) + '</span></span>'
+                            + '</label>';
+                    });
+                    html += ''
+                        + '<details open style="background:#eaffea; border-left:4px solid var(--cozy-accent,#7fb069); border-radius:10px; padding:8px 12px; margin-bottom:8px;">'
+                        +   '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">✨ ' + nomeMod + ' <span style="font-size:11px; color:#2b5a2b; font-weight:600;">(criar novo · ' + qtd + ' campo(s))</span></summary>'
+                        +   '<div style="margin:8px 0 4px 4px; display:flex; gap:6px; flex-wrap:wrap;">'
+                        +     '<button type="button" class="btn-main btn-sec" style="margin:0; padding:3px 8px; font-size:10px; width:auto;" onclick="_marcarCamposNovo(' + v.idx + ', true)">☑ Todos</button>'
+                        +     '<button type="button" class="btn-main btn-sec" style="margin:0; padding:3px 8px; font-size:10px; width:auto;" onclick="_marcarCamposNovo(' + v.idx + ', false)">☐ Nenhum</button>'
+                        +   '</div>'
+                        +   '<div style="margin:2px 0 0 4px;">' + (subitens || '<em style="font-size:12px; color:#888;">Este Sim não traz nenhum campo preenchido no mod.</em>') + '</div>'
+                        + '</details>';
+                } else {
+                    // Vinculado a Sim existente: mostra diff (antes ➜ depois) igual atualizado
+                    const simSite = (db.sims || []).find(s => String(s.id) === String(v.escolha));
+                    if (!simSite) return;
+                    const nomeCompleto = _escapeHtml(((simSite.nome||m.nome||'') + ' ' + (simSite.sobrenome||m.sobrenome||'')).trim() || '(sem nome)');
+                    const mudancas = _diffSim(simSite, m);
+                    let subitens = '';
+                    if (mudancas.length === 0) {
+                        subitens = '<em style="font-size:12px; color:#888;">O Sim do site já bate com o mod — nada a atualizar.</em>';
+                    } else {
+                        mudancas.forEach((mu, muIdx) => {
+                            const antes = _escapeHtml(_norm(mu.atual) || '—');
+                            const depois = _escapeHtml(_norm(mu.novo) || '—');
+                            subitens += ''
+                                + '<label style="display:flex; align-items:flex-start; gap:8px; padding:4px 0; font-size:12px; cursor:pointer;">'
+                                +   '<input type="checkbox" checked data-import-vin="' + v.idx + ':' + mu.key + '" style="margin-top:2px;">'
+                                +   '<span><strong>' + _escapeHtml(mu.label) + ':</strong> <span style="color:#a03;">' + antes + '</span> ➜ <span style="color:#070;">' + depois + '</span></span>'
+                                + '</label>';
+                        });
+                    }
+                    html += ''
+                        + '<details open style="background:#eaf4ff; border-left:4px solid #4a90d9; border-radius:10px; padding:8px 12px; margin-bottom:8px;">'
+                        +   '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">🔗 ' + nomeCompleto + ' <span style="font-size:11px; color:#2a5a8a; font-weight:600;">(vincular · ' + mudancas.length + ' campo(s))</span></summary>'
+                        +   (mudancas.length ? '<div style="margin:8px 0 4px 4px; display:flex; gap:6px; flex-wrap:wrap;">'
+                        +     '<button type="button" class="btn-main btn-sec" style="margin:0; padding:3px 8px; font-size:10px; width:auto;" onclick="_marcarCamposVin(' + v.idx + ', true)">☑ Todos</button>'
+                        +     '<button type="button" class="btn-main btn-sec" style="margin:0; padding:3px 8px; font-size:10px; width:auto;" onclick="_marcarCamposVin(' + v.idx + ', false)">☐ Nenhum</button>'
+                        +   '</div>' : '')
+                        +   '<div style="margin:2px 0 0 4px;">' + subitens + '</div>'
+                        + '</details>';
+                }
+            });
         }
 
+        // ---------- Bloco: ⚡ Atualizados ----------
         if (atualizadosMarcados.length === 0) {
-            html += '<div style="padding:20px; text-align:center; color:#888; font-size:13px;">Nenhum Sim ⚡Atualizado foi selecionado no passo anterior — clique em <strong>Aplicar importação</strong> para processar apenas os Novos Sims.</div>';
+            if (!vinculosMarcados.length) {
+                html += '<div style="padding:20px; text-align:center; color:#888; font-size:13px;">Nenhum Sim foi selecionado no passo anterior.</div>';
+            }
         } else {
-            html += '<div style="margin:0 0 8px 0; font-size:12px; color:#a07500;"><strong>⚡ Selecione os campos que quer atualizar em cada Sim (padrão: todos marcados).</strong></div>';
+            html += '<div style="margin:14px 0 8px 0; font-size:12px; color:#a07500;"><strong>⚡ Selecione os campos que quer atualizar em cada Sim (padrão: todos marcados).</strong></div>';
             atualizadosMarcados.forEach(idx => {
                 const item = diff.atualizados[idx];
                 const s = item.simSite; const m = item.modSim;
-                const nomeCompleto = _escapeHtml((s.nome||m.nome||'') + ' ' + (s.sobrenome||m.sobrenome||'')).trim();
+                const nomeCompleto = _escapeHtml(((s.nome||m.nome||'') + ' ' + (s.sobrenome||m.sobrenome||'')).trim() || '(sem nome)');
                 let subitens = '';
                 item.mudancas.forEach((mu, muIdx) => {
                     const antes = _escapeHtml(_norm(mu.atual) || '—');
@@ -12163,7 +12066,7 @@ function atualizarIndicadorMemoria() {
                 });
                 html += ''
                     + '<details open style="background:#fff8e0; border-left:4px solid #d4af37; border-radius:10px; padding:8px 12px; margin-bottom:8px;">'
-                    +   '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">⚡ ' + (nomeCompleto || '(sem nome)') + ' <span style="font-size:11px; color:#a07500; font-weight:600;">(' + item.mudancas.length + ' campo(s))</span></summary>'
+                    +   '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">⚡ ' + nomeCompleto + ' <span style="font-size:11px; color:#a07500; font-weight:600;">(' + item.mudancas.length + ' campo(s))</span></summary>'
                     +   '<div style="margin:8px 0 4px 4px; display:flex; gap:6px; flex-wrap:wrap;">'
                     +     '<button type="button" class="btn-main btn-sec" style="margin:0; padding:3px 8px; font-size:10px; width:auto;" onclick="_marcarCamposSim(' + idx + ', true)">☑ Todos deste Sim</button>'
                     +     '<button type="button" class="btn-main btn-sec" style="margin:0; padding:3px 8px; font-size:10px; width:auto;" onclick="_marcarCamposSim(' + idx + ', false)">☐ Nenhum deste Sim</button>'
@@ -12179,9 +12082,15 @@ function atualizarIndicadorMemoria() {
     window._marcarCamposSim = function(idx, marcar) {
         document.querySelectorAll('[data-import-mud^="' + idx + ':"]').forEach(chk => { chk.checked = !!marcar; });
     };
+    window._marcarCamposNovo = function(vidx, marcar) {
+        document.querySelectorAll('[data-import-novo^="' + vidx + ':"]').forEach(chk => { chk.checked = !!marcar; });
+    };
+    window._marcarCamposVin = function(vidx, marcar) {
+        document.querySelectorAll('[data-import-vin^="' + vidx + ':"]').forEach(chk => { chk.checked = !!marcar; });
+    };
 
     window._selecionarTodosCampos = function(marcar) {
-        document.querySelectorAll('[data-import-mud]').forEach(chk => { chk.checked = !!marcar; });
+        document.querySelectorAll('[data-import-mud],[data-import-novo],[data-import-vin]').forEach(chk => { chk.checked = !!marcar; });
     };
 
     function _mostrarPasso(n) {
@@ -12243,9 +12152,10 @@ function atualizarIndicadorMemoria() {
         }
     }
 
-    function _criarSimDoMod(modSim) {
+    function _criarSimDoMod(modSim, chaves) {
         const novo = { id: 'sim_local_' + Date.now() + '_' + Math.floor(Math.random()*1e6) };
-        _aplicarCamposMod(novo, modSim, CAMPOS.map(c => c.key));
+        const keys = Array.isArray(chaves) && chaves.length ? chaves : CAMPOS.map(c => c.key);
+        _aplicarCamposMod(novo, modSim, keys);
         novo.historico_relacionamentos = [];
         return novo;
     }
@@ -12257,22 +12167,45 @@ function atualizarIndicadorMemoria() {
 
         let nNovos = 0, nAtualizados = 0, nIgnorados = 0;
 
-        // 1) Vínculos escolhidos no passo 1
+        // 1) Vínculos escolhidos no passo 1 — agora respeita seleção de campos do passo 2
         st.selecao.vinculosMarcados.forEach(v => {
             const item = st.diff.semVinculo[v.idx];
             if (v.escolha === '__novo__') {
-                const novo = _criarSimDoMod(item.modSim);
+                const chaves = [];
+                document.querySelectorAll('[data-import-novo^="' + v.idx + ':"]').forEach(chk => {
+                    if (chk.checked) {
+                        const key = chk.getAttribute('data-import-novo').split(':')[1];
+                        chaves.push(key);
+                    }
+                });
+                if (chaves.length === 0) { nIgnorados++; return; }
+                const novo = _criarSimDoMod(item.modSim, chaves);
                 db.sims = db.sims || [];
                 db.sims.push(novo);
                 nNovos++;
             } else {
                 const simSite = db.sims.find(s => String(s.id) === String(v.escolha));
-                if (simSite) {
-                    _aplicarCamposMod(simSite, item.modSim, CAMPOS.map(c => c.key));
-                    nAtualizados++;
-                } else {
-                    nIgnorados++;
+                if (!simSite) { nIgnorados++; return; }
+                const chaves = [];
+                document.querySelectorAll('[data-import-vin^="' + v.idx + ':"]').forEach(chk => {
+                    if (chk.checked) {
+                        const key = chk.getAttribute('data-import-vin').split(':')[1];
+                        chaves.push(key);
+                    }
+                });
+                // Sim já bate com o mod (sem checkboxes renderizados) → só vincula o simId
+                if (chaves.length === 0) {
+                    const anyVin = document.querySelector('[data-import-vin^="' + v.idx + ':"]');
+                    if (!anyVin) {
+                        simSite.simId = String(item.modSim.id);
+                        nAtualizados++;
+                    } else {
+                        nIgnorados++;
+                    }
+                    return;
                 }
+                _aplicarCamposMod(simSite, item.modSim, chaves);
+                nAtualizados++;
             }
         });
 
@@ -12301,6 +12234,314 @@ function atualizarIndicadorMemoria() {
 })();
 </script>
 
+<!-- ===== v54_16: FAB móvel/retrátil + Undo Import + Roleta card no Dashboard ===== -->
+<style>
+  #fab-registrar-evento.fab-collapsed { transform: scale(0.55) !important; opacity: 0.45; }
+  #fab-registrar-evento.fab-collapsed:hover { opacity: 1; transform: scale(0.75) !important; }
+  #fab-collapse-toggle {
+    position: fixed; z-index: 9501; width: 22px; height: 22px; border-radius: 50%;
+    border: none; cursor: pointer; background: #fff; color: #4a3b2a; font-size: 12px; line-height: 1;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;
+  }
+  #btn-undo-import {
+    position: fixed; bottom: 18px; left: 18px; z-index: 9400;
+    background: #fff; border: 2px solid var(--cozy-gold, #d4af37); color: #4a3b2a;
+    border-radius: 22px; padding: 8px 14px; font-size: 12px; font-weight: 700;
+    cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.14); display: none;
+  }
+  #btn-undo-import:hover { background: #fff8e0; }
+  .roleta-create-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, rgba(212,175,55,0.10), rgba(127,176,105,0.10));
+    border: 2px dashed var(--cozy-gold, #d4af37); border-radius: 16px;
+    padding: 22px 18px; min-height: 260px; cursor: pointer; text-align: center;
+    transition: transform .15s ease, box-shadow .15s ease, background .2s;
+    position: relative; overflow: hidden;
+  }
+  .roleta-create-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(120,90,40,0.18); background: linear-gradient(135deg, rgba(212,175,55,0.18), rgba(127,176,105,0.18)); }
+  .roleta-create-card .ghost-wheel {
+    width: 130px; height: 130px; border-radius: 50%;
+    background: conic-gradient(#0079C1 0 12.5%, #7CD700 0 25%, #FFC83D 0 37.5%, #FF6B6B 0 50%, #9B59B6 0 62.5%, #1ABC9C 0 75%, #E67E22 0 87.5%, #f4b8c7 0 100%);
+    opacity: 0.28; margin-bottom: 14px; position: relative;
+  }
+  .roleta-create-card .ghost-wheel::after {
+    content: ""; position: absolute; inset: 42%; background: #fff; border-radius: 50%;
+  }
+  .roleta-create-card .plus-badge {
+    font-size: 34px; font-weight: 900; color: var(--cozy-gold, #d4af37); line-height: 1;
+    margin-bottom: 4px;
+  }
+  .roleta-create-card .plus-label { font-size: 14px; font-weight: 800; color: #4a3b2a; }
+  .roleta-create-card .plus-sub { font-size: 11px; color: #8a7a5a; margin-top: 4px; }
+</style>
+
+<button id="fab-collapse-toggle" type="button" title="Retrair/expandir FAB" aria-label="Retrair FAB">−</button>
+<button id="btn-undo-import" type="button" title="Desfazer última importação de dados do mod">↩ Desfazer importação</button>
+
+<!-- Modal criar roleta (dashboard) — 2 passos: nome -> opções -->
+<div id="modal-nova-roleta" style="display:none; position:fixed; inset:0; z-index:9800; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:16px;">
+  <div style="background:#fff8e7; border:2px solid var(--cozy-gold,#d4af37); border-radius:18px; padding:22px 24px; width:min(460px,100%); box-shadow:0 16px 40px rgba(0,0,0,0.25);">
+    <h3 style="margin:0 0 6px 0; color:#4a3b2a;">🎡 Criar nova roleta</h3>
+    <div id="nova-roleta-stepdot" style="font-size:11px; color:#8a7a5a; margin-bottom:14px;">Passo 1 de 2 · Dê um nome</div>
+
+    <!-- Passo 1: nome -->
+    <div id="nova-roleta-passo-1">
+      <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Nome da roleta</label>
+      <input type="text" id="inline-new-roleta-name" placeholder="Ex: Desastres, Sonhos, Viagens..." style="width:100%; padding:8px 10px; border:1.5px solid #e6d5a8; border-radius:10px; background:#fffdf6; box-sizing:border-box; font-size:13px;">
+      <p style="font-size:11px; color:#8a7a5a; margin:8px 0 14px;">No próximo passo você escolhe as opções que vão girar na roleta.</p>
+      <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <button type="button" onclick="_fecharNovaRoleta()" style="padding:8px 16px; border-radius:10px; border:none; background:#eee; color:#555; font-weight:700; cursor:pointer;">Cancelar</button>
+        <button type="button" onclick="_novaRoletaProximo()" style="padding:8px 16px; border-radius:10px; border:none; background:var(--cozy-accent,#7fb069); color:#fff; font-weight:700; cursor:pointer;">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- Passo 2: opções -->
+    <div id="nova-roleta-passo-2" style="display:none;">
+      <div style="font-size:12px; color:#4a3b2a; margin-bottom:6px;">Roleta: <b id="nova-roleta-nome-echo" style="color:#7fb069;"></b></div>
+      <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Opções da roleta (uma por linha)</label>
+      <textarea id="inline-new-roleta-opcoes" rows="8" placeholder="Exemplo:&#10;Ganhar na loteria&#10;Reforma em casa&#10;Viagem inesperada" style="width:100%; padding:10px; border:1.5px solid #e6d5a8; border-radius:10px; background:#fffdf6; box-sizing:border-box; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
+      <p style="font-size:11px; color:#8a7a5a; margin:8px 0 14px;">Pelo menos 2 opções. Você pode editar depois em Configurações › Roletas.</p>
+      <div style="display:flex; gap:8px; justify-content:space-between;">
+        <button type="button" onclick="_novaRoletaVoltar()" style="padding:8px 16px; border-radius:10px; border:none; background:#eee; color:#555; font-weight:700; cursor:pointer;">← Voltar</button>
+        <div style="display:flex; gap:8px;">
+          <button type="button" onclick="_fecharNovaRoleta()" style="padding:8px 16px; border-radius:10px; border:none; background:#eee; color:#555; font-weight:700; cursor:pointer;">Cancelar</button>
+          <button type="button" onclick="_novaRoletaConfirmar()" style="padding:8px 16px; border-radius:10px; border:none; background:var(--cozy-accent,#7fb069); color:#fff; font-weight:700; cursor:pointer;">Criar roleta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // =====================================================
+  // #2 — FAB móvel + retrátil (persistente)
+  // =====================================================
+  const POS_KEY = 'simstoria.fab.pos';
+  const COL_KEY = 'simstoria.fab.collapsed';
+  function initFab(){
+    const fab = document.getElementById('fab-registrar-evento');
+    const tog = document.getElementById('fab-collapse-toggle');
+    if (!fab || !tog) return;
+    // Restaurar posição
+    try {
+      const saved = JSON.parse(localStorage.getItem(POS_KEY) || 'null');
+      if (saved && typeof saved.left === 'number') {
+        fab.style.left = saved.left + 'px'; fab.style.top = saved.top + 'px';
+        fab.style.right = 'auto';
+      }
+    } catch(e){}
+    // Restaurar estado colapsado
+    if (localStorage.getItem(COL_KEY) === '1') { fab.classList.add('fab-collapsed'); tog.textContent = '+'; }
+    positionToggle();
+
+    function positionToggle(){
+      const r = fab.getBoundingClientRect();
+      tog.style.left = (r.left - 4) + 'px';
+      tog.style.top  = (r.top - 4) + 'px';
+    }
+    window.addEventListener('resize', positionToggle);
+    window.addEventListener('scroll', positionToggle, true);
+
+    // Drag
+    let dragging = false, moved = false, ox = 0, oy = 0;
+    fab.addEventListener('pointerdown', (e) => {
+      dragging = true; moved = false;
+      const r = fab.getBoundingClientRect();
+      ox = e.clientX - r.left; oy = e.clientY - r.top;
+      fab.setPointerCapture(e.pointerId);
+    });
+    fab.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = Math.abs(e.clientX - (fab.getBoundingClientRect().left + ox));
+      const dy = Math.abs(e.clientY - (fab.getBoundingClientRect().top + oy));
+      if (dx > 3 || dy > 3) moved = true;
+      const nl = Math.min(Math.max(0, e.clientX - ox), window.innerWidth - fab.offsetWidth);
+      const nt = Math.min(Math.max(0, e.clientY - oy), window.innerHeight - fab.offsetHeight);
+      fab.style.left = nl + 'px'; fab.style.top = nt + 'px'; fab.style.right = 'auto';
+      positionToggle();
+    });
+    fab.addEventListener('pointerup', (e) => {
+      dragging = false;
+      try { fab.releasePointerCapture(e.pointerId); } catch(_){}
+      const r = fab.getBoundingClientRect();
+      localStorage.setItem(POS_KEY, JSON.stringify({ left: r.left, top: r.top }));
+      if (moved) { e.stopImmediatePropagation(); e.preventDefault(); }
+    });
+    // Se moveu, impede o click de abrir o modal
+    fab.addEventListener('click', (e) => { if (moved) { e.stopImmediatePropagation(); e.preventDefault(); moved = false; } }, true);
+
+    // Botão de retrair/expandir
+    tog.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isCol = fab.classList.toggle('fab-collapsed');
+      tog.textContent = isCol ? '+' : '−';
+      localStorage.setItem(COL_KEY, isCol ? '1' : '0');
+    });
+  }
+
+  // =====================================================
+  // #4 — Desfazer última importação de dados do mod
+  // =====================================================
+  function _listarBackups(){
+    return Object.keys(localStorage).filter(k => k.startsWith('db_backup_pre_import_')).sort();
+  }
+  function atualizarBotaoUndo(){
+    const btn = document.getElementById('btn-undo-import');
+    if (!btn) return;
+    btn.style.display = _listarBackups().length ? 'block' : 'none';
+  }
+  window.desfazerUltimaImportacao = function(){
+    const bks = _listarBackups();
+    if (!bks.length) { alert('Nenhuma importação recente para desfazer.'); return; }
+    const ultima = bks[bks.length - 1];
+    const ts = Number(ultima.replace('db_backup_pre_import_', ''));
+    const quando = ts ? new Date(ts).toLocaleString('pt-BR') : '?';
+    if (!confirm('Desfazer a última importação de dados do mod? Todo o estado voltará para ' + quando + '.')) return;
+    try {
+      const raw = localStorage.getItem(ultima);
+      if (!raw) throw new Error('Backup não encontrado no navegador.');
+      const snap = JSON.parse(raw);
+      if (!snap || typeof snap !== 'object' || Array.isArray(snap)) {
+        throw new Error('Backup em formato inesperado.');
+      }
+      if (!window.db || typeof window.db !== 'object') {
+        // Estado ainda não carregado: apenas restaura em localStorage e recarrega.
+        try { localStorage.setItem('legacy_companion_db', raw); } catch(_) {}
+        localStorage.removeItem(ultima);
+        alert('✅ Backup restaurado. A página será recarregada.');
+        location.reload();
+        return;
+      }
+      // Substitui db em memória e salva
+      Object.keys(window.db).forEach(k => { delete window.db[k]; });
+      Object.assign(window.db, snap);
+      if (typeof salvarTudo === 'function') salvarTudo();
+      localStorage.removeItem(ultima);
+      alert('✅ Importação desfeita. A página será recarregada.');
+      location.reload();
+    } catch(e) {
+      console.error('Falha ao restaurar backup:', e);
+      alert('Falha ao restaurar backup: ' + (e && e.message ? e.message : e));
+    }
+  };
+  document.getElementById('btn-undo-import').addEventListener('click', window.desfazerUltimaImportacao);
+  // Verifica periodicamente
+  setInterval(atualizarBotaoUndo, 2000);
+
+  // =====================================================
+  // #6 — Card "Crie sua nova roleta" no Dashboard
+  // =====================================================
+  // --- Fluxo em 2 passos: nome -> opcoes -> criar ---
+  let _novoNome = '';
+  function _mostrarPasso(n){
+    const p1 = document.getElementById('nova-roleta-passo-1');
+    const p2 = document.getElementById('nova-roleta-passo-2');
+    const dot = document.getElementById('nova-roleta-stepdot');
+    if (!p1 || !p2) return;
+    if (n === 1) {
+      p1.style.display = 'block'; p2.style.display = 'none';
+      if (dot) dot.textContent = 'Passo 1 de 2 · Dê um nome';
+      setTimeout(() => { const i = document.getElementById('inline-new-roleta-name'); if (i) i.focus(); }, 30);
+    } else {
+      p1.style.display = 'none'; p2.style.display = 'block';
+      if (dot) dot.textContent = 'Passo 2 de 2 · Escolha as opções';
+      const echo = document.getElementById('nova-roleta-nome-echo');
+      if (echo) echo.textContent = _novoNome;
+      setTimeout(() => { const t = document.getElementById('inline-new-roleta-opcoes'); if (t) t.focus(); }, 30);
+    }
+  }
+  window._fecharNovaRoleta = function(){
+    const m = document.getElementById('modal-nova-roleta');
+    if (m) m.style.display = 'none';
+    _novoNome = '';
+    const inp = document.getElementById('inline-new-roleta-name'); if (inp) inp.value = '';
+    const txt = document.getElementById('inline-new-roleta-opcoes'); if (txt) txt.value = '';
+    _mostrarPasso(1);
+  };
+  window._novaRoletaVoltar = function(){ _mostrarPasso(1); };
+  window._novaRoletaProximo = function(){
+    try {
+      const inp = document.getElementById('inline-new-roleta-name');
+      const nome = (inp.value || '').trim().toLowerCase();
+      if (!nome) { alert('Digite um nome para a roleta.'); inp.focus(); return; }
+      const cfg = (window.db && window.db.config) || {};
+      if (cfg[nome]) { alert('Já existe uma roleta com esse nome.'); return; }
+      _novoNome = nome;
+      _mostrarPasso(2);
+    } catch(e) { alert('Erro ao avançar: ' + (e && e.message ? e.message : e)); }
+  };
+  window._novaRoletaConfirmar = function(){
+    try {
+      if (!_novoNome) { _mostrarPasso(1); return; }
+      const txt = document.getElementById('inline-new-roleta-opcoes');
+      const raw = (txt && txt.value) || '';
+      const opcoes = raw.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+      if (opcoes.length < 2) { alert('Digite pelo menos 2 opções (uma por linha).'); if (txt) txt.focus(); return; }
+      if (!window.db) { alert('Estado do site ainda não carregou. Aguarde alguns segundos e tente de novo.'); return; }
+      window.db.config = window.db.config || {};
+      if (window.db.config[_novoNome]) { alert('Já existe uma roleta com esse nome.'); return; }
+      window.db.config[_novoNome] = opcoes;
+      if (typeof salvarTudo === 'function') salvarTudo();
+      if (typeof renderDash === 'function') renderDash();
+      if (typeof renderConfig === 'function') renderConfig();
+      if (typeof showToast === 'function') showToast('🎡 Roleta "' + _novoNome + '" criada com ' + opcoes.length + ' opções!');
+      _fecharNovaRoleta();
+    } catch(e) { alert('Erro ao criar roleta: ' + (e && e.message ? e.message : e)); }
+  };
+  // Compat: se algo antigo ainda chamar _criarRoletaInline, redireciona ao novo fluxo
+  window._criarRoletaInline = function(){ window._novaRoletaProximo(); };
+  window._abrirModalNovaRoleta = function(){
+    const m = document.getElementById('modal-nova-roleta');
+    if (!m) return;
+    _novoNome = '';
+    const inp = document.getElementById('inline-new-roleta-name'); if (inp) inp.value = '';
+    const txt = document.getElementById('inline-new-roleta-opcoes'); if (txt) txt.value = '';
+    _mostrarPasso(1);
+    m.style.display = 'flex';
+  };
+  let _movendo = false;
+  function injetarCardCriar(){
+    const c = document.getElementById('dash-cards');
+    if (!c) return;
+    let card = c.querySelector('.roleta-create-card');
+    if (!card) {
+      card = document.createElement('div');
+      card.className = 'roleta-create-card';
+      card.setAttribute('role', 'button');
+      card.setAttribute('tabindex', '0');
+      card.onclick = window._abrirModalNovaRoleta;
+      card.innerHTML = '<div class="ghost-wheel"></div><div class="plus-badge">+</div><div class="plus-label">Crie sua nova roleta</div><div class="plus-sub">Adicione temas próprios para o seu save</div>';
+    }
+    // Sempre garante que o card-convite seja o ÚLTIMO filho.
+    if (c.lastElementChild !== card) {
+      _movendo = true;
+      c.appendChild(card);
+      // libera o flag no próximo tick para o observer ignorar a mutação
+      setTimeout(() => { _movendo = false; }, 0);
+    }
+  }
+  // Envolve renderDash para reinjetar após cada render
+  const _origRenderDash = window.renderDash;
+  if (typeof _origRenderDash === 'function') {
+    window.renderDash = function(){ _origRenderDash.apply(this, arguments); injetarCardCriar(); };
+  }
+  // Também observa mudanças no container caso renderDash seja chamado antes deste script
+  const obsTarget = document.getElementById('dash-cards');
+  if (obsTarget) {
+    new MutationObserver(() => { if (_movendo) return; injetarCardCriar(); }).observe(obsTarget, { childList: true });
+  }
+
+  // Init tudo
+  function init(){ initFab(); atualizarBotaoUndo(); injetarCardCriar(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+
 </body>
+
 </html>
 
