@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE 54-14-MOD - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-55-15-MOD - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -889,9 +889,10 @@
 </head>
 <body>
 
-<div id="banner-drive-expirado" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:#fff3cd; border-bottom:1px solid #ffc107; padding:10px 16px; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+<div id="banner-drive-expirado" style="display:none; position:fixed; top:0; left:0; right:0; z-index:9999; background:#fff3cd; border-bottom:1px solid #ffc107; padding:10px 44px 10px 16px; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
     <span id="banner-drive-texto" style="font-size:13px; font-weight:700; color:#856404;">⚠️ Sua sessão do Google Drive expirou ou está prestes a expirar. Reconecte para não perder seus uploads.</span>
     <button id="banner-drive-btn" class="btn-main" style="width:auto; margin:0; background:#4285F4; padding:7px 14px; font-size:12px;" onclick="autenticarGoogle()">Reconectar conta do Google</button>
+    <button id="banner-drive-fechar" onclick="fecharBannerDrive()" aria-label="Fechar aviso" title="Fechar" style="position:absolute; top:6px; right:10px; background:transparent; border:none; font-size:20px; line-height:1; cursor:pointer; color:#856404; padding:2px 6px;">×</button>
 </div>
 
 <div class="sidebar">
@@ -1715,15 +1716,15 @@
                     <button class="btn-main btn-sec" style="margin:0; flex:1; border-color:#d4af37; color:#a0781a;" onclick="if(confirm('Carregar a família Goth? Sims existentes serão substituídos.')) carregarFamiliaGoth()">👨‍👩‍👧‍👦 Carregar Família Goth</button>
                 </div>
 
-                <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🔄 BACKUP MANUAL (OFFLINE)</div>
-                <p style="font-size: 12px; color: var(--ts4-subtle-text);">Para quem não deseja conectar no Google ou salvar no navegador.</p>
+                <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🔄 BACKUP MANUAL & IMPORTAÇÃO</div>
+                <p style="font-size: 12px; color: var(--ts4-subtle-text);">Faça download do seu legado ou importe um arquivo — backup do site <em>ou</em> export do mod SimStoria. O tipo é detectado automaticamente.</p>
                 <div style="display:flex; flex-direction:column; gap:10px; margin-top: 15px;">
                     <input type="file" id="import-file" style="display:none" onchange="importarArquivo(event)" accept=".json">
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <button class="btn-main btn-sec" style="margin:0; flex:1" onclick="fazerBackup()">💾 Download Backup Atual (.json)</button>
                         <button class="btn-main btn-sec" style="margin:0; flex:1; border-color:var(--ts4-blue); color:var(--ts4-blue);" onclick="fazerBackupZip()">🗜️ Exportar Tudo (.zip)</button>
                     </div>
-                    <button class="btn-main btn-sec" style="margin:0;" onclick="document.getElementById('import-file').click()">📥 Importar Backup Existente</button>
+                    <button class="btn-main btn-sec" style="margin:0;" onclick="document.getElementById('import-file').click()" title="Aceita backup .json do site ou export .json do mod SimStoria">📥 Importar Arquivo (Backup ou Mod SimStoria)</button>
                     <button class="btn-main" style="margin:0; background:#ff4d4d" onclick="reiniciarConfiguracoes()">⚠️ EXCLUIR TUDO (Reset Completo)</button>
                 </div>
 
@@ -8389,6 +8390,8 @@ function verificarSessaoDrive() {
 
     if (!accessToken) {
         // Ainda não conectou nesta sessão/aba — não é um erro, é só o primeiro passo de cada visita.
+        // Se o usuário já fechou este aviso antes, respeita a escolha (aviso de expiração continua aparecendo).
+        if (localStorage.getItem('gdrive_hint_dismissed') === '1') { banner.style.display = 'none'; return; }
         if (textoEl) textoEl.innerHTML = '🔗 Conecte sua conta do Google para sincronizar esta família com a Nuvem.';
         if (btnEl) btnEl.innerText = 'Conectar conta do Google';
         banner.style.display = 'flex';
@@ -8403,6 +8406,15 @@ function verificarSessaoDrive() {
 }
 
 function ocultarBannerExpirado() {
+    let banner = document.getElementById('banner-drive-expirado');
+    if (banner) banner.style.display = 'none';
+}
+
+function fecharBannerDrive() {
+    // Fechamento manual pelo usuário — só afeta o aviso de "conecte sua conta"
+    // (o aviso de expiração vai reaparecer da próxima vez que o token estiver perto de expirar,
+    // porque é uma situação urgente que a pessoa precisa ver).
+    try { localStorage.setItem('gdrive_hint_dismissed', '1'); } catch(e) {}
     let banner = document.getElementById('banner-drive-expirado');
     if (banner) banner.style.display = 'none';
 }
@@ -11814,37 +11826,74 @@ function atualizarIndicadorMemoria() {
 
 <!-- === MODAL: IMPORTAR MOD SIMSTORIA === -->
 <div id="modal-import-mod" class="modal" style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); overflow-y:auto; padding:20px 0;">
-    <div class="modal-content" style="max-width:820px; margin:20px auto; background:var(--ts4-panel, #fffdf5); border-radius:18px; padding:24px 28px; box-shadow:0 12px 40px rgba(0,0,0,0.25); position:relative;">
+    <div class="modal-content" style="max-width:860px; margin:20px auto; background:var(--ts4-panel, #fffdf5); border-radius:18px; padding:24px 28px; box-shadow:0 12px 40px rgba(0,0,0,0.25); position:relative;">
         <button onclick="fecharModalImportMod()" style="position:absolute; top:12px; right:16px; background:transparent; border:none; font-size:22px; cursor:pointer; color:var(--ts4-subtle-text, #888);" aria-label="Fechar">✖</button>
         <h2 style="margin:0 0 4px 0; font-family:'Fredoka','Quicksand',sans-serif;">📥 Atualizar meu Legado</h2>
-        <p id="import-mod-resumo" style="margin:0 0 16px 0; font-size:13px; color:var(--ts4-subtle-text, #666);">Análise concluída! Confira o que mudou no seu save.</p>
 
-        <div id="import-mod-tabs" style="display:flex; gap:8px; margin-bottom:14px; border-bottom:2px solid var(--ts4-border, #e0dccb);">
-            <button type="button" class="import-mod-tab-btn" data-tab="novidades" onclick="trocarAbaImportMod('novidades')" style="padding:8px 14px; border:none; background:transparent; border-bottom:3px solid var(--cozy-accent, #7fb069); font-weight:700; cursor:pointer; color:var(--ts4-text,#4a3b2a);">🔥 Novidades <span id="import-mod-count-nov">(0)</span></button>
-            <button type="button" class="import-mod-tab-btn" data-tab="inalterados" onclick="trocarAbaImportMod('inalterados')" style="padding:8px 14px; border:none; background:transparent; border-bottom:3px solid transparent; font-weight:600; cursor:pointer; color:var(--ts4-subtle-text,#888);">💤 Sem Alterações <span id="import-mod-count-ina">(0)</span></button>
+        <!-- Indicador de passo -->
+        <div id="import-mod-steps-nav" style="display:flex; gap:6px; align-items:center; margin:6px 0 12px 0; font-size:12px; color:var(--ts4-subtle-text,#888);">
+            <span id="import-mod-step1-badge" style="padding:3px 10px; border-radius:12px; background:var(--cozy-accent,#7fb069); color:#fff; font-weight:700;">1. Escolher Sims</span>
+            <span>→</span>
+            <span id="import-mod-step2-badge" style="padding:3px 10px; border-radius:12px; background:#eee; color:#888; font-weight:600;">2. Escolher campos</span>
         </div>
 
-        <div id="import-mod-body" style="max-height:55vh; overflow-y:auto; padding-right:6px;">
-            <div id="import-mod-aba-novidades"></div>
-            <div id="import-mod-aba-inalterados" style="display:none;"></div>
+        <p id="import-mod-resumo" style="margin:0 0 12px 0; font-size:13px; color:var(--ts4-subtle-text, #666);">Análise concluída! Confira o que mudou no seu save.</p>
+
+        <!-- ================= PASSO 1 ================= -->
+        <div id="import-mod-step1">
+            <!-- Abas -->
+            <div id="import-mod-tabs" style="display:flex; gap:8px; margin-bottom:8px; border-bottom:2px solid var(--ts4-border, #e0dccb);">
+                <button type="button" class="import-mod-tab-btn" data-tab="novidades" onclick="trocarAbaImportMod('novidades')" style="padding:8px 14px; border:none; background:transparent; border-bottom:3px solid var(--cozy-accent, #7fb069); font-weight:700; cursor:pointer; color:var(--ts4-text,#4a3b2a);">🔥 Novidades <span id="import-mod-count-nov">(0)</span></button>
+                <button type="button" class="import-mod-tab-btn" data-tab="inalterados" onclick="trocarAbaImportMod('inalterados')" style="padding:8px 14px; border:none; background:transparent; border-bottom:3px solid transparent; font-weight:600; cursor:pointer; color:var(--ts4-subtle-text,#888);">💤 Sem Alterações <span id="import-mod-count-ina">(0)</span></button>
+            </div>
+
+            <!-- Barra de seleção em massa -->
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 4px; font-size:12px; background:var(--ts4-secondary-bg,#fff8ec); border-radius:8px; margin-bottom:10px;">
+                <strong style="font-size:11px; color:var(--ts4-subtle-text,#666);">Seleção rápida (aba atual):</strong>
+                <button type="button" class="btn-main btn-sec" style="margin:0; padding:4px 10px; font-size:11px; width:auto;" onclick="_selecionarSimsAba(true)">☑ Selecionar todos</button>
+                <button type="button" class="btn-main btn-sec" style="margin:0; padding:4px 10px; font-size:11px; width:auto;" onclick="_selecionarSimsAba(false)">☐ Desmarcar todos</button>
+                <span id="import-mod-selecao-info" style="margin-left:auto; font-size:11px; color:var(--ts4-subtle-text,#666); font-weight:700;"></span>
+            </div>
+
+            <div id="import-mod-body" style="max-height:50vh; overflow-y:auto; padding-right:6px;">
+                <div id="import-mod-aba-novidades"></div>
+                <div id="import-mod-aba-inalterados" style="display:none;"></div>
+            </div>
         </div>
 
-        <p style="margin:16px 0 4px 0; font-size:11px; color:var(--ts4-subtle-text,#888); font-style:italic;">
+        <!-- ================= PASSO 2 ================= -->
+        <div id="import-mod-step2" style="display:none;">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 4px; font-size:12px; background:var(--ts4-secondary-bg,#fff8ec); border-radius:8px; margin-bottom:10px;">
+                <strong style="font-size:11px; color:var(--ts4-subtle-text,#666);">Seleção rápida (todos os campos):</strong>
+                <button type="button" class="btn-main btn-sec" style="margin:0; padding:4px 10px; font-size:11px; width:auto;" onclick="_selecionarTodosCampos(true)">☑ Marcar tudo</button>
+                <button type="button" class="btn-main btn-sec" style="margin:0; padding:4px 10px; font-size:11px; width:auto;" onclick="_selecionarTodosCampos(false)">☐ Desmarcar tudo</button>
+            </div>
+            <div id="import-mod-step2-body" style="max-height:50vh; overflow-y:auto; padding-right:6px;"></div>
+        </div>
+
+        <p style="margin:14px 0 4px 0; font-size:11px; color:var(--ts4-subtle-text,#888); font-style:italic;">
             🔒 Suas biografias, fotos, títulos narrativos, notas, gerações manuais e vínculos de parentesco (pai/mãe/cônjuge) criados no site <strong>não serão apagados</strong>. Apenas os campos vindos do jogo são atualizados.
         </p>
 
-        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:14px; flex-wrap:wrap;">
+        <div style="display:flex; justify-content:space-between; gap:10px; margin-top:14px; flex-wrap:wrap;">
             <button class="btn-main btn-sec" style="margin:0; width:auto; padding:10px 18px;" onclick="fecharModalImportMod()">Cancelar</button>
-            <button class="btn-main" style="margin:0; width:auto; padding:10px 18px; background:var(--cozy-accent, #7fb069); color:#fff;" onclick="aplicarImportMod()">✓ Confirmar Importação</button>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button id="btn-import-voltar" class="btn-main btn-sec" style="margin:0; width:auto; padding:10px 18px; display:none;" onclick="_voltarPassoImportMod()">← Voltar</button>
+                <button id="btn-import-avancar" class="btn-main" style="margin:0; width:auto; padding:10px 18px; background:var(--cozy-accent, #7fb069); color:#fff;" onclick="_avancarPassoImportMod()">Próximo →</button>
+                <button id="btn-import-aplicar" class="btn-main" style="margin:0; width:auto; padding:10px 18px; background:var(--cozy-accent, #7fb069); color:#fff; display:none;" onclick="aplicarImportMod()">✓ Aplicar importação</button>
+            </div>
         </div>
     </div>
 </div>
 
+
 <script>
 /* === SIMSTORIA MOD IMPORT === */
 (function(){
-    // Estado corrente do diff (populado ao abrir o modal)
+    // Estado corrente do diff + escolhas do usuário
     window._importModState = null;
+    let _abaAtual = 'novidades';
+    let _passoAtual = 1;
 
     // Backup preventivo em localStorage (mantém últimos 3)
     function _backupPreImport() {
@@ -11861,29 +11910,26 @@ function atualizarIndicadorMemoria() {
     }
 
     // Mapeamento (mod → site) — campos comparáveis vindos do jogo
-    // key = campo no db.sims, from(modSim) = valor equivalente no JSON do mod
     const CAMPOS = [
-        { key:'nome',       label:'Nome',          from: m => m.nome || '' },
-        { key:'sobrenome',  label:'Sobrenome',     from: m => m.sobrenome || '' },
-        { key:'genero',     label:'Gênero',        from: m => m.genero || '' },
+        { key:'nome',       label:'Nome',            from: m => m.nome || '' },
+        { key:'sobrenome',  label:'Sobrenome',       from: m => m.sobrenome || '' },
+        { key:'genero',     label:'Gênero',          from: m => m.genero || '' },
         { key:'estagio',    label:'Estágio de Vida', from: m => m.estagio_vida || '' },
-        { key:'tipoSim',    label:'Tipo de Sim',   from: m => m.tipo_sim || '' },
-        { key:'carreira',   label:'Carreira',      from: m => m.carreira || '' },
-        { key:'aspiracao',  label:'Aspiração',     from: m => m.aspiracao_atual || '' },
-        { key:'status',     label:'Status de Vida',from: m => m.status_vida || '' },
-        { key:'causaMorte', label:'Causa da Morte',from: m => m.causa_morte || '' },
-        { key:'familia',    label:'Família',       from: m => m.familia || '' },
-        { key:'isNpc',      label:'É NPC',         from: m => !!m.is_npc },
-        { key:'tracos',     label:'Traços',        from: m => _tracosLimpos(m.tracos), tipo:'tracos' },
+        { key:'tipoSim',    label:'Tipo de Sim',     from: m => m.tipo_sim || '' },
+        { key:'carreira',   label:'Carreira',        from: m => m.carreira || '' },
+        { key:'aspiracao',  label:'Aspiração',       from: m => m.aspiracao_atual || '' },
+        { key:'status',     label:'Status de Vida',  from: m => m.status_vida || '' },
+        { key:'causaMorte', label:'Causa da Morte',  from: m => m.causa_morte || '' },
+        { key:'familia',    label:'Família',         from: m => m.familia || '' },
+        { key:'isNpc',      label:'É NPC',           from: m => !!m.is_npc },
+        { key:'tracos',     label:'Traços',          from: m => _tracosLimpos(m.tracos), tipo:'tracos' },
     ];
 
     function _tracosLimpos(arr) {
-        // Aceita array de strings legíveis; ignora qualquer texto com "hash:" ou "tokens {"
         if (!Array.isArray(arr)) return '';
         const lim = arr
             .map(x => (typeof x === 'string' ? x.trim() : ''))
             .filter(x => x && !/hash\s*:/i.test(x) && !/tokens\s*\{/.test(x));
-        // dedup preservando ordem
         return [...new Set(lim)].join(', ');
     }
 
@@ -11899,7 +11945,6 @@ function atualizarIndicadorMemoria() {
             .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
-    // Compara um Sim do mod com um Sim do site; devolve lista de mudanças
     function _diffSim(simSite, simMod) {
         const mudancas = [];
         CAMPOS.forEach(c => {
@@ -11912,16 +11957,15 @@ function atualizarIndicadorMemoria() {
         return mudancas;
     }
 
-    // Calcula diff completo entre JSON do mod e db atual
     function calcularDiffMod(dadosMod) {
         const sims = (db && db.sims) || [];
         const porSimId = new Map();
         sims.forEach(s => { if (s.simId) porSimId.set(String(s.simId), s); });
 
-        const novos = [];         // {modSim}
+        const novos = [];         // não usado diretamente — semVinculo cobre o caso "não vinculado"
         const atualizados = [];   // {modSim, simSite, mudancas}
         const inalterados = [];   // {modSim, simSite}
-        const semVinculo = [];    // {modSim, sugestoes}  — precisam de select manual
+        const semVinculo = [];    // {modSim, sugestoes}
 
         (dadosMod.sims || []).forEach(modSim => {
             const vinculado = porSimId.get(String(modSim.id));
@@ -11931,11 +11975,10 @@ function atualizarIndicadorMemoria() {
                 else inalterados.push({ modSim, simSite: vinculado });
                 return;
             }
-            // Sem simId cadastrado ainda — sugere Sims parecidos por nome/sobrenome
             const nomeMod = _norm(modSim.nome).toLowerCase();
             const sobMod = _norm(modSim.sobrenome).toLowerCase();
             const sugestoes = sims
-                .filter(s => !s.simId) // ainda não vinculado a nenhum id do mod
+                .filter(s => !s.simId)
                 .map(s => {
                     let score = 0;
                     if (_norm(s.nome).toLowerCase() === nomeMod && nomeMod) score += 2;
@@ -11950,35 +11993,35 @@ function atualizarIndicadorMemoria() {
         return { novos, atualizados, inalterados, semVinculo };
     }
 
-    // Renderiza abas do modal
-    function renderAbasImportMod(diff) {
+    // ---------- PASSO 1: renderiza a lista de Sims ----------
+    function renderPasso1(diff) {
         const abaNov = document.getElementById('import-mod-aba-novidades');
         const abaIna = document.getElementById('import-mod-aba-inalterados');
         const totalNov = diff.atualizados.length + diff.semVinculo.length;
         document.getElementById('import-mod-count-nov').textContent = '(' + totalNov + ')';
         document.getElementById('import-mod-count-ina').textContent = '(' + diff.inalterados.length + ')';
         document.getElementById('import-mod-resumo').textContent =
-            'Encontramos ' + totalNov + ' Sim(s) com novidades e ' + diff.inalterados.length + ' sem alterações no seu save.';
+            'Passo 1 de 2 — Escolha quais Sims você quer trazer do save (' + totalNov + ' com novidades, ' + diff.inalterados.length + ' sem alterações).';
 
         let htmlNov = '';
 
-        // Sems vínculo — precisam de select
+        // ✨ Novos Sims (sem vínculo) — checkbox marcado por default + select para vincular/criar
         if (diff.semVinculo.length) {
-            htmlNov += '<div style="margin-bottom:14px;"><strong style="font-size:13px;">🔗 Vincule ou crie um novo Sim para os itens abaixo:</strong></div>';
+            htmlNov += '<div style="margin:4px 0 6px 0;"><strong style="font-size:12px; color:#2b7a2b;">✨ Novos Sims detectados no save:</strong></div>';
             diff.semVinculo.forEach((item, idx) => {
                 const m = item.modSim;
                 const nomeCompleto = _escapeHtml((m.nome||'') + ' ' + (m.sobrenome||'')).trim();
-                const meta = [m.estagio_vida, m.familia && ('Família ' + m.familia)].filter(Boolean).map(_escapeHtml).join(' · ');
+                const meta = [m.estagio_vida, m.familia && ('Família ' + m.familia), m.is_npc && 'NPC'].filter(Boolean).map(_escapeHtml).join(' · ');
                 let opts = '<option value="__novo__">➕ Criar novo Sim</option>';
                 item.sugestoes.forEach(s => {
                     const nomeSim = _escapeHtml((s.sim.nome||'') + ' ' + (s.sim.sobrenome||'')).trim();
                     const extra = s.sim.estagio ? ' (' + _escapeHtml(s.sim.estagio) + ')' : '';
-                    opts += '<option value="' + _escapeHtml(s.sim.id) + '">' + nomeSim + extra + '</option>';
+                    opts += '<option value="' + _escapeHtml(s.sim.id) + '">🔗 Vincular a: ' + nomeSim + extra + '</option>';
                 });
                 htmlNov += ''
-                    + '<div style="background:#eaffea; border-left:4px solid var(--cozy-accent,#7fb069); border-radius:10px; padding:10px 12px; margin-bottom:8px;">'
+                    + '<div style="background:#eaffea; border-left:4px solid var(--cozy-accent,#7fb069); border-radius:10px; padding:10px 12px; margin-bottom:6px;" data-import-row="vinculo:' + idx + '">'
                     +   '<label style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:13px; cursor:pointer;">'
-                    +     '<input type="checkbox" checked data-import-vinculo="' + idx + '"> ✨ ' + (nomeCompleto || '(sem nome)')
+                    +     '<input type="checkbox" checked data-import-vinculo="' + idx + '" data-aba="novidades"> ✨ ' + (nomeCompleto || '(sem nome)')
                     +   '</label>'
                     +   (meta ? '<div style="font-size:11px; color:#666; margin:4px 0 6px 26px;">' + meta + '</div>' : '')
                     +   '<div style="margin:6px 0 0 26px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">'
@@ -11989,11 +12032,124 @@ function atualizarIndicadorMemoria() {
             });
         }
 
-        // Atualizados
+        // ⚡ Atualizados — checkbox DESMARCADO por default (evita sobrescrever sem querer)
         if (diff.atualizados.length) {
-            htmlNov += '<div style="margin:10px 0 8px 0;"><strong style="font-size:13px;">⚡ Sims atualizados:</strong></div>';
+            htmlNov += '<div style="margin:12px 0 6px 0;"><strong style="font-size:12px; color:#a07500;">⚡ Sims com mudanças (marque os que quer atualizar):</strong></div>';
             diff.atualizados.forEach((item, idx) => {
-                const m = item.modSim; const s = item.simSite;
+                const s = item.simSite; const m = item.modSim;
+                const nomeCompleto = _escapeHtml((s.nome||m.nome||'') + ' ' + (s.sobrenome||m.sobrenome||'')).trim();
+                const qtd = item.mudancas.length;
+                const labels = item.mudancas.map(mu => _escapeHtml(mu.label)).join(', ');
+                htmlNov += ''
+                    + '<div style="background:#fff8e0; border-left:4px solid #d4af37; border-radius:10px; padding:10px 12px; margin-bottom:6px;">'
+                    +   '<label style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:13px; cursor:pointer;">'
+                    +     '<input type="checkbox" data-import-atual="' + idx + '" data-aba="novidades"> ⚡ ' + (nomeCompleto || '(sem nome)')
+                    +     '<span style="margin-left:auto; font-size:11px; font-weight:600; color:#a07500; background:#fff2c2; padding:2px 8px; border-radius:10px;">' + qtd + ' campo(s)</span>'
+                    +   '</label>'
+                    +   '<div style="font-size:11px; color:#666; margin:4px 0 0 26px;">Mudou: ' + labels + '</div>'
+                    + '</div>';
+            });
+        }
+
+        if (!htmlNov) {
+            htmlNov = '<div style="padding:20px; text-align:center; color:#888;">Nenhuma novidade detectada — o save está sincronizado. 🌱</div>';
+        }
+        abaNov.innerHTML = htmlNov;
+
+        // 💤 Inalterados — desmarcados (não altera nada mesmo se marcar, mas mantém consistência)
+        let htmlIna = '';
+        if (diff.inalterados.length) {
+            htmlIna = '';
+            diff.inalterados.forEach((item, idx) => {
+                const s = item.simSite;
+                const nome = _escapeHtml((s.nome||'') + ' ' + (s.sobrenome||'')).trim();
+                htmlIna += ''
+                    + '<label style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-bottom:1px solid #eee; font-size:12px; color:#666; cursor:pointer;">'
+                    +   '<input type="checkbox" data-import-ina="' + idx + '" data-aba="inalterados"> 💤 ' + nome
+                    + '</label>';
+            });
+        } else {
+            htmlIna = '<div style="padding:20px; text-align:center; color:#888;">Nenhum Sim inalterado.</div>';
+        }
+        abaIna.innerHTML = htmlIna;
+
+        _atualizarContadorSelecao();
+        // Vincula listeners para o contador
+        document.querySelectorAll('#import-mod-step1 input[type="checkbox"]').forEach(chk => {
+            chk.addEventListener('change', _atualizarContadorSelecao);
+        });
+    }
+
+    function _atualizarContadorSelecao() {
+        const marcados = document.querySelectorAll('#import-mod-step1 input[type="checkbox"]:checked').length;
+        const info = document.getElementById('import-mod-selecao-info');
+        if (info) info.textContent = marcados + ' Sim(s) selecionado(s)';
+        const btnAvancar = document.getElementById('btn-import-avancar');
+        if (btnAvancar) btnAvancar.disabled = (marcados === 0);
+        if (btnAvancar) btnAvancar.style.opacity = (marcados === 0) ? '0.5' : '1';
+    }
+
+    window._selecionarSimsAba = function(marcar) {
+        document.querySelectorAll('#import-mod-step1 input[type="checkbox"][data-aba="' + _abaAtual + '"]').forEach(chk => {
+            chk.checked = !!marcar;
+        });
+        _atualizarContadorSelecao();
+    };
+
+    window.trocarAbaImportMod = function(qual) {
+        _abaAtual = qual;
+        document.getElementById('import-mod-aba-novidades').style.display = (qual === 'novidades') ? '' : 'none';
+        document.getElementById('import-mod-aba-inalterados').style.display = (qual === 'inalterados') ? '' : 'none';
+        document.querySelectorAll('.import-mod-tab-btn').forEach(b => {
+            const ativo = b.getAttribute('data-tab') === qual;
+            b.style.borderBottomColor = ativo ? 'var(--cozy-accent, #7fb069)' : 'transparent';
+            b.style.fontWeight = ativo ? '700' : '600';
+            b.style.color = ativo ? 'var(--ts4-text,#4a3b2a)' : 'var(--ts4-subtle-text,#888)';
+        });
+    };
+
+    // ---------- PASSO 2: escolher campos dos Sims ⚡Atualizados marcados ----------
+    function renderPasso2() {
+        const st = window._importModState;
+        const body = document.getElementById('import-mod-step2-body');
+        const diff = st.diff;
+
+        // Coleta escolhas do passo 1
+        const atualizadosMarcados = [];
+        document.querySelectorAll('[data-import-atual]').forEach(chk => {
+            if (chk.checked) atualizadosMarcados.push(parseInt(chk.getAttribute('data-import-atual'), 10));
+        });
+        const vinculosMarcados = [];
+        document.querySelectorAll('[data-import-vinculo]').forEach(chk => {
+            if (chk.checked) {
+                const idx = parseInt(chk.getAttribute('data-import-vinculo'), 10);
+                const sel = document.querySelector('[data-import-select="' + idx + '"]');
+                vinculosMarcados.push({ idx, escolha: sel ? sel.value : '__novo__' });
+            }
+        });
+        st.selecao = { atualizadosMarcados, vinculosMarcados };
+
+        document.getElementById('import-mod-resumo').textContent =
+            'Passo 2 de 2 — Escolha quais campos atualizar em cada Sim.';
+
+        let html = '';
+
+        // Resumo read-only dos ✨novos / vínculos escolhidos
+        if (vinculosMarcados.length) {
+            let criar = 0, vincular = 0;
+            vinculosMarcados.forEach(v => { if (v.escolha === '__novo__') criar++; else vincular++; });
+            html += '<div style="background:#eaffea; border:1px solid var(--cozy-accent,#7fb069); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:12px; color:#2b5a2b;">'
+                + '✨ <strong>Novos Sims:</strong> ' + criar + ' serão criados · ' + vincular + ' serão vinculados a Sims existentes (todos os campos do jogo serão preenchidos).'
+                + '</div>';
+        }
+
+        if (atualizadosMarcados.length === 0) {
+            html += '<div style="padding:20px; text-align:center; color:#888; font-size:13px;">Nenhum Sim ⚡Atualizado foi selecionado no passo anterior — clique em <strong>Aplicar importação</strong> para processar apenas os Novos Sims.</div>';
+        } else {
+            html += '<div style="margin:0 0 8px 0; font-size:12px; color:#a07500;"><strong>⚡ Selecione os campos que quer atualizar em cada Sim (padrão: todos marcados).</strong></div>';
+            atualizadosMarcados.forEach(idx => {
+                const item = diff.atualizados[idx];
+                const s = item.simSite; const m = item.modSim;
                 const nomeCompleto = _escapeHtml((s.nome||m.nome||'') + ' ' + (s.sobrenome||m.sobrenome||'')).trim();
                 let subitens = '';
                 item.mudancas.forEach((mu, muIdx) => {
@@ -12005,59 +12161,65 @@ function atualizarIndicadorMemoria() {
                         +   '<span><strong>' + _escapeHtml(mu.label) + ':</strong> <span style="color:#a03;">' + antes + '</span> ➜ <span style="color:#070;">' + depois + '</span></span>'
                         + '</label>';
                 });
-                htmlNov += ''
-                    + '<div style="background:#fff8e0; border-left:4px solid #d4af37; border-radius:10px; padding:10px 12px; margin-bottom:8px;">'
-                    +   '<label style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:13px; cursor:pointer;">'
-                    +     '<input type="checkbox" checked data-import-atual="' + idx + '" onchange="_toggleTodasMudancas(' + idx + ', this.checked)"> ⚡ ' + (nomeCompleto || '(sem nome)')
-                    +   '</label>'
-                    +   '<div style="margin:6px 0 0 26px;">' + subitens + '</div>'
-                    + '</div>';
+                html += ''
+                    + '<details open style="background:#fff8e0; border-left:4px solid #d4af37; border-radius:10px; padding:8px 12px; margin-bottom:8px;">'
+                    +   '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">⚡ ' + (nomeCompleto || '(sem nome)') + ' <span style="font-size:11px; color:#a07500; font-weight:600;">(' + item.mudancas.length + ' campo(s))</span></summary>'
+                    +   '<div style="margin:8px 0 4px 4px; display:flex; gap:6px; flex-wrap:wrap;">'
+                    +     '<button type="button" class="btn-main btn-sec" style="margin:0; padding:3px 8px; font-size:10px; width:auto;" onclick="_marcarCamposSim(' + idx + ', true)">☑ Todos deste Sim</button>'
+                    +     '<button type="button" class="btn-main btn-sec" style="margin:0; padding:3px 8px; font-size:10px; width:auto;" onclick="_marcarCamposSim(' + idx + ', false)">☐ Nenhum deste Sim</button>'
+                    +   '</div>'
+                    +   '<div style="margin:2px 0 0 4px;">' + subitens + '</div>'
+                    + '</details>';
             });
         }
 
-        if (!htmlNov) {
-            htmlNov = '<div style="padding:20px; text-align:center; color:#888;">Nenhuma novidade detectada — o save está sincronizado. 🌱</div>';
-        }
-        abaNov.innerHTML = htmlNov;
-
-        // Inalterados
-        let htmlIna = '';
-        if (diff.inalterados.length) {
-            htmlIna = '<div style="color:#888; font-size:12px;">';
-            diff.inalterados.forEach(item => {
-                const s = item.simSite;
-                htmlIna += '<div style="padding:5px 8px; border-bottom:1px solid #eee;">💤 '
-                    + _escapeHtml((s.nome||'') + ' ' + (s.sobrenome||'')).trim() + '</div>';
-            });
-            htmlIna += '</div>';
-        } else {
-            htmlIna = '<div style="padding:20px; text-align:center; color:#888;">Nenhum Sim inalterado.</div>';
-        }
-        abaIna.innerHTML = htmlIna;
+        body.innerHTML = html;
     }
 
-    window._toggleTodasMudancas = function(idx, checked) {
-        document.querySelectorAll('[data-import-mud^="' + idx + ':"]').forEach(chk => {
-            chk.checked = checked;
-        });
+    window._marcarCamposSim = function(idx, marcar) {
+        document.querySelectorAll('[data-import-mud^="' + idx + ':"]').forEach(chk => { chk.checked = !!marcar; });
     };
 
-    window.trocarAbaImportMod = function(qual) {
-        document.getElementById('import-mod-aba-novidades').style.display = (qual === 'novidades') ? '' : 'none';
-        document.getElementById('import-mod-aba-inalterados').style.display = (qual === 'inalterados') ? '' : 'none';
-        document.querySelectorAll('.import-mod-tab-btn').forEach(b => {
-            const ativo = b.getAttribute('data-tab') === qual;
-            b.style.borderBottomColor = ativo ? 'var(--cozy-accent, #7fb069)' : 'transparent';
-            b.style.fontWeight = ativo ? '700' : '600';
-            b.style.color = ativo ? 'var(--ts4-text,#4a3b2a)' : 'var(--ts4-subtle-text,#888)';
-        });
+    window._selecionarTodosCampos = function(marcar) {
+        document.querySelectorAll('[data-import-mud]').forEach(chk => { chk.checked = !!marcar; });
+    };
+
+    function _mostrarPasso(n) {
+        _passoAtual = n;
+        document.getElementById('import-mod-step1').style.display = (n === 1) ? '' : 'none';
+        document.getElementById('import-mod-step2').style.display = (n === 2) ? '' : 'none';
+        document.getElementById('btn-import-voltar').style.display = (n === 2) ? '' : 'none';
+        document.getElementById('btn-import-avancar').style.display = (n === 1) ? '' : 'none';
+        document.getElementById('btn-import-aplicar').style.display = (n === 2) ? '' : 'none';
+
+        const b1 = document.getElementById('import-mod-step1-badge');
+        const b2 = document.getElementById('import-mod-step2-badge');
+        if (n === 1) {
+            b1.style.background = 'var(--cozy-accent,#7fb069)'; b1.style.color = '#fff';
+            b2.style.background = '#eee'; b2.style.color = '#888';
+        } else {
+            b1.style.background = '#c9e5c0'; b1.style.color = '#4a3b2a';
+            b2.style.background = 'var(--cozy-accent,#7fb069)'; b2.style.color = '#fff';
+        }
+    }
+
+    window._avancarPassoImportMod = function() {
+        const marcados = document.querySelectorAll('#import-mod-step1 input[type="checkbox"]:checked').length;
+        if (marcados === 0) { alert('Selecione pelo menos um Sim para prosseguir.'); return; }
+        renderPasso2();
+        _mostrarPasso(2);
+    };
+
+    window._voltarPassoImportMod = function() {
+        _mostrarPasso(1);
     };
 
     window.abrirModalImportMod = function(dadosMod) {
         const diff = calcularDiffMod(dadosMod);
-        window._importModState = { diff, dadosMod };
-        renderAbasImportMod(diff);
+        window._importModState = { diff, dadosMod, selecao: null };
+        renderPasso1(diff);
         trocarAbaImportMod('novidades');
+        _mostrarPasso(1);
         document.getElementById('modal-import-mod').style.display = 'block';
     };
 
@@ -12073,9 +12235,7 @@ function atualizarIndicadorMemoria() {
             if (!c) return;
             simSite[k] = c.from(modSim);
         });
-        // Sempre garante vínculo do simId
         simSite.simId = String(modSim.id);
-        // Aspirações concluídas: append único
         if (Array.isArray(modSim.aspiracoes_concluidas) && modSim.aspiracoes_concluidas.length) {
             const atuais = Array.isArray(simSite.aspiracoesConcluidas) ? simSite.aspiracoesConcluidas : [];
             const merged = [...new Set([...atuais, ...modSim.aspiracoes_concluidas.filter(x => x && !/hash\s*:/i.test(String(x)))])];
@@ -12085,33 +12245,28 @@ function atualizarIndicadorMemoria() {
 
     function _criarSimDoMod(modSim) {
         const novo = { id: 'sim_local_' + Date.now() + '_' + Math.floor(Math.random()*1e6) };
-        // Preenche todos os campos comparáveis
         _aplicarCamposMod(novo, modSim, CAMPOS.map(c => c.key));
-        // Campos preservados começam vazios
         novo.historico_relacionamentos = [];
         return novo;
     }
 
     window.aplicarImportMod = function() {
         const st = window._importModState;
-        if (!st) return;
+        if (!st || !st.selecao) return;
         _backupPreImport();
 
         let nNovos = 0, nAtualizados = 0, nIgnorados = 0;
 
-        // 1) Sem vínculo — criar novos ou vincular a existente
-        st.diff.semVinculo.forEach((item, idx) => {
-            const chk = document.querySelector('[data-import-vinculo="' + idx + '"]');
-            if (!chk || !chk.checked) { nIgnorados++; return; }
-            const sel = document.querySelector('[data-import-select="' + idx + '"]');
-            const escolha = sel ? sel.value : '__novo__';
-            if (escolha === '__novo__') {
+        // 1) Vínculos escolhidos no passo 1
+        st.selecao.vinculosMarcados.forEach(v => {
+            const item = st.diff.semVinculo[v.idx];
+            if (v.escolha === '__novo__') {
                 const novo = _criarSimDoMod(item.modSim);
                 db.sims = db.sims || [];
                 db.sims.push(novo);
                 nNovos++;
             } else {
-                const simSite = db.sims.find(s => String(s.id) === String(escolha));
+                const simSite = db.sims.find(s => String(s.id) === String(v.escolha));
                 if (simSite) {
                     _aplicarCamposMod(simSite, item.modSim, CAMPOS.map(c => c.key));
                     nAtualizados++;
@@ -12121,8 +12276,9 @@ function atualizarIndicadorMemoria() {
             }
         });
 
-        // 2) Atualizados — aplica só as mudanças marcadas
-        st.diff.atualizados.forEach((item, idx) => {
+        // 2) Atualizados — aplica só os campos marcados no passo 2
+        st.selecao.atualizadosMarcados.forEach(idx => {
+            const item = st.diff.atualizados[idx];
             const chaves = [];
             item.mudancas.forEach((mu, muIdx) => {
                 const chk = document.querySelector('[data-import-mud="' + idx + ':' + muIdx + '"]');
