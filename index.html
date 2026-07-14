@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-23-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-27-SimStoria - Companion Narrativo em Implementação (Sims Edition) — v54.27</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1300,7 +1300,13 @@
                         <line x1="80" y1="20" x2="90" y2="45" stroke="#ddd" stroke-width=".8"/>
                     </svg><div style="font-size:9px;color:#7a6849;text-align:center;margin-top:2px;">Todas as gerações interligadas</div></span>
                 </span>
-                <!-- Modos 1-5 (vis-network) removidos: agora só usamos os modos Family Echo (Cytoscape) acima. -->
+                <span style="width:100%; height:1px; background:#eee; margin:4px 0;"></span>
+                <span style="font-size:12px; font-weight:bold; color:#555;">🌳 Formato da Árvore:</span>
+                <button id="btn-layout-1" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(1)">Tradicional (Topo→Base)</button>
+                <button id="btn-layout-2" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(2)">Horizontal (Esq→Dir)</button>
+                <button id="btn-layout-3" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(3)">Livre (Física)</button>
+                <button id="btn-layout-4" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px;" onclick="setTreeLayout(4)">Radial (Circular)</button>
+                <button id="btn-layout-5" class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; border-color: #9B59B6; color: #9B59B6;" onclick="setTreeLayout(5)">👁️ Linhagem Principal (Focado)</button>
 
             </div>
 
@@ -2129,7 +2135,7 @@
         <li><strong>Visual:</strong> Molduras dos cards em estilo "retrato de família".</li>
         <li><strong>Perfil dos Sims:</strong> É possível salvar genitor(a) como NPC, e depois transformá-lo em Sim da árvore da família, se quiser.</li>
         <li><strong>Perfil dos Sims:</strong> Novo campo Aspiração, com botão 🎲 Sortear, exibido no perfil do sim.</li>
-        <li><strong>Perfil dos Sims:</strong> Novo campo Natureza Oculta com as opções para selecionar se o sim é humano ou algum oculto.</li>
+        <li><strong>Perfil dos Sims:</strong> Novo campo Tipo de Sim com as opções para selecionar se o sim é humano ou algum oculto.</li>
         <li><strong>Roleta:</strong> Nova roleta com diversas opções de "Regras" para o seu jogo (você encontra em Laboratório). Gostou da Regra? Pode clicar para registrá-la no seu livro de regras.</li>
         <li><strong>Gerenciamento de Metas:</strong> Você pode sortear metas no Dashboard, registrá-las no livro de metas e acompanhar seu progresso. Possibilidade de editar metas, desistir, concluir, filtrá-las por tags no livro da família, e vinculá-las a um sim cadastrado.</li>
         <li><strong>Galeria:</strong> Adicionada a opção de Remover capa do álbum.</li>
@@ -2282,7 +2288,7 @@
                 <div class="profile-field" style="grid-column: span 2;"><strong>Traços</strong><span id="v-tracos">...</span></div>
                 <div class="profile-field"><strong>Aspiração</strong><span id="v-aspiracao">—</span></div>
                 <div class="profile-field" id="campo-metas-aspiracao" style="display:none; grid-column: span 2; border-left-color: var(--ts4-green);"><strong style="color:var(--ts4-green);">🎯 Metas Aspiracionais</strong><div id="v-metas-aspiracao" style="margin-top:6px; font-size:13px;"></div></div>
-                <div class="profile-field"><strong>Natureza</strong><span id="v-oculto">👤 Humano</span></div>
+                <div class="profile-field"><strong>Tipo de Sim</strong><span id="v-oculto">👤 Humano</span></div>
                 <div class="profile-field" style="grid-column: span 2;"><strong>Anotações / História do Sim</strong><span id="v-extra">...</span></div>
                 <div class="profile-field" style="grid-column: span 2;">
                     <strong style="color:var(--ts4-green)">Árvore de Parentesco</strong>
@@ -2524,7 +2530,7 @@
                 <div id="e-metas-aspiracao-preview" style="margin-top:6px;"></div>
 
                 <label style="margin-top:10px; font-weight:bold; font-size:13px; display:flex; align-items:center; gap:5px;">
-                    Natureza Oculta:
+                    Tipo de Sim:
                     <span style="cursor:help; background:#ccc; color:white; border-radius:50%; width:14px; height:14px; font-size:10px; display:inline-flex; align-items:center; justify-content:center;" title="Tipo de Sim (Humano, Vampiro, Bruxo...). Padroniza as cores da árvore sem depender de palavras-chave nas notas.">❓</span>
                 </label>
                 <select id="e-oculto" style="font-size:12px; padding:8px;">
@@ -7542,6 +7548,9 @@ let edgesArray = [];
                 u.parents.forEach(p => { (parentUnitsOf[p] = parentUnitsOf[p] || []).push(u.key); });
             });
             const hubSims = new Set();
+            // hubSim = qualquer Sim que aparece como pai em ≥2 uniões (mesmo aninhado no meio da árvore).
+            // Assim uma Sim com múltiplos relacionamentos fica UMA linha acima de todos os parceiros,
+            // com arestas descendo para cada união — em vez de ser deitada na mesma linha dos parceiros.
             if (mode === 6) {
                 Object.entries(parentUnitsOf).forEach(([sid, ks]) => { if (ks.length >= 2) hubSims.add(sid); });
             }
@@ -7560,14 +7569,24 @@ let edgesArray = [];
             const childUnitKeysAll = new Set();
             Object.values(childUnitsOf).forEach(arr => arr.forEach(k => childUnitKeysAll.add(k)));
 
-            // Agrupa uniões raiz por hub (modo 6)
+            // Agrupa uniões por hub (modo 6):
+            //   hubGroups          → hub cujas uniões TODAS são raízes (o Sim é o ancestral).
+            //   hubGroupsInternal  → hub cujas uniões são unidades filhas de alguém (nested).
             const hubUnitKeys = new Set();
             const hubGroups = [];
+            const hubGroupsInternal = {}; // hubSim -> [ukList]
             hubSims.forEach(sid => {
-                const ks = parentUnitsOf[sid].filter(k => !childUnitKeysAll.has(k));
-                if (ks.length >= 2) {
-                    hubGroups.push({ hubSim: sid, memberUnits: ks });
-                    ks.forEach(k => hubUnitKeys.add(k));
+                const allKs = parentUnitsOf[sid];
+                if (allKs.length < 2) return;
+                const rootKs = allKs.filter(k => !childUnitKeysAll.has(k));
+                if (rootKs.length === allKs.length) {
+                    // 100% raízes → hub top-level (comportamento original v54)
+                    hubGroups.push({ hubSim: sid, memberUnits: allKs });
+                    allKs.forEach(k => hubUnitKeys.add(k));
+                } else {
+                    // pelo menos uma união é filha de outra unidade → hub interno
+                    hubGroupsInternal[sid] = allKs.slice();
+                    allKs.forEach(k => hubUnitKeys.add(k));
                 }
             });
 
@@ -7594,20 +7613,51 @@ let edgesArray = [];
             // ============================================================
             // 5. Largura recursiva
             // ============================================================
+            // Layout items de uma unidade (modo 6): distingue hub interno (bloco agrupado)
+            // de child unit avulsa e de filho solto. Mode 7/8 mantém comportamento antigo.
+            function layoutItemsOf(u) {
+                if (mode !== 6) {
+                    return {
+                        hubItems: [],
+                        childKs: [],
+                        looseChildren: u.children.slice(),
+                    };
+                }
+                const childKs = childUnitsOf[u.key] || [];
+                const hubChildren = u.children.filter(cid => hubGroupsInternal[cid]);
+                const hubUnionSet = new Set();
+                hubChildren.forEach(cid => hubGroupsInternal[cid].forEach(vk => hubUnionSet.add(vk)));
+                const regularChildKs = childKs.filter(k => !hubUnionSet.has(k));
+                const looseChildren = u.children.filter(cid =>
+                    !childKs.some(ck => units[ck].parents.includes(cid)) &&
+                    !hubGroupsInternal[cid]
+                );
+                return {
+                    hubItems: hubChildren.map(cid => ({ hubSim: cid, unions: hubGroupsInternal[cid] })),
+                    childKs: regularChildKs,
+                    looseChildren,
+                };
+            }
+
             const unitWidth = {};
+            const hubGroupWidth = {}; // hubSim -> largura do bloco (hub + suas uniões lado a lado)
+            function calcHubGroupWidth(hubSim, unions, seen) {
+                let total = 0;
+                unions.forEach(vk => { total += calcWidth(vk, seen) + H_GAP; });
+                if (total > 0) total -= H_GAP;
+                const w = Math.max(NODE_W, total);
+                hubGroupWidth[hubSim] = w;
+                return w;
+            }
             function calcWidth(uk, seen) {
                 seen = seen || new Set();
                 if (seen.has(uk)) return unitWidth[uk] || NODE_W;
                 seen.add(uk);
                 const u = units[uk];
                 const own = (u.type === 'couple') ? (NODE_W * 2 + COUPLE_GAP) : NODE_W;
-                // Em modo 7, child units não são posicionadas abaixo (cada container é independente).
-                // Em modo 8 idem (stacking vertical por unidade).
-                const childKs = (mode === 6) ? (childUnitsOf[uk] || []) : [];
-                const looseChildren = (mode === 6)
-                    ? u.children.filter(cid => !childKs.some(ck => units[ck].parents.includes(cid)))
-                    : u.children.slice();
+                const { hubItems, childKs, looseChildren } = layoutItemsOf(u);
                 let total = 0;
+                hubItems.forEach(hi => { total += calcHubGroupWidth(hi.hubSim, hi.unions, seen) + H_GAP; });
                 childKs.forEach(ck => { total += calcWidth(ck, seen) + H_GAP; });
                 looseChildren.forEach(() => { total += NODE_W + H_GAP; });
                 if (total > 0) total -= H_GAP;
@@ -7656,11 +7706,9 @@ let edgesArray = [];
                 if (mode === 7 && unitColorIdx[uk] === undefined) unitColorIdx[uk] = (colorCounter++) % PALETTE.length;
 
                 // Filhos
-                const childKs = (mode === 6) ? (childUnitsOf[uk] || []) : [];
-                const looseChildren = (mode === 6)
-                    ? u.children.filter(cid => !childKs.some(ck => units[ck].parents.includes(cid)))
-                    : u.children.slice();
+                const { hubItems, childKs, looseChildren } = layoutItemsOf(u);
                 const items = [];
+                hubItems.forEach(hi => items.push({ type: 'hub', hubSim: hi.hubSim, unions: hi.unions, w: hubGroupWidth[hi.hubSim] || NODE_W }));
                 childKs.forEach(ck => items.push({ type: 'unit', k: ck, w: unitWidth[ck] }));
                 looseChildren.forEach(cid => items.push({ type: 'sim', id: cid, w: NODE_W }));
                 if (!items.length) return;
@@ -7672,7 +7720,22 @@ let edgesArray = [];
                     const cx = cursor + c.w / 2;
                     if (c.type === 'unit') {
                         placeUnit(c.k, cx, childY);
-                        // centro x do nó "topo" da sub-unidade (para barra de irmandade)
+                        childCenters.push(cx);
+                    } else if (c.type === 'hub') {
+                        // Posiciona o hub Sim uma linha ACIMA de todos os parceiros dele
+                        const hKey = nodeIdFor(c.hubSim, uk);
+                        if (!simPos[hKey]) { simPos[hKey] = { x: cx, y: childY + NODE_H / 2, realId: String(c.hubSim) }; simAppearances[c.hubSim] = (simAppearances[c.hubSim]||0)+1; }
+                        // As uniões descem uma linha abaixo do hub
+                        const memberY = childY + NODE_H + HUB_GAP;
+                        let totalU = 0;
+                        c.unions.forEach(vk => { totalU += unitWidth[vk] + H_GAP; });
+                        if (totalU > 0) totalU -= H_GAP;
+                        let cursorU = cx - totalU / 2;
+                        c.unions.forEach(vk => {
+                            const uw = unitWidth[vk];
+                            placeUnit(vk, cursorU + uw / 2, memberY);
+                            cursorU += uw + H_GAP;
+                        });
                         childCenters.push(cx);
                     } else {
                         const sKey = nodeIdFor(c.id, uk);
@@ -7747,116 +7810,43 @@ let edgesArray = [];
             }
 
             // ============================================================
-            // 6.5 SNAP DE LAYOUT — mantém a promessa "esposa ao lado do esposo
-            // na mesma linha da geração; filho único centralizado abaixo".
-            //
-            // Sem esse passo, quando um cônjuge vem de uma unidade colocada
-            // por um caminho diferente (fallback de "unidades não colocadas"),
-            // o Y dele pode divergir do parceiro; e um filho único herda o X
-            // dos "items" (que centraliza o bloco, não o pai) — o que dá a
-            // impressão de "linha quebrada".
+            // 6.5 SNAP MÍNIMO — apenas alinha casais lado a lado no mesmo Y
+            // (restaurado do comportamento v53: sem forçar Y por geração,
+            // que estava achatando/quebrando a árvore. Mantemos só a garantia
+            // "esposo e esposa na mesma linha" e "filho único centralizado
+            // abaixo do pai/união".)
             // ============================================================
             try {
-                // 1) Determina a geração de cada Sim real (0 = topo).
-                const geracaoDe = {};
-                const cacheGer = {};
-                const computaGer = (id, visit) => {
-                    id = String(id);
-                    if (cacheGer[id] !== undefined) return cacheGer[id];
-                    visit = visit || new Set();
-                    if (visit.has(id)) return 0;
-                    visit.add(id);
-                    const s = byId[id];
-                    if (!s) return 0;
-                    let g = 0;
-                    if (s.p1 && byId[String(s.p1)]) g = Math.max(g, computaGer(s.p1, visit) + 1);
-                    if (s.p2 && byId[String(s.p2)]) g = Math.max(g, computaGer(s.p2, visit) + 1);
-                    cacheGer[id] = g;
-                    return g;
-                };
-                sims.forEach(s => { geracaoDe[String(s.id)] = computaGer(s.id); });
-                // Cônjuges: normaliza pela maior geração do par (evita casal em linhas diferentes)
-                let mudou = true, guard = 0;
-                while (mudou && guard < 5) {
-                    mudou = false; guard++;
-                    sims.forEach(s => {
-                        if (!s.spouse) return;
-                        const a = geracaoDe[String(s.id)] || 0;
-                        const b = geracaoDe[String(s.spouse)] || 0;
-                        const g = Math.max(a, b);
-                        if (a !== g) { geracaoDe[String(s.id)] = g; mudou = true; }
-                        if (b !== g) { geracaoDe[String(s.spouse)] = g; mudou = true; }
-                    });
-                }
-
-                // 2) Y-alvo por geração = min(Y) dos nós dessa geração
-                //    (mantém a árvore o mais compacta possível, sem alterar a ordem geral).
-                const yMinGer = {};
-                Object.entries(simPos).forEach(([nodeId, pos]) => {
-                    const rid = pos.realId || nodeId.split(/[@#]/)[0];
-                    const g = geracaoDe[String(rid)];
-                    if (g === undefined) return;
-                    if (yMinGer[g] === undefined || pos.y < yMinGer[g]) yMinGer[g] = pos.y;
-                });
-                // Garante que gerações mais novas ficam abaixo de gerações mais velhas.
-                const gersOrd = Object.keys(yMinGer).map(Number).sort((a,b)=>a-b);
-                for (let i = 1; i < gersOrd.length; i++) {
-                    const gAtual = gersOrd[i], gAnt = gersOrd[i-1];
-                    const minPermitido = yMinGer[gAnt] + NODE_H + V_GAP;
-                    if (yMinGer[gAtual] < minPermitido) yMinGer[gAtual] = minPermitido;
-                }
-                // 3) Snap Y em todos os simPos
-                Object.entries(simPos).forEach(([nodeId, pos]) => {
-                    const rid = pos.realId || nodeId.split(/[@#]/)[0];
-                    const g = geracaoDe[String(rid)];
-                    if (g !== undefined && yMinGer[g] !== undefined) pos.y = yMinGer[g];
-                });
-                // Snap Y dos unions (fica na mesma linha do casal)
-                Object.entries(unionPos).forEach(([uk, pos]) => {
-                    const u = units[uk];
-                    if (!u) return;
-                    const g = Math.max.apply(null, u.parents.map(p => geracaoDe[String(p)] || 0));
-                    if (yMinGer[g] !== undefined) pos.y = yMinGer[g];
-                });
-                // Snap Y das sibling bars (metade do caminho até a próxima geração)
-                Object.entries(sibBarPos).forEach(([uk, pos]) => {
-                    const u = units[uk];
-                    if (!u) return;
-                    const gPai = Math.max.apply(null, u.parents.map(p => geracaoDe[String(p)] || 0));
-                    const gFilho = gPai + 1;
-                    if (yMinGer[gPai] !== undefined && yMinGer[gFilho] !== undefined) {
-                        pos.y = yMinGer[gPai] + (yMinGer[gFilho] - yMinGer[gPai]) / 2;
-                    }
-                });
-
-                // 4) Casais lado a lado no mesmo Y (garantia extra)
+                // Casais lado a lado no mesmo Y do union.
+                // Exceção: se um dos parceiros é um hub Sim (múltiplos relacionamentos),
+                // ele fica UMA linha acima; não podemos forçá-lo para a linha do parceiro.
                 Object.values(units).forEach(u => {
                     if (u.type !== 'couple') return;
                     const [aId, bId] = u.parents;
+                    const aIsHub = hubSims.has(String(aId));
+                    const bIsHub = hubSims.has(String(bId));
+                    if (aIsHub || bIsHub) return; // hub cuida do próprio posicionamento
                     const aKey = nodeIdFor(aId, u.key), bKey = nodeIdFor(bId, u.key);
                     const pa = simPos[aKey], pb = simPos[bKey], pu = unionPos[u.key];
                     if (!pa || !pb || !pu) return;
-                    // Y idêntico ao union
                     pa.y = pu.y; pb.y = pu.y;
-                    // X simétrico em torno do union (mantém o centro atual)
                     const cx = pu.x;
                     pa.x = cx - (NODE_W + COUPLE_GAP) / 2;
                     pb.x = cx + (NODE_W + COUPLE_GAP) / 2;
                 });
-
-                // 5) Filho único: centraliza X abaixo do pai/união
+                // Filho único: centraliza X abaixo do pai/união
                 Object.values(units).forEach(u => {
                     if (u.children.length !== 1) return;
-                    if (sibBarPos[u.key]) return; // já tem barra de irmandade
+                    if (sibBarPos[u.key]) return;
                     const cid = u.children[0];
                     const ck = nodeIdFor(cid, u.key);
                     const pc = simPos[ck];
-                    if (!pc) return;
                     const pu = unionPos[u.key];
-                    if (!pu) return;
+                    if (!pc || !pu) return;
                     pc.x = pu.x;
                 });
-            } catch(e) { console.warn('snap layout árvore falhou (ignorado):', e); }
+            } catch(e) { console.warn('snap mínimo de casais falhou (ignorado):', e); }
+
 
             // ============================================================
             // 7. Elementos Cytoscape
@@ -7916,11 +7906,21 @@ let edgesArray = [];
                 }
             });
 
-            // Edges hub -> uniões (modo 6)
+            // Edges hub -> uniões (modo 6) — top-level e internos
             hubGroups.forEach(h => {
                 h.memberUnits.forEach(uk => {
                     if (units[uk].type === 'couple' && unionPos[uk]) {
                         elements.push({ data: { id: 'e_hub_' + h.hubSim + '_' + uk, source: String(h.hubSim), target: 'u_' + uk, kind: 'hub' } });
+                    } else if (units[uk].type === 'single' && unionPos[uk]) {
+                        // Hub com relacionamento solo (parceiro NPC / sem cônjuge cadastrado): liga direto ao próprio hub
+                        // Não desenha nada aqui — só o edge para couples faz sentido visualmente.
+                    }
+                });
+            });
+            Object.entries(hubGroupsInternal).forEach(([hubSim, unionList]) => {
+                unionList.forEach(uk => {
+                    if (units[uk].type === 'couple' && unionPos[uk]) {
+                        elements.push({ data: { id: 'e_hubi_' + hubSim + '_' + uk, source: String(hubSim), target: 'u_' + uk, kind: 'hub' } });
                     }
                 });
             });
@@ -8001,6 +8001,17 @@ let edgesArray = [];
             //   em comum na base), desenha uma linha laranja entre eles.
             (function _sibling_links(){
                 const emittedSL = new Set();
+                // Pré-calcula: para cada Sim, o conjunto de unidades onde ele aparece como filho.
+                // Se dois Sims já dividem alguma unidade (mesmos pais na base), a barra de
+                // irmandade normal já os conecta — não desenhamos a linha laranja extra,
+                // que atravessava a árvore e causava cruzamentos indevidos.
+                const childUnitsBySim = {};
+                Object.values(units).forEach(u => {
+                    (u.children||[]).forEach(cid => {
+                        const k = String(cid);
+                        (childUnitsBySim[k] = childUnitsBySim[k] || new Set()).add(u.key);
+                    });
+                });
                 sims.forEach(s => {
                     const list = Array.isArray(s.irmaos) ? s.irmaos : [];
                     list.forEach(otherId => {
@@ -8009,6 +8020,13 @@ let edgesArray = [];
                         if (!byId[b]) return;
                         const key = [a,b].sort().join('|');
                         if (emittedSL.has(key)) return;
+                        // Pula quando já são irmãos "de verdade" (mesma unidade familiar).
+                        const ua = childUnitsBySim[a], ub = childUnitsBySim[b];
+                        if (ua && ub) {
+                            let compart = false;
+                            ua.forEach(k => { if (ub.has(k)) compart = true; });
+                            if (compart) return;
+                        }
                         emittedSL.add(key);
                         const aNode = Object.keys(simPos).find(k => simPos[k].realId === a);
                         const bNode = Object.keys(simPos).find(k => simPos[k].realId === b);
@@ -8552,7 +8570,8 @@ function verificarSessaoDrive() {
     if (!accessToken) {
         // Ainda não conectou nesta sessão/aba — não é um erro, é só o primeiro passo de cada visita.
         // Se o usuário já fechou este aviso antes, respeita a escolha (aviso de expiração continua aparecendo).
-        if (localStorage.getItem('gdrive_hint_dismissed') === '1') { banner.style.display = 'none'; return; }
+        // Dismissal fica só na sessão: banner reaparece ao atualizar a página.
+        if (sessionStorage.getItem('gdrive_hint_dismissed') === '1') { banner.style.display = 'none'; return; }
         if (textoEl) textoEl.innerHTML = '🔗 Conecte sua conta do Google para sincronizar esta família com a Nuvem.';
         if (btnEl) btnEl.innerText = 'Conectar conta do Google';
         banner.style.display = 'flex';
@@ -8575,7 +8594,9 @@ function fecharBannerDrive() {
     // Fechamento manual pelo usuário — só afeta o aviso de "conecte sua conta"
     // (o aviso de expiração vai reaparecer da próxima vez que o token estiver perto de expirar,
     // porque é uma situação urgente que a pessoa precisa ver).
-    try { localStorage.setItem('gdrive_hint_dismissed', '1'); } catch(e) {}
+    try { sessionStorage.setItem('gdrive_hint_dismissed', '1'); } catch(e) {}
+    // Limpa flag antiga que ficava presa em localStorage e nunca reaparecia.
+    try { localStorage.removeItem('gdrive_hint_dismissed'); } catch(e) {}
     let banner = document.getElementById('banner-drive-expirado');
     if (banner) banner.style.display = 'none';
 }
@@ -13560,6 +13581,742 @@ function atualizarIndicadorMemoria() {
   function init(){ initFab(); atualizarBotaoUndo(); injetarCardCriar(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+})();
+</script>
+
+
+<!-- ============================================================ -->
+<!-- SimStoria v54.27 — extras: 127 (posições árvore), 42 (dirty  -->
+<!-- guard), 74 (toast undo), 80 (highlight livro), 83 (inline    -->
+<!-- edit + rename Natureza→Tipo de Sim). Coesos num único IIFE.  -->
+<!-- ============================================================ -->
+<script>
+(function(){
+  'use strict';
+  var V = 'v54.27';
+  try { console.log('[SimStoria ' + V + '] extras carregados'); } catch(_){}
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function projKey(){
+    try{
+      var el = document.getElementById('familia-ativa-nome');
+      var n = el && el.textContent ? el.textContent.trim() : '';
+      return 'simstoria:posArvore:' + (n || 'default');
+    } catch(_){ return 'simstoria:posArvore:default'; }
+  }
+  function safeSalvar(){ try { if (typeof salvarTudo==='function') salvarTudo(); } catch(_){} }
+  function reRenderAll(){
+    ['renderTree','renderGenList','renderIaSimList','renderLivroComFiltro','renderMetas','renderConfig','renderDash'].forEach(function(fn){
+      try { if (typeof window[fn]==='function') window[fn](); } catch(_){}
+    });
+  }
+
+  // =========================================================
+  // CSS
+  // =========================================================
+  (function injectCss(){
+    if (document.getElementById('ss-v5427-css')) return;
+    var st = document.createElement('style');
+    st.id = 'ss-v5427-css';
+    st.textContent = [
+      '.ss-highlight { background: linear-gradient(transparent 55%, var(--cozy-gold-soft, #f0d97a) 55%); padding: 0 2px; border-radius: 3px; font-weight: 700; color: inherit; }',
+      '.ss-inline-edit.open { outline: 2px dashed #d4af37; outline-offset:2px; border-radius:8px; }',
+      '.ss-inline-pencil { display:inline-block; margin-left:6px; opacity:.35; cursor:pointer; font-size:12px; transition: opacity .15s; user-select:none; }',
+      '.profile-field:hover .ss-inline-pencil { opacity:.95; }',
+      '.ss-inline-editor { margin-top:8px; display:flex; flex-direction:column; gap:6px; }',
+      '.ss-inline-editor select, .ss-inline-editor input, .ss-inline-editor textarea { font-size:12px; padding:6px 8px; border-radius:8px; border:1px solid #d4af37; font-family:inherit; width:100%; box-sizing:border-box; }',
+      '.ss-inline-actions { display:flex; gap:6px; flex-wrap:wrap; }',
+      '.ss-inline-actions button { border:0; border-radius:8px; padding:5px 10px; font-weight:700; cursor:pointer; font-size:11px; font-family:inherit; }',
+      '.ss-btn-save { background: var(--ts4-green, #7fb069); color:#fff; }',
+      '.ss-btn-cancel { background:#eee; color:#555; }',
+      '.ss-snippet { background:#fffaf0; border:1px dashed #d4af37; border-radius:8px; padding:6px 10px; margin-bottom:6px; font-size:12px; color:#5a3a1a; line-height:1.45; }'
+    ].join('\n');
+    document.head.appendChild(st);
+  })();
+
+  // =========================================================
+  // 74 — Toast com "Desfazer"
+  // =========================================================
+  var _toastHostId = 'ss-toast-undo-host';
+  function ensureToastHost(){
+    var h = document.getElementById(_toastHostId);
+    if (h) return h;
+    h = document.createElement('div');
+    h.id = _toastHostId;
+    h.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:100000;display:flex;flex-direction:column;gap:10px;pointer-events:none;';
+    document.body.appendChild(h);
+    return h;
+  }
+  window.mostrarToastUndo = function(opts){
+    opts = opts || {};
+    var mensagem = opts.mensagem || 'Ação executada';
+    var duracao = opts.duracao || 5000;
+    var onConfirm = opts.onConfirm || function(){};
+    var onUndo = opts.onUndo || function(){};
+    var host = ensureToastHost();
+
+    var el = document.createElement('div');
+    el.style.cssText = 'pointer-events:auto;min-width:260px;max-width:380px;background:#4a3b2a;color:#fff8e7;border-radius:14px;padding:12px 14px 14px;box-shadow:0 10px 28px rgba(0,0,0,.28);font-family:Nunito,Quicksand,sans-serif;font-size:13px;position:relative;overflow:hidden;';
+    el.innerHTML =
+      '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<div style="flex:1;line-height:1.35;">'+esc(mensagem)+'</div>' +
+        '<button data-act="undo" style="background:#f0d97a;color:#4a3b2a;border:0;border-radius:10px;padding:6px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">Desfazer</button>' +
+        '<button data-act="close" title="Fechar" style="background:transparent;border:0;color:#f6ecd6;font-size:16px;cursor:pointer;padding:2px 4px;">×</button>' +
+      '</div>' +
+      '<div class="ss-toast-bar" style="position:absolute;left:0;bottom:0;height:3px;background:#f0d97a;width:100%;transform-origin:left;transition:transform '+duracao+'ms linear;"></div>';
+    host.appendChild(el);
+
+    var done = false;
+    var t = setTimeout(function(){ finish(false); }, duracao);
+    requestAnimationFrame(function(){
+      var bar = el.querySelector('.ss-toast-bar');
+      if (bar) bar.style.transform = 'scaleX(0)';
+    });
+
+    function finish(undone){
+      if (done) return; done = true;
+      clearTimeout(t);
+      try { if (undone) onUndo(); else onConfirm(); } catch(e){ console.warn('[toastUndo]', e); }
+      el.style.transition = 'opacity .2s';
+      el.style.opacity = '0';
+      setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 220);
+    }
+    el.querySelector('[data-act="undo"]').addEventListener('click', function(){ finish(true); });
+    el.querySelector('[data-act="close"]').addEventListener('click', function(){ finish(false); });
+  };
+
+  // ---- deletarSim (com restauração completa) ----
+  window.deletarSim = function(){
+    var id = window.currentSimId;
+    if (!id || !window.db || !db.sims) return;
+    var idx = db.sims.findIndex(function(x){ return String(x.id)===String(id); });
+    if (idx < 0) return;
+    var s = db.sims[idx];
+    var snapshot = {
+      sim: JSON.parse(JSON.stringify(s)),
+      idx: idx,
+      linksP1: db.sims.filter(function(x){ return String(x.p1)===String(id); }).map(function(x){ return x.id; }),
+      linksP2: db.sims.filter(function(x){ return String(x.p2)===String(id); }).map(function(x){ return x.id; }),
+      linksIrmaos: db.sims.filter(function(x){ return (x.irmaos||[]).some(function(z){ return String(z)===String(id); }); }).map(function(x){ return x.id; }),
+      conjugeId: s.spouse || ''
+    };
+    if (s.spouse){
+      var conj = db.sims.find(function(x){ return String(x.id)===String(s.spouse); });
+      if (conj) conj.spouse = '';
+    }
+    db.sims.splice(idx, 1);
+    db.sims.forEach(function(f){
+      if (String(f.p1)===String(id)) f.p1='';
+      if (String(f.p2)===String(id)) f.p2='';
+      if (f.irmaos) f.irmaos = f.irmaos.filter(function(z){ return String(z)!==String(id); });
+    });
+    try { if (typeof fecharModal==='function') fecharModal(); } catch(_){}
+    reRenderAll();
+
+    window.mostrarToastUndo({
+      mensagem: '🗑️ ' + (snapshot.sim.nome||'Sim') + ' excluído(a).',
+      duracao: 5000,
+      onConfirm: function(){ safeSalvar(); },
+      onUndo: function(){
+        db.sims.splice(Math.min(snapshot.idx, db.sims.length), 0, snapshot.sim);
+        snapshot.linksP1.forEach(function(cid){ var c=db.sims.find(function(x){return String(x.id)===String(cid);}); if(c) c.p1 = snapshot.sim.id; });
+        snapshot.linksP2.forEach(function(cid){ var c=db.sims.find(function(x){return String(x.id)===String(cid);}); if(c) c.p2 = snapshot.sim.id; });
+        snapshot.linksIrmaos.forEach(function(cid){ var c=db.sims.find(function(x){return String(x.id)===String(cid);}); if(c){ c.irmaos = c.irmaos || []; if(c.irmaos.indexOf(snapshot.sim.id)<0) c.irmaos.push(snapshot.sim.id); } });
+        if (snapshot.conjugeId){ var conj2 = db.sims.find(function(x){ return String(x.id)===String(snapshot.conjugeId); }); if (conj2) conj2.spouse = snapshot.sim.id; }
+        safeSalvar();
+        reRenderAll();
+      }
+    });
+  };
+
+  // ---- deletarLinhaLivro ----
+  window.deletarLinhaLivro = function(index){
+    if (!window.db || typeof db.historia !== 'string') return;
+    var linhas = db.historia.split('\n').filter(function(l){ return l.trim()!==''; });
+    if (index < 0 || index >= linhas.length) return;
+    var removida = linhas[index];
+    linhas.splice(index, 1);
+    db.historia = linhas.join('\n');
+    try { renderLivroComFiltro(); } catch(_){}
+    window.mostrarToastUndo({
+      mensagem: '🗑️ Registro removido do Livro.',
+      duracao: 5000,
+      onConfirm: function(){ safeSalvar(); },
+      onUndo: function(){
+        var atuais = db.historia.split('\n').filter(function(l){ return l.trim()!==''; });
+        atuais.splice(Math.min(index, atuais.length), 0, removida);
+        db.historia = atuais.join('\n');
+        safeSalvar();
+        try { renderLivroComFiltro(); } catch(_){}
+      }
+    });
+  };
+
+  // ---- desistirMeta ----
+  window.desistirMeta = function(i){
+    if (!window.db || !db.metas_pendentes) return;
+    var meta = db.metas_pendentes[i];
+    if (!meta) return;
+    var copia = JSON.parse(JSON.stringify(meta));
+    db.metas_pendentes.splice(i, 1);
+    try { renderMetas(); } catch(_){}
+    window.mostrarToastUndo({
+      mensagem: '🏳️ Meta abandonada.',
+      duracao: 5000,
+      onConfirm: function(){
+        var nome = '';
+        try { nome = (copia && copia.simId && typeof _nomeSimPorId==='function') ? _nomeSimPorId(copia.simId) : ''; } catch(_){}
+        var sufixo = nome ? ' (' + nome + ')' : '';
+        db.historia = (db.historia||'') + '\n[' + new Date().toLocaleDateString('pt-BR') + '] [META-DESISTIDA] Meta abandonada: ' + (copia.texto || '') + sufixo;
+        safeSalvar();
+        try { renderLivroComFiltro(); } catch(_){}
+      },
+      onUndo: function(){
+        db.metas_pendentes.splice(Math.min(i, db.metas_pendentes.length), 0, copia);
+        safeSalvar();
+        try { renderMetas(); } catch(_){}
+      }
+    });
+  };
+
+  // ---- deletarRoleta ----
+  window.deletarRoleta = function(key){
+    if (!window.db || !db.config || !(key in db.config)) return;
+    var backup = JSON.parse(JSON.stringify(db.config[key]));
+    delete db.config[key];
+    try { renderConfig(); renderDash(); } catch(_){}
+    window.mostrarToastUndo({
+      mensagem: '🗑️ Roleta "'+key+'" excluída.',
+      duracao: 5000,
+      onConfirm: function(){ safeSalvar(); },
+      onUndo: function(){ db.config[key] = backup; safeSalvar(); try { renderConfig(); renderDash(); } catch(_){} }
+    });
+  };
+
+  // =========================================================
+  // 42 — Guard de dirty ao trocar de aba
+  // =========================================================
+  window.__formDirty = { active:false, snapshot:null, simNome:'' };
+
+  function snapshotSimForm(){
+    var ids = ['e-nome','e-status','e-crush','e-tracos','e-aspiracao','e-extra','e-oculto','e-p1','e-p2','e-spouse','e-rel','e-fase'];
+    var acc = {};
+    ids.forEach(function(id){ var el=document.getElementById(id); if(el) acc[id] = el.value; });
+    var tr = document.getElementById('e-traicao'); if(tr) acc.traicao = !!tr.checked;
+    var np = document.getElementById('e-isNpc'); if(np) acc.isNpc = !!np.checked;
+    return JSON.stringify(acc);
+  }
+  function updateDirty(){
+    var edit = document.getElementById('mode-edit');
+    var modal = document.getElementById('modal-sim');
+    if (!edit || !modal || edit.style.display==='none' || modal.style.display==='none') {
+      window.__formDirty.active = false; return;
+    }
+    var current = snapshotSimForm();
+    window.__formDirty.active = (current !== window.__formDirty.snapshot);
+  }
+
+  var _origToggleEdit = window.toggleEditMode;
+  window.toggleEditMode = function(isEdit){
+    var r = _origToggleEdit ? _origToggleEdit.apply(this, arguments) : undefined;
+    setTimeout(function(){
+      if (isEdit){
+        window.__formDirty.snapshot = snapshotSimForm();
+        window.__formDirty.active = false;
+        var s = null;
+        try { s = (window.db && window.currentSimId) ? db.sims.find(function(x){return String(x.id)===String(window.currentSimId);}) : null; } catch(_){}
+        window.__formDirty.simNome = s ? (s.nome||'este Sim') : 'novo Sim';
+      } else {
+        window.__formDirty.active = false;
+      }
+    }, 30);
+    return r;
+  };
+
+  var _origSalvarSim = window.salvarSim;
+  if (typeof _origSalvarSim === 'function'){
+    window.salvarSim = function(){
+      window.__formDirty.active = false;
+      return _origSalvarSim.apply(this, arguments);
+    };
+  }
+  var _origFecharModal = window.fecharModal;
+  if (typeof _origFecharModal === 'function'){
+    window.fecharModal = function(){
+      window.__formDirty.active = false;
+      return _origFecharModal.apply(this, arguments);
+    };
+  }
+
+  document.addEventListener('input', function(ev){
+    var modal = document.getElementById('modal-sim');
+    if (!modal || modal.style.display==='none') return;
+    if (!modal.contains(ev.target)) return;
+    var edit = document.getElementById('mode-edit');
+    if (!edit || edit.style.display==='none') return;
+    updateDirty();
+  }, true);
+  document.addEventListener('change', function(ev){
+    var modal = document.getElementById('modal-sim');
+    if (!modal || modal.style.display==='none') return;
+    if (!modal.contains(ev.target)) return;
+    updateDirty();
+  }, true);
+
+  var _origSwitchTab = window.switchTab;
+  if (typeof _origSwitchTab === 'function'){
+    window.switchTab = function(id){
+      var self = this;
+      var inlineOpen = !!document.querySelector('.ss-inline-edit.open');
+      if (window.__formDirty.active || inlineOpen){
+        var nome = window.__formDirty.simNome || 'este Sim';
+        var msg = inlineOpen
+          ? '✏️ Há um campo do perfil sendo editado. Salve ou cancele antes de trocar de aba.'
+          : '✏️ Você tem alterações não salvas em '+ nome +'.';
+        var host = ensureToastHost();
+        var el = document.createElement('div');
+        el.style.cssText = 'pointer-events:auto;min-width:280px;max-width:380px;background:#7a5a1a;color:#fff8e7;border-radius:14px;padding:12px 14px;box-shadow:0 10px 28px rgba(0,0,0,.3);font-family:Nunito,Quicksand,sans-serif;font-size:13px;';
+        el.innerHTML =
+          '<div style="line-height:1.35;margin-bottom:10px;">'+esc(msg)+'</div>' +
+          '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">' +
+            (inlineOpen ? '' :
+              '<button data-act="descartar" style="background:#c97064;color:#fff;border:0;border-radius:10px;padding:6px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">Descartar e sair</button>') +
+            '<button data-act="ficar" style="background:#f0d97a;color:#4a3b2a;border:0;border-radius:10px;padding:6px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">Continuar editando</button>' +
+          '</div>';
+        host.appendChild(el);
+        var close = function(){ if(el.parentNode) el.parentNode.removeChild(el); };
+        var descartar = el.querySelector('[data-act="descartar"]');
+        if (descartar) descartar.addEventListener('click', function(){
+          window.__formDirty.active = false;
+          try { if (typeof fecharModal==='function') fecharModal(); } catch(_){}
+          close();
+          _origSwitchTab.call(self, id);
+        });
+        el.querySelector('[data-act="ficar"]').addEventListener('click', close);
+        return;
+      }
+      return _origSwitchTab.apply(self, arguments);
+    };
+  }
+
+  // =========================================================
+  // 127 — Persistência de posições dos cards na árvore
+  // =========================================================
+  function loadPositionsFromLS(){
+    try { var raw = localStorage.getItem(projKey()); return raw ? JSON.parse(raw) : {}; }
+    catch(_){ return {}; }
+  }
+  function savePositionsToLS(map){
+    try { localStorage.setItem(projKey(), JSON.stringify(map||{})); } catch(_){}
+  }
+  function getPosMap(){
+    if (!window.db) return {};
+    if (!db.posicoesArvore || typeof db.posicoesArvore!=='object') db.posicoesArvore = {};
+    var ls = loadPositionsFromLS();
+    Object.keys(ls).forEach(function(k){ if (!(k in db.posicoesArvore)) db.posicoesArvore[k] = ls[k]; });
+    return db.posicoesArvore;
+  }
+  function setPos(nodeId, pos){
+    var m = getPosMap();
+    m[nodeId] = { x: pos.x, y: pos.y };
+    savePositionsToLS(m);
+    safeSalvar();
+  }
+  function clearAllPos(){
+    if (window.db) db.posicoesArvore = {};
+    savePositionsToLS({});
+    safeSalvar();
+  }
+
+  var _cyPosWired = null;
+  function wireCyPositions(){
+    var cy = window.cyTree;
+    if (!cy || cy === _cyPosWired) return;
+    _cyPosWired = cy;
+
+    // Restaura
+    var map = getPosMap();
+    var restored = 0;
+    cy.nodes().forEach(function(n){
+      var d = n.data();
+      if (d.kind !== 'sim' && d.kind !== 'npc') return;
+      var p = map[n.id()];
+      if (p && typeof p.x==='number' && typeof p.y==='number'){
+        n.position({ x: p.x, y: p.y });
+        restored++;
+      }
+    });
+    if (restored > 0){
+      try { cy.fit(undefined, 60); } catch(_){}
+    }
+
+    // Salva ao soltar
+    cy.on('free', 'node', function(evt){
+      var n = evt.target;
+      var d = n.data();
+      if (d.kind !== 'sim' && d.kind !== 'npc') return;
+      var p = n.position();
+      if (!p || typeof p.x!=='number') return;
+      setPos(n.id(), p);
+    });
+  }
+  setInterval(wireCyPositions, 800);
+
+  var _origRenderTree = window.renderTree;
+  if (typeof _origRenderTree === 'function'){
+    window.renderTree = function(){
+      var r = _origRenderTree.apply(this, arguments);
+      _cyPosWired = null;
+      setTimeout(wireCyPositions, 120);
+      return r;
+    };
+  }
+
+  // Botão "Redefinir layout"
+  function injectResetLayoutBtn(){
+    if (document.getElementById('ss-btn-reset-layout')) return;
+    var btnCentralizar = document.querySelector('button[onclick*="centralizarArvore"]');
+    if (!btnCentralizar || !btnCentralizar.parentNode) return;
+    var btn = document.createElement('button');
+    btn.id = 'ss-btn-reset-layout';
+    btn.className = 'btn-main btn-sec';
+    btn.style.cssText = 'width:auto; margin:0;';
+    btn.title = 'Restaurar layout automático dos cards da árvore';
+    btn.innerHTML = '<span class="lbl-full">↺ Redefinir layout</span><span class="lbl-short">↺ Layout</span>';
+    btn.addEventListener('click', function(){
+      var snapshot = JSON.parse(JSON.stringify(getPosMap()));
+      clearAllPos();
+      try { if (typeof renderTree==='function') renderTree(); } catch(_){}
+      window.mostrarToastUndo({
+        mensagem: '↺ Layout dos cards redefinido.',
+        duracao: 5000,
+        onConfirm: function(){},
+        onUndo: function(){
+          if (window.db) db.posicoesArvore = snapshot;
+          savePositionsToLS(snapshot);
+          safeSalvar();
+          try { if (typeof renderTree==='function') renderTree(); } catch(_){}
+        }
+      });
+    });
+    btnCentralizar.parentNode.insertBefore(btn, btnCentralizar.nextSibling);
+  }
+  setInterval(injectResetLayoutBtn, 1500);
+
+  // =========================================================
+  // 80 — Destaque de resultados na busca do Livro
+  // =========================================================
+  var _origRenderLivro = window.renderLivroComFiltro;
+  if (typeof _origRenderLivro === 'function'){
+    window.renderLivroComFiltro = function(){
+      var r = _origRenderLivro.apply(this, arguments);
+      try { destacarBuscaLivro(); } catch(e){ console.warn('[ss highlight]', e); }
+      return r;
+    };
+  }
+
+  function normalize(s){
+    try { return String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase(); }
+    catch(_){ return String(s||'').toLowerCase(); }
+  }
+  function normLen(ch){
+    try { return ch.normalize('NFD').replace(/\p{Diacritic}/gu, '').length; }
+    catch(_){ return 1; }
+  }
+  // Mapeia índice no texto normalizado -> índice no original
+  function mapPos(orig, normIdx){
+    var n = 0;
+    for (var i = 0; i < orig.length; i++){
+      var l = normLen(orig[i]);
+      if (n + l > normIdx) return i;
+      n += l;
+      if (n === normIdx) return i+1;
+    }
+    return orig.length;
+  }
+
+  function destacarBuscaLivro(){
+    var termo = (window.filtroTextoLivro || '').trim();
+    if (!termo) return;
+    var container = document.getElementById('timeline-history');
+    if (!container) return;
+    var normTermo = normalize(termo);
+    if (!normTermo) return;
+    var alvo = container.querySelectorAll('.livro-item-texto');
+    alvo.forEach(function(box){
+      highlightTextNodes(box, normTermo);
+      var textLen = (box.textContent||'').length;
+      if (textLen > 400){
+        buildSnippet(box, normTermo);
+      }
+    });
+  }
+
+  function highlightTextNodes(root, normTermo){
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: function(n){
+        if (!n.nodeValue || !n.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+        var p = n.parentNode;
+        if (p && p.classList && p.classList.contains('ss-highlight')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var nodes = [];
+    var cur;
+    while ((cur = walker.nextNode())) nodes.push(cur);
+    nodes.forEach(function(tn){
+      var txt = tn.nodeValue;
+      var norm = normalize(txt);
+      if (norm.indexOf(normTermo) < 0) return;
+      var out = [];
+      var i = 0;
+      while (i < norm.length){
+        var found = norm.indexOf(normTermo, i);
+        if (found < 0){
+          out.push({ text: txt.substring(mapPos(txt, i)), mark: false });
+          break;
+        }
+        var startOrig = mapPos(txt, found);
+        var endOrig = mapPos(txt, found + normTermo.length);
+        if (mapPos(txt, i) < startOrig){
+          out.push({ text: txt.substring(mapPos(txt, i), startOrig), mark: false });
+        }
+        out.push({ text: txt.substring(startOrig, endOrig), mark: true });
+        i = found + normTermo.length;
+      }
+      if (out.length === 0) return;
+      var frag = document.createDocumentFragment();
+      out.forEach(function(part){
+        if (part.mark){
+          var m = document.createElement('mark');
+          m.className = 'ss-highlight';
+          m.textContent = part.text;
+          frag.appendChild(m);
+        } else {
+          frag.appendChild(document.createTextNode(part.text));
+        }
+      });
+      tn.parentNode.replaceChild(frag, tn);
+    });
+  }
+
+  function buildSnippet(box, normTermo){
+    var full = box.textContent || '';
+    var normFull = normalize(full);
+    var idx = normFull.indexOf(normTermo);
+    if (idx < 0) return;
+    var start = Math.max(0, idx - 120);
+    var end = Math.min(normFull.length, idx + normTermo.length + 120);
+    var prefix = start > 0 ? '… ' : '';
+    var suffix = end < normFull.length ? ' …' : '';
+    var snippet = prefix + full.substring(mapPos(full, start), mapPos(full, end)) + suffix;
+
+    var snipEl = document.createElement('div');
+    snipEl.className = 'ss-snippet';
+    snipEl.textContent = snippet;
+    highlightTextNodes(snipEl, normTermo);
+
+    var toggle = document.createElement('button');
+    toggle.textContent = 'Ver completo ▾';
+    toggle.style.cssText = 'margin-left:6px;background:transparent;border:0;color:var(--ts4-blue,#0079C1);cursor:pointer;font-size:11px;font-weight:700;';
+    var opened = false;
+    box.style.display = 'none';
+    toggle.addEventListener('click', function(){
+      opened = !opened;
+      box.style.display = opened ? '' : 'none';
+      toggle.textContent = opened ? 'Ver resumo ▴' : 'Ver completo ▾';
+    });
+    snipEl.appendChild(toggle);
+    box.parentNode.insertBefore(snipEl, box);
+  }
+
+  // =========================================================
+  // 83 — Edição inline no perfil (view mode) + rename Natureza→Tipo de Sim
+  // =========================================================
+  var FASE_OPTIONS = [
+    ['recem_nascido','👶 Recém-nascido'],
+    ['bebe-colo','👶 Bebê de Colo'],
+    ['bebe','🍼 Bebê'],
+    ['crianca','🧒 Criança'],
+    ['adolescente','🧑 Adolescente'],
+    ['jovem-adulto','👨 Jovem Adulto'],
+    ['adulto','🧔 Adulto'],
+    ['idoso','👴 Idoso']
+  ];
+  var OCULTO_OPTIONS = [
+    ['humano','👤 Humano'],['vampiro','🧛 Vampiro'],['bruxo','🧙 Bruxo / Feiticeiro'],
+    ['lobisim','🐺 Lobisim'],['sereia','🧜 Sereia'],['alien','👽 Alien'],
+    ['fantasma','👻 Fantasma'],['robo','🤖 Servo / Robô'],['planta','🌱 PlantaSim'],['outro','✨ Outro']
+  ];
+
+  var INLINE_FIELDS = [
+    { id:'v-fase',      prop:'fase',      kind:'select',    options: FASE_OPTIONS, label:'Fase de Vida' },
+    { id:'v-oculto',    prop:'oculto',    kind:'select',    options: OCULTO_OPTIONS, label:'Tipo de Sim' },
+    { id:'v-tracos',    prop:'tracos',    kind:'text',      label:'Traços' },
+    { id:'v-aspiracao', prop:'aspiracao', kind:'aspiracao', label:'Aspiração' },
+    { id:'v-extra',     prop:'extra',     kind:'textarea',  label:'Anotações / História' }
+  ];
+
+  function findSim(){
+    if (!window.db || !window.currentSimId) return null;
+    return db.sims.find(function(x){ return String(x.id)===String(window.currentSimId); }) || null;
+  }
+  function getAspiracaoPool(){
+    try {
+      var comum = (typeof POOLS!=='undefined' && POOLS.aspiracoes) ? (POOLS.aspiracoes.comum || []) : [];
+      var extras = (window.db && db.custom && db.custom.aspiracoes) ? db.custom.aspiracoes : [];
+      var all = comum.concat(extras);
+      var seen = {}, out = [];
+      all.forEach(function(a){ if (!seen[a]){ seen[a]=1; out.push(a); } });
+      return out;
+    } catch(_){ return []; }
+  }
+
+  function decorateInlineFields(){
+    var modal = document.getElementById('modal-sim');
+    var view = document.getElementById('mode-view');
+    if (!modal || !view || modal.style.display==='none' || view.style.display==='none') return;
+    INLINE_FIELDS.forEach(function(f){
+      var span = document.getElementById(f.id);
+      if (!span) return;
+      var field = span.closest('.profile-field');
+      if (!field) return;
+      if (field.classList.contains('ss-inline-edit')) return;
+      field.classList.add('ss-inline-edit');
+      var pencil = document.createElement('span');
+      pencil.className = 'ss-inline-pencil';
+      pencil.textContent = '✎';
+      pencil.title = 'Editar rapidamente';
+      pencil.addEventListener('click', function(ev){
+        ev.stopPropagation();
+        openInlineEditor(field, span, f);
+      });
+      var strong = field.querySelector('strong');
+      if (strong) strong.appendChild(pencil); else field.appendChild(pencil);
+    });
+  }
+
+  function openInlineEditor(field, span, f){
+    if (field.querySelector('.ss-inline-editor')) return;
+    var sim = findSim();
+    if (!sim) return;
+    field.classList.add('open');
+    var oldDisplay = span.style.display;
+    span.style.display = 'none';
+
+    var wrap = document.createElement('div');
+    wrap.className = 'ss-inline-editor';
+    var input;
+
+    if (f.kind === 'select'){
+      input = document.createElement('select');
+      f.options.forEach(function(o){
+        var op = document.createElement('option'); op.value = o[0]; op.textContent = o[1];
+        input.appendChild(op);
+      });
+      input.value = sim[f.prop] || (f.options[0] && f.options[0][0]) || '';
+    } else if (f.kind === 'aspiracao'){
+      var pool = getAspiracaoPool();
+      input = document.createElement('select');
+      var opN = document.createElement('option'); opN.value=''; opN.textContent='— Nenhuma —';
+      input.appendChild(opN);
+      pool.forEach(function(a){ var op = document.createElement('option'); op.value=a; op.textContent=a; input.appendChild(op); });
+      if (sim.aspiracao && pool.indexOf(sim.aspiracao) < 0){
+        var opX = document.createElement('option'); opX.value=sim.aspiracao; opX.textContent=sim.aspiracao+' (personalizada)';
+        input.appendChild(opX);
+      }
+      input.value = sim.aspiracao || '';
+    } else if (f.kind === 'textarea'){
+      input = document.createElement('textarea');
+      input.rows = 4;
+      input.value = sim[f.prop] || '';
+      input.style.minHeight = '80px';
+      var autoResize = function(){
+        input.style.height = 'auto';
+        input.style.height = Math.min(400, input.scrollHeight + 4) + 'px';
+      };
+      input.addEventListener('input', autoResize);
+      setTimeout(autoResize, 20);
+    } else {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.value = sim[f.prop] || '';
+    }
+    wrap.appendChild(input);
+
+    var actions = document.createElement('div');
+    actions.className = 'ss-inline-actions';
+
+    if (f.kind === 'aspiracao'){
+      var srt = document.createElement('button');
+      srt.type='button'; srt.className='ss-btn-cancel';
+      srt.style.background = '#fbe4ec'; srt.style.color = '#7a5a1a';
+      srt.textContent = '🎲 Sortear';
+      srt.addEventListener('click', function(){
+        var pool2 = getAspiracaoPool();
+        if (!pool2.length) return;
+        var pick = pool2[Math.floor(Math.random()*pool2.length)];
+        var exists = Array.prototype.some.call(input.options, function(o){ return o.value===pick; });
+        if (!exists){ var op = document.createElement('option'); op.value=pick; op.textContent=pick; input.appendChild(op); }
+        input.value = pick;
+      });
+      actions.appendChild(srt);
+    }
+
+    var save = document.createElement('button');
+    save.type='button'; save.className='ss-btn-save'; save.textContent='💾 Salvar';
+    save.addEventListener('click', function(){
+      var v = input.value;
+      sim[f.prop] = v;
+      safeSalvar();
+      close();
+      // Log opcional para fase (importante)
+      if (f.prop === 'fase' && window.db){
+        var label = (FASE_OPTIONS.find(function(o){return o[0]===v;})||[])[1] || v;
+        var marc = (typeof _marcadorSim==='function')?_marcadorSim(sim.id):'';
+        db.historia = (db.historia||'') + '\n['+new Date().toLocaleDateString('pt-BR')+'] [FASES] '+(sim.nome||'Sim')+' agora está na fase: '+label + marc;
+        safeSalvar();
+        try { renderLivroComFiltro(); } catch(_){}
+      }
+      try { if (typeof abrirPerfil==='function') abrirPerfil(window.currentSimId); } catch(_){}
+      try { if (typeof renderTree==='function') renderTree(); } catch(_){}
+      try { if (typeof renderGenList==='function') renderGenList(); } catch(_){}
+      if (typeof showToast==='function') showToast('✓ '+f.label+' atualizado(a)!');
+    });
+
+    var cancel = document.createElement('button');
+    cancel.type='button'; cancel.className='ss-btn-cancel'; cancel.textContent='Cancelar';
+    cancel.addEventListener('click', close);
+
+    actions.appendChild(save);
+    actions.appendChild(cancel);
+    wrap.appendChild(actions);
+    field.appendChild(wrap);
+    setTimeout(function(){ try { input.focus(); if (input.select) input.select(); } catch(_){} }, 30);
+
+    function close(){
+      if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+      span.style.display = oldDisplay || '';
+      field.classList.remove('open');
+    }
+  }
+
+  var _origAbrirPerfil = window.abrirPerfil;
+  if (typeof _origAbrirPerfil === 'function'){
+    window.abrirPerfil = function(id){
+      var r = _origAbrirPerfil.apply(this, arguments);
+      setTimeout(decorateInlineFields, 40);
+      return r;
+    };
+  }
+  setInterval(function(){
+    var modal = document.getElementById('modal-sim');
+    var view = document.getElementById('mode-view');
+    if (modal && view && modal.style.display!=='none' && view.style.display!=='none'){
+      decorateInlineFields();
+    }
+  }, 1500);
+
 })();
 </script>
 
