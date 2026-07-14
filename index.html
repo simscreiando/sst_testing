@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-21-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54_22-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1304,6 +1304,13 @@
                 <!-- Modos 1-5 (vis-network) removidos: agora só usamos os modos Family Echo (Cytoscape) acima. -->
 
             </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; align-items:center;">
+                <button class="btn-main btn-sec" style="margin:0; width:auto; padding:8px 16px; font-size:12px; border-color:var(--cozy-accent,#7fb069); color:var(--cozy-accent,#7fb069); font-weight:bold;" onclick="document.getElementById('import-file').click()" title="Aceita backup .json do site ou export .json do mod SimStoria">📥 Importar Família</button>
+                <span style="font-size:11px; color:#7a6849; font-style:italic;">Aceita backup .json do site ou export do mod SimStoria.</span>
+            </div>
+
+
 
         </div><div id="tab-ia" class="tab-pane">
             <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 5px solid #ffc107;">
@@ -7479,7 +7486,7 @@ let edgesArray = [];
             const NODE_W = 150, NODE_H = 190;
             const H_GAP = 36;
             const COUPLE_GAP = 28;
-            const V_GAP = 110;
+            const V_GAP = 72;
             const HUB_GAP = 70;
             const SIB_BAR_GAP = 28; // distância do union até a barra de irmandade
             const PALETTE = ['#e3f2fd','#e8f5e9','#fff8e1','#fce4ec','#ede7f6','#fbe9e7','#e0f7fa','#f3e5f5'];
@@ -7979,28 +7986,6 @@ let edgesArray = [];
                 }
             });
 
-            // ── #110 EXTRA: arestas diretas p1→filho e p2→filho (com seta) ──
-            //   Reproduz o comportamento do v53 (vis-network) — cada filho
-            //   fica visivelmente ligado aos DOIS pais quando ambos existem.
-            (function _direct_parent_child(){
-                const emittedDP = new Set();
-                sims.forEach(child => {
-                    const cid = String(child.id);
-                    [child.p1, child.p2].forEach((pid, slot) => {
-                        if (!pid) return;
-                        const pKey = String(pid);
-                        if (!byId[pKey]) return;
-                        // encontra 1 nó do pai e 1 nó do filho já posicionados
-                        const parentNode = Object.keys(simPos).find(k => simPos[k].realId === pKey);
-                        const childNode  = Object.keys(simPos).find(k => simPos[k].realId === cid);
-                        if (!parentNode || !childNode) return;
-                        const eid = 'e_dp_' + pKey + '_' + cid + '_' + slot;
-                        if (emittedDP.has(eid)) return;
-                        emittedDP.add(eid);
-                        elements.push({ data: { id: eid, source: parentNode, target: childNode, kind: 'directParent' } });
-                    });
-                });
-            })();
 
             // ── #111 EXTRA: irmãos declarados (sim.irmaos[]) ──
             //   Recupera o comportamento do v53: quando dois sims estão
@@ -8198,12 +8183,6 @@ let edgesArray = [];
                         'width': 2, 'line-color': '#aaaacc', 'line-style': 'dashed',
                         'curve-style': 'taxi', 'taxi-direction': 'downward',
                         'target-arrow-shape': 'none'
-                    }},
-                    { selector: 'edge[kind = "directParent"]', style: {
-                        'width': 2, 'line-color': '#0079C1', 'line-opacity': 0.75,
-                        'curve-style': 'taxi', 'taxi-direction': 'downward',
-                        'taxi-turn': 30, 'taxi-turn-min-distance': 6,
-                        'target-arrow-shape': 'triangle', 'target-arrow-color': '#0079C1', 'arrow-scale': 0.9
                     }},
                     { selector: 'edge[kind = "siblingLink"]', style: {
                         'width': 2.5, 'line-color': '#FF8C00', 'line-opacity': 0.85,
@@ -11970,25 +11949,38 @@ function atualizarIndicadorMemoria() {
         <p id="import-mod-resumo" style="margin:0 0 12px 0; font-size:13px; color:var(--ts4-subtle-text, #666);">Análise concluída! Confira o que mudou no seu save.</p>
 
         <!-- Barra de pesquisa (funciona em todos os passos) -->
-        <div style="position:relative; margin:0 0 10px 0;">
-            <input type="text" id="import-mod-search"
-                placeholder="🔍 Buscar Sim por nome ou sobrenome..."
-                autocomplete="off"
-                style="width:100%; padding:9px 34px 9px 12px; box-sizing:border-box;
-                       border:1.5px solid var(--ts4-border, #e0dccb); border-radius:10px;
-                       background:var(--ts4-secondary-bg, #fff8ec); font-size:13px;
-                       color:var(--ts4-text, #4a3b2a); outline:none;">
-            <button type="button" id="import-mod-search-clear"
-                onclick="(function(){var i=document.getElementById('import-mod-search');i.value='';i.dispatchEvent(new Event('input'));i.focus();})();"
-                title="Limpar busca"
-                style="position:absolute; right:6px; top:50%; transform:translateY(-50%);
-                       background:transparent; border:none; font-size:16px; cursor:pointer;
-                       color:var(--ts4-subtle-text,#888); display:none;">✖</button>
+        <div style="margin:0 0 10px 0;">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <div style="position:relative; flex:1 1 240px; min-width:200px;">
+                    <input type="text" id="import-mod-search"
+                        placeholder="🔍 Buscar Sim por nome ou sobrenome..."
+                        autocomplete="off"
+                        style="width:100%; padding:9px 34px 9px 12px; box-sizing:border-box;
+                               border:1.5px solid var(--ts4-border, #e0dccb); border-radius:10px;
+                               background:var(--ts4-secondary-bg, #fff8ec); font-size:13px;
+                               color:var(--ts4-text, #4a3b2a); outline:none;">
+                    <button type="button" id="import-mod-search-clear"
+                        onclick="(function(){var i=document.getElementById('import-mod-search');i.value='';i.dispatchEvent(new Event('input'));i.focus();})();"
+                        title="Limpar busca"
+                        style="position:absolute; right:6px; top:50%; transform:translateY(-50%);
+                               background:transparent; border:none; font-size:16px; cursor:pointer;
+                               color:var(--ts4-subtle-text,#888); display:none;">✖</button>
+                </div>
+                <label style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ts4-subtle-text,#666);">
+                    <span>🔠 Ordenar:</span>
+                    <select id="import-mod-sort" style="font-size:12px; padding:6px 8px; border-radius:8px; border:1.5px solid var(--ts4-border,#e0dccb); background:var(--ts4-secondary-bg,#fff8ec); color:var(--ts4-text,#4a3b2a);">
+                        <option value="padrao">Padrão</option>
+                        <option value="az">A → Z</option>
+                        <option value="za">Z → A</option>
+                    </select>
+                </label>
+            </div>
             <div id="import-mod-search-empty" style="display:none; padding:14px; text-align:center;
                  font-size:12px; color:var(--ts4-subtle-text,#888); font-style:italic;">
                 Nenhum Sim encontrado com esse nome. 🌱
             </div>
         </div>
+
 
         <!-- ================= PASSO 1 ================= -->
         <div id="import-mod-step1">
@@ -12917,28 +12909,40 @@ function atualizarIndicadorMemoria() {
             .toLowerCase().trim();
     }
 
+    function _isVisivel(el) {
+        return !!el && getComputedStyle(el).display !== 'none';
+    }
+
+    function _passoAtualImportMod() {
+        if (_isVisivel(document.getElementById('import-mod-step1'))) return 1;
+        if (_isVisivel(document.getElementById('import-mod-step2'))) return 2;
+        if (_isVisivel(document.getElementById('import-mod-step3'))) return 3;
+        return 1;
+    }
+
     function _linhasImportModVisiveis() {
         // Retorna array de {row, texto} para cada linha de Sim visível na tela.
         const linhas = [];
-        // Passo 1 — novidades (cada <div> filho direto que representa 1 Sim)
-        const nov = document.getElementById('import-mod-aba-novidades');
-        if (nov && nov.offsetParent !== null) {
-            nov.querySelectorAll(':scope > div').forEach(row => {
-                // ignora cabeçalhos (usam só <strong> sem checkbox)
-                if (row.querySelector('input[type="checkbox"]')) linhas.push({ row, texto: row.textContent });
-            });
+        const passo = _passoAtualImportMod();
+        if (passo === 1) {
+            const nov = document.getElementById('import-mod-aba-novidades');
+            if (_isVisivel(nov)) {
+                nov.querySelectorAll(':scope > div').forEach(row => {
+                    // ignora cabeçalhos (usam só <strong> sem checkbox)
+                    if (row.querySelector('input[type="checkbox"]')) linhas.push({ row, texto: row.textContent });
+                });
+            }
+            const ina = document.getElementById('import-mod-aba-inalterados');
+            if (_isVisivel(ina)) {
+                ina.querySelectorAll(':scope > label').forEach(row => linhas.push({ row, texto: row.textContent }));
+            }
+        } else if (passo === 2) {
+            const p2 = document.getElementById('import-mod-step2-body');
+            if (_isVisivel(p2)) p2.querySelectorAll(':scope > details').forEach(row => linhas.push({ row, texto: row.querySelector('summary')?.textContent || '' }));
+        } else if (passo === 3) {
+            const p3 = document.getElementById('import-mod-step3-body');
+            if (_isVisivel(p3)) p3.querySelectorAll('details > label').forEach(row => linhas.push({ row, texto: row.textContent }));
         }
-        // Passo 1 — inalterados
-        const ina = document.getElementById('import-mod-aba-inalterados');
-        if (ina && ina.offsetParent !== null) {
-            ina.querySelectorAll(':scope > label').forEach(row => linhas.push({ row, texto: row.textContent }));
-        }
-        // Passo 2 — cada Sim é um <details>
-        const p2 = document.getElementById('import-mod-step2-body');
-        if (p2) p2.querySelectorAll(':scope > details').forEach(row => linhas.push({ row, texto: row.querySelector('summary')?.textContent || '' }));
-        // Passo 3 — vínculos: um <label> por relação; agrupados em <details>
-        const p3 = document.getElementById('import-mod-step3-body');
-        if (p3) p3.querySelectorAll('details > label').forEach(row => linhas.push({ row, texto: row.textContent }));
         return linhas;
     }
 
@@ -12964,16 +12968,104 @@ function atualizarIndicadorMemoria() {
         if (empty) empty.style.display = (termo && visiveis === 0) ? '' : 'none';
     }
 
+    // --- Ordenação alfabética (opcional) --------------------------------
+    // Reordena in-place os filhos dos containers visíveis. Cabeçalhos de
+    // seção (divs sem checkbox no passo 1) ficam ancorados no topo da sua
+    // seção. Ordem "padrao" re-renderiza o passo atual.
+    function _ordenarContainer(container, seletor, ordem, getTexto) {
+        if (!container) return;
+        const filhos = Array.from(container.querySelectorAll(seletor));
+        if (filhos.length < 2) return;
+        // Agrupa em blocos separados pelos "cabeçalhos" (elementos que NÃO batem no seletor mas são filhos diretos)
+        // Aqui simplificamos: só ordenamos os elementos que batem no seletor, mantendo cabeçalhos onde estão.
+        const ordenados = filhos.slice().sort((a, b) => {
+            const ta = _normStr(getTexto(a));
+            const tb = _normStr(getTexto(b));
+            if (ta < tb) return ordem === 'za' ? 1 : -1;
+            if (ta > tb) return ordem === 'za' ? -1 : 1;
+            return 0;
+        });
+        // Reinsere na mesma posição do primeiro elemento ordenável, um após o outro
+        const ancora = filhos[0];
+        ordenados.forEach(el => ancora.parentNode.insertBefore(el, ancora));
+        // remove os originais residuais e mantém apenas os reordenados
+        filhos.forEach(el => { if (!ordenados.includes(el)) el.remove(); });
+    }
+
+    window._aplicarOrdemImportMod = function() {
+        const sel = document.getElementById('import-mod-sort');
+        if (!sel) return;
+        const ordem = sel.value || 'padrao';
+        if (ordem === 'padrao') {
+            // Re-renderiza o passo atual para restaurar a ordem original
+            const st = window._importModState;
+            if (st && st.diff) {
+                const passo = _passoAtualImportMod();
+                try {
+                    if (passo === 1 && typeof renderPasso1 === 'function') renderPasso1(st.diff);
+                    else if (passo === 2 && typeof renderPasso2 === 'function') renderPasso2();
+                    else if (passo === 3 && typeof renderPasso3 === 'function') renderPasso3();
+                } catch(e) { console.warn('re-render padrão falhou', e); }
+            }
+            try { _aplicarBuscaImportMod(); } catch(e){}
+            return;
+        }
+        const passo = _passoAtualImportMod();
+        if (passo === 1) {
+            const nov = document.getElementById('import-mod-aba-novidades');
+            if (_isVisivel(nov)) {
+                // Ordena apenas os <div> que têm checkbox (linhas de Sim)
+                const alvo = Array.from(nov.querySelectorAll(':scope > div')).filter(d => d.querySelector('input[type="checkbox"]'));
+                if (alvo.length >= 2) {
+                    const ordenados = alvo.slice().sort((a,b) => {
+                        const ta = _normStr(a.textContent), tb = _normStr(b.textContent);
+                        return ordem === 'za' ? tb.localeCompare(ta) : ta.localeCompare(tb);
+                    });
+                    // insere todos logo após o último cabeçalho anterior à primeira linha (ou no fim)
+                    const parent = alvo[0].parentNode;
+                    ordenados.forEach(el => parent.appendChild(el));
+                }
+            }
+            const ina = document.getElementById('import-mod-aba-inalterados');
+            if (_isVisivel(ina)) {
+                _ordenarContainer(ina, ':scope > label', ordem, el => el.textContent);
+            }
+        } else if (passo === 2) {
+            const p2 = document.getElementById('import-mod-step2-body');
+            _ordenarContainer(p2, ':scope > details', ordem, el => el.querySelector('summary')?.textContent || '');
+        } else if (passo === 3) {
+            const p3 = document.getElementById('import-mod-step3-body');
+            if (p3) {
+                p3.querySelectorAll('details').forEach(det => {
+                    _ordenarContainer(det, ':scope > label', ordem, el => el.textContent);
+                });
+            }
+        }
+        try { _aplicarBuscaImportMod(); } catch(e){}
+    };
+
     function _iniciarBuscaImportMod() {
         const inp = document.getElementById('import-mod-search');
-        if (!inp || inp._ss_bound) return;
-        inp._ss_bound = true;
-        inp.addEventListener('input', _aplicarBuscaImportMod);
+        if (inp && !inp._ss_bound) {
+            inp._ss_bound = true;
+            inp.addEventListener('input', _aplicarBuscaImportMod);
+        }
+        const sel = document.getElementById('import-mod-sort');
+        if (sel && !sel._ss_bound) {
+            sel._ss_bound = true;
+            sel.addEventListener('change', window._aplicarOrdemImportMod);
+        }
+        if (sel) sel.value = 'padrao';
     }
     // Reaplica o filtro ao trocar passo/aba (as linhas são re-renderizadas).
     window._reaplicarBuscaImportMod = function() {
-        try { _aplicarBuscaImportMod(); } catch(e){}
+        try {
+            const sel = document.getElementById('import-mod-sort');
+            if (sel) sel.value = 'padrao';
+            _aplicarBuscaImportMod();
+        } catch(e){}
     };
+
 
     // Aplica um Sim do mod nos campos do Sim do site (só campos escolhidos)
     function _aplicarCamposMod(simSite, modSim, chaves) {
