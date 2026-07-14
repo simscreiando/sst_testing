@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54_22-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-23-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- vis-network removido: árvore genealógica usa apenas Cytoscape agora -->
-    <script>window.vis = { DataSet: function(){ return { add:()=>{}, update:()=>{}, remove:()=>{}, get:()=>[], length:0 }; }, Network: function(){ return { on:()=>{}, destroy:()=>{}, fit:()=>{}, setOptions:()=>{}, getSelectedNodes:()=>[], selectNodes:()=>{}, canvas:{ frame:{ canvas:{ toDataURL:()=>'' , getBoundingClientRect:()=>({left:0,top:0}) } } } }; } };</script>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
     
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
@@ -37,7 +36,7 @@
                 radial-gradient(circle at 50% 95%, rgba(127,176,105,0.25) 0, transparent 50%),
                 linear-gradient(180deg, #fbf3df 0%, #f6ecd6 60%, #f1e3c5 100%) !important;
             font-family: 'Nunito', 'Quicksand', sans-serif !important;
-            color: var(--cozy-ink) !important;f
+            color: var(--cozy-ink) !important;
         }
         body:not(.dark-mode) h1, body:not(.dark-mode) h2, body:not(.dark-mode) h3,
         body:not(.dark-mode) .sidebar h1 {
@@ -7087,17 +7086,26 @@ function importarArquivo(event) {
             const container = document.getElementById('tree-display');
             const cyContainer = document.getElementById('tree-cy');
 
-            // Sempre Cytoscape (Family Echo). Se um modo antigo (1-5) estiver setado, cai no 6.
-            if (!(currentTreeLayout >= 6 && currentTreeLayout <= 8)) currentTreeLayout = 6;
-            if (container) container.style.display = 'none';
-            if (cyContainer) cyContainer.style.display = 'block';
-            if (window.network) { try { window.network.destroy(); } catch(e){} window.network = null; }
-            try { const t = document.getElementById('ss-tree-tooltip'); if(t) t.style.opacity='0'; } catch(e){}
-            renderFamilyEchoTree(currentTreeLayout);
-            return;
-            // === Código vis-network abaixo desativado (mantido apenas para referência) ===
-            // eslint-disable-next-line no-unreachable
-            if (false) {
+            // Dispatcher: modos 6/7/8 usam o renderer Family Echo (Cytoscape)
+            if (currentTreeLayout >= 6 && currentTreeLayout <= 8) {
+                if (container) container.style.display = 'none';
+                if (cyContainer) cyContainer.style.display = 'block';
+                if (window.network) { try { window.network.destroy(); } catch(e){} window.network = null; }
+                try { const t = document.getElementById('ss-tree-tooltip'); if(t) t.style.opacity='0'; } catch(e){}
+                renderFamilyEchoTree(currentTreeLayout);
+                return;
+            }
+            // Modos 1-5 voltam ao vis-network original
+            if (cyContainer) cyContainer.style.display = 'none';
+            if (container) container.style.display = '';
+            if (window.cyTree) { try { window.cyTree.destroy(); } catch(e){} window.cyTree = null; }
+
+            if (!db.sims || db.sims.length === 0) {
+                container.innerHTML = '<p style="color:#888; text-align:center; padding-top:20px;">Nenhum Sim criado ainda. Adicione o seu primeiro Sim para começar o legado.</p>';
+                window.network = null;
+                return;
+            }
+            {
 
 
             let geracoes = calcularNiveisDeGeracao();
@@ -7466,7 +7474,7 @@ let edgesArray = [];
                     if (db.sims.find(x => String(x.id) === String(simIdLimpo))) abrirPerfil(simIdLimpo);
                 }
             });
-            } // fim if(false) do bloco vis-network legado
+            } // fim bloco vis-network (modos 1-5)
         }
 
 
@@ -7486,7 +7494,7 @@ let edgesArray = [];
             const NODE_W = 150, NODE_H = 190;
             const H_GAP = 36;
             const COUPLE_GAP = 28;
-            const V_GAP = 30;
+            const V_GAP = 72;
             const HUB_GAP = 70;
             const SIB_BAR_GAP = 28; // distância do union até a barra de irmandade
             const PALETTE = ['#e3f2fd','#e8f5e9','#fff8e1','#fce4ec','#ede7f6','#fbe9e7','#e0f7fa','#f3e5f5'];
