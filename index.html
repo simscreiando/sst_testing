@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-27-SimStoria - Companion Narrativo em Implementação (Sims Edition) — v54.27</title>
+    <title>TESTE-54-28-SimStoria - Companion Narrativo em Implementação (Sims Edition) — v54.27</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -12112,7 +12112,7 @@ function atualizarIndicadorMemoria() {
         { key:'familia',    label:'Família',         from: m => m.familia || '' },
         { key:'isNpc',      label:'É NPC',           from: m => !!m.is_npc },
         { key:'tracos',     label:'Traços',          from: m => _tracosLimpos(m.tracos), tipo:'tracos' },
-        { key:'extra',      label:'Notas Extras (do jogo)', from: m => _outrasInfoLimpas(m.outras_informacoes), tipo:'extra' },
+        { key:'extra',      label:'Anotações / História do Sim (do jogo)', from: m => _notasSimCompletas(m), tipo:'extra' },
     ];
 
     // Mapeia o "estagio_vida" bruto vindo do mod (em português com acentos e
@@ -12203,6 +12203,33 @@ function atualizarIndicadorMemoria() {
         });
         return out.join('\n');
     }
+
+    // Junta em UM único bloco (para "Anotações / História do Sim") tudo que
+    // o mod exporta como texto livre por Sim: conquistas, aspirações
+    // concluídas e outras_informacoes — cada categoria com seu cabeçalho.
+    function _notasSimCompletas(m) {
+        const partes = [];
+        const _dedup = arr => {
+            const vistos = new Set(); const out = [];
+            (arr || []).forEach(x => {
+                const s = String(x == null ? '' : x).trim();
+                if (!s) return;
+                if (/hash\s*:/i.test(s) || /tokens\s*\{/.test(s)) return;
+                const k = s.toLowerCase();
+                if (vistos.has(k)) return;
+                vistos.add(k); out.push(s);
+            });
+            return out;
+        };
+        const conq = _dedup(m && m.conquistas);
+        if (conq.length) partes.push('🏅 Conquistas (do jogo):\n' + conq.map(x => '• ' + x).join('\n'));
+        const asp = _dedup(m && m.aspiracoes_concluidas);
+        if (asp.length) partes.push('🎯 Aspirações concluídas (do jogo):\n' + asp.map(x => '• ' + x).join('\n'));
+        const outras = _outrasInfoLimpas(m && m.outras_informacoes);
+        if (outras) partes.push('📝 Outras informações (do jogo):\n' + outras.split('\n').map(x => '• ' + x).join('\n'));
+        return partes.join('\n\n');
+    }
+
 
     function _norm(v) {
         if (v === null || v === undefined) return '';
@@ -13235,6 +13262,69 @@ function atualizarIndicadorMemoria() {
             try { _inferirIrmaosPorPais(); } catch(e){ console.warn('Falha ao inferir irmãos:', e); }
         }
 
+        // 4) Eventos (chave global "eventos" do export do mod)
+        //    Registra cada evento no Livro da Família e faz vínculos por tipo:
+        //      - aspiracao_concluida → garante em sim.aspiracoesConcluidas
+        //      - traco_perdido       → remove o traço da string sim.tracos
+        //      - comeco_namoro       → cria vínculo de namoro (se ambos mapeados e livres)
+        let nEventos = 0, nEventosIgn = 0;
+        const eventos = (st.dadosMod && Array.isArray(st.dadosMod.eventos)) ? st.dadosMod.eventos : [];
+        if (eventos.length) {
+            // (re)monta o mapa mod→local (pode não existir se passo 3 não rodou)
+            const mapaEv = {};
+            (db.sims||[]).forEach(s => { if (s.simId) mapaEv[String(s.simId)] = String(s.id); });
+            Object.keys(novosLocais).forEach(k => { mapaEv[k] = novosLocais[k]; });
+            const _mkEv = (id) => (typeof _marcadorSim === 'function') ? _marcadorSim(id) : (id ? ` {{SIM:${id}}}` : '');
+
+            eventos.forEach(ev => {
+                if (!ev || !ev.titulo) { nEventosIgn++; return; }
+                const localId = mapaEv[String(ev.sim_id)] || '';
+                const simLocal = localId ? (db.sims||[]).find(s => String(s.id) === String(localId)) : null;
+                const data = ev.data_jogo || new Date().toLocaleDateString('pt-BR');
+                let tag = '[EVENTO]';
+                if (ev.tipo === 'aspiracao_concluida') tag = '[CONQUISTA] 🎯';
+                else if (ev.tipo === 'traco_perdido')   tag = '[MUDANÇA] 🔻';
+                else if (ev.tipo === 'comeco_namoro')   tag = '[ROMANCE] 💞';
+
+                // marcador do sim principal + (se namoro) do parceiro
+                let marcadores = _mkEv(localId);
+                if (ev.tipo === 'comeco_namoro' && ev.com_sim_id) {
+                    const outroLocal = mapaEv[String(ev.com_sim_id)];
+                    if (outroLocal) marcadores += _mkEv(outroLocal);
+                }
+
+                try {
+                    db.historia = (db.historia || '') +
+                        `\n[${data}] ${tag} ${ev.titulo}${marcadores} [MOD-IMPORT]`;
+                    nEventos++;
+                } catch(_) { nEventosIgn++; }
+
+                // Vínculos/efeitos por tipo
+                if (simLocal) {
+                    if (ev.tipo === 'aspiracao_concluida' && ev.aspiracao) {
+                        const atuais = Array.isArray(simLocal.aspiracoesConcluidas) ? simLocal.aspiracoesConcluidas : [];
+                        if (!atuais.some(x => String(x).toLowerCase() === String(ev.aspiracao).toLowerCase())) {
+                            simLocal.aspiracoesConcluidas = [...atuais, ev.aspiracao];
+                        }
+                    } else if (ev.tipo === 'traco_perdido' && ev.traco) {
+                        const alvo = String(ev.traco).toLowerCase();
+                        const lista = String(simLocal.tracos || '').split(',').map(s => s.trim()).filter(Boolean);
+                        const novos = lista.filter(t => t.toLowerCase() !== alvo);
+                        if (novos.length !== lista.length) simLocal.tracos = novos.join(', ');
+                    } else if (ev.tipo === 'comeco_namoro' && ev.com_sim_id) {
+                        const outroLocal = mapaEv[String(ev.com_sim_id)];
+                        const outro = outroLocal ? (db.sims||[]).find(s => String(s.id) === String(outroLocal)) : null;
+                        if (outro && !simLocal.spouse && !outro.spouse) {
+                            simLocal.spouse = String(outro.id);
+                            outro.spouse    = String(simLocal.id);
+                            simLocal.relStatus = 'namorado';
+                            outro.relStatus    = 'namorado';
+                        }
+                    }
+                }
+            });
+        }
+
         try { salvarTudo(); } catch(e) { console.warn(e); }
         try { renderTree && renderTree(); } catch(e){}
         try { renderGenList && renderGenList(); } catch(e){}
@@ -13244,6 +13334,7 @@ function atualizarIndicadorMemoria() {
         fecharModalImportMod();
         let msg = '✅ Importação concluída — ' + nNovos + ' novo(s), ' + nAtualizados + ' atualizado(s), ' + nIgnorados + ' ignorado(s).';
         if (classif.length) msg += ' 💞 ' + nVinculos + ' vínculo(s) criado(s)' + (nVinculosIgn ? ', ' + nVinculosIgn + ' ignorado(s)' : '') + '.';
+        if (nEventos || nEventosIgn) msg += ' 📖 ' + nEventos + ' evento(s) no livro' + (nEventosIgn ? ', ' + nEventosIgn + ' ignorado(s)' : '') + '.';
         try { showToast(msg); } catch(e){ alert(msg); }
     };
 })();
