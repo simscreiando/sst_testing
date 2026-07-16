@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-28-SimStoria - Companion Narrativo em Implementação (Sims Edition) — v54.27</title>
+    <title>TESTE-54-29-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -11973,6 +11973,8 @@ function atualizarIndicadorMemoria() {
             <span id="import-mod-step2-badge" style="padding:3px 10px; border-radius:12px; background:#eee; color:#888; font-weight:600;">2. Escolher campos</span>
             <span id="import-mod-step3-arrow">→</span>
             <span id="import-mod-step3-badge" style="padding:3px 10px; border-radius:12px; background:#eee; color:#888; font-weight:600;">3. Relacionamentos</span>
+            <span id="import-mod-step4-arrow">→</span>
+            <span id="import-mod-step4-badge" style="padding:3px 10px; border-radius:12px; background:#eee; color:#888; font-weight:600;">4. Eventos</span>
         </div>
 
         <p id="import-mod-resumo" style="margin:0 0 12px 0; font-size:13px; color:var(--ts4-subtle-text, #666);">Análise concluída! Confira o que mudou no seu save.</p>
@@ -12055,6 +12057,19 @@ function atualizarIndicadorMemoria() {
                 </span>
             </div>
             <div id="import-mod-step3-body" style="max-height:50vh; overflow-y:auto; padding-right:6px;"></div>
+        </div>
+
+        <!-- ================= PASSO 4 — EVENTOS ================= -->
+        <div id="import-mod-step4" style="display:none;">
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 4px; font-size:12px; background:var(--ts4-secondary-bg,#fff8ec); border-radius:8px; margin-bottom:10px;">
+                <strong style="font-size:11px; color:var(--ts4-subtle-text,#666);">Seleção rápida (eventos):</strong>
+                <button type="button" class="btn-main btn-sec" style="margin:0; padding:4px 10px; font-size:11px; width:auto;" onclick="_selecionarTodosEv(true)">☑ Marcar todos</button>
+                <button type="button" class="btn-main btn-sec" style="margin:0; padding:4px 10px; font-size:11px; width:auto;" onclick="_selecionarTodosEv(false)">☐ Desmarcar todos</button>
+                <span style="margin-left:auto; font-size:11px; color:var(--ts4-subtle-text,#666);">
+                    📖 Os eventos marcados vão para o Livro da Família e disparam efeitos (traço perdido, aspiração concluída, namoro).
+                </span>
+            </div>
+            <div id="import-mod-step4-body" style="max-height:50vh; overflow-y:auto; padding-right:6px;"></div>
         </div>
 
         <p style="margin:14px 0 4px 0; font-size:11px; color:var(--ts4-subtle-text,#888); font-style:italic;">
@@ -12307,7 +12322,7 @@ function atualizarIndicadorMemoria() {
         document.getElementById('import-mod-count-nov').textContent = '(' + totalNov + ')';
         document.getElementById('import-mod-count-ina').textContent = '(' + diff.inalterados.length + ')';
         document.getElementById('import-mod-resumo').textContent =
-            'Passo 1 de 2 — Escolha quais Sims você quer trazer do save (' + totalNov + ' com novidades, ' + diff.inalterados.length + ' sem alterações).';
+            'Passo 1 de ' + _totalPassosImportMod() + ' — Escolha quais Sims você quer trazer do save (' + totalNov + ' com novidades, ' + diff.inalterados.length + ' sem alterações).';
 
         let htmlNov = '';
 
@@ -12437,7 +12452,7 @@ function atualizarIndicadorMemoria() {
         st.selecao = { atualizadosMarcados, vinculosMarcados };
 
         document.getElementById('import-mod-resumo').textContent =
-            'Passo 2 de 2 — Escolha quais informações trazer para cada Sim.';
+            'Passo 2 de ' + _totalPassosImportMod() + ' — Escolha quais informações trazer para cada Sim.';
 
         let html = '';
 
@@ -12577,28 +12592,34 @@ function atualizarIndicadorMemoria() {
         document.getElementById('import-mod-step1').style.display = (n === 1) ? '' : 'none';
         document.getElementById('import-mod-step2').style.display = (n === 2) ? '' : 'none';
         document.getElementById('import-mod-step3').style.display = (n === 3) ? '' : 'none';
+        document.getElementById('import-mod-step4').style.display = (n === 4) ? '' : 'none';
         document.getElementById('btn-import-voltar').style.display = (n === 1) ? 'none' : '';
-        // No passo 2 mostra "Próximo →" quando existir passo 3 (há relacionamentos no export)
         const temRel = _temRelacionamentosParaRevisar();
-        const ehUltimoPasso = (n === 3) || (n === 2 && !temRel);
+        const temEv  = _temEventosParaRevisar();
+        // Último passo = último efetivamente visível conforme o export
+        const ultimo = temEv ? 4 : (temRel ? 3 : 2);
+        const ehUltimoPasso = (n === ultimo);
         document.getElementById('btn-import-avancar').style.display = ehUltimoPasso ? 'none' : '';
         document.getElementById('btn-import-aplicar').style.display = ehUltimoPasso ? '' : 'none';
 
         const b1 = document.getElementById('import-mod-step1-badge');
         const b2 = document.getElementById('import-mod-step2-badge');
         const b3 = document.getElementById('import-mod-step3-badge');
+        const b4 = document.getElementById('import-mod-step4-badge');
         const arr3 = document.getElementById('import-mod-step3-arrow');
-        // Badge 3 só aparece quando há relacionamentos
+        const arr4 = document.getElementById('import-mod-step4-arrow');
         if (b3) b3.style.display = temRel ? '' : 'none';
         if (arr3) arr3.style.display = temRel ? '' : 'none';
+        if (b4) b4.style.display = temEv ? '' : 'none';
+        if (arr4) arr4.style.display = temEv ? '' : 'none';
         const off = { bg:'#eee', fg:'#888' };
         const done = { bg:'#c9e5c0', fg:'#4a3b2a' };
         const on = { bg:'var(--cozy-accent,#7fb069)', fg:'#fff' };
         const set = (el, st) => { if (!el) return; el.style.background = st.bg; el.style.color = st.fg; };
-        if (n === 1) { set(b1,on); set(b2,off); set(b3,off); }
-        else if (n === 2) { set(b1,done); set(b2,on); set(b3,off); }
-        else { set(b1,done); set(b2,done); set(b3,on); }
-        // Reaplica a busca corrente ao novo conteúdo renderizado.
+        if (n === 1)      { set(b1,on);   set(b2,off);  set(b3,off);  set(b4,off);  }
+        else if (n === 2) { set(b1,done); set(b2,on);   set(b3,off);  set(b4,off);  }
+        else if (n === 3) { set(b1,done); set(b2,done); set(b3,on);   set(b4,off);  }
+        else              { set(b1,done); set(b2,done); set(b3,done); set(b4,on);   }
         try { window._reaplicarBuscaImportMod && window._reaplicarBuscaImportMod(); } catch(e){}
     }
 
@@ -12608,6 +12629,19 @@ function atualizarIndicadorMemoria() {
         return Array.isArray(st.dadosMod.relacionamentos) && st.dadosMod.relacionamentos.length > 0;
     }
 
+    function _temEventosParaRevisar() {
+        const st = window._importModState;
+        if (!st || !st.dadosMod) return false;
+        return Array.isArray(st.dadosMod.eventos) && st.dadosMod.eventos.length > 0;
+    }
+
+    function _totalPassosImportMod() {
+        let n = 2;
+        if (_temRelacionamentosParaRevisar()) n = 3;
+        if (_temEventosParaRevisar()) n = Math.max(n, 4);
+        return n;
+    }
+
     window._avancarPassoImportMod = function() {
         if (_passoAtual === 1) {
             const marcados = document.querySelectorAll('#import-mod-step1 input[type="checkbox"]:checked').length;
@@ -12615,20 +12649,32 @@ function atualizarIndicadorMemoria() {
             renderPasso2();
             _mostrarPasso(2);
         } else if (_passoAtual === 2) {
-            // Captura seleção de campos e vai para passo 3
             _capturarSelecaoCamposPasso2();
-            renderPasso3();
-            _mostrarPasso(3);
+            if (_temRelacionamentosParaRevisar()) {
+                renderPasso3();
+                _mostrarPasso(3);
+            } else if (_temEventosParaRevisar()) {
+                renderPasso4();
+                _mostrarPasso(4);
+            }
+        } else if (_passoAtual === 3) {
+            if (_temEventosParaRevisar()) {
+                renderPasso4();
+                _mostrarPasso(4);
+            }
         }
     };
 
     window._voltarPassoImportMod = function() {
-        if (_passoAtual === 3) {
+        if (_passoAtual === 4) {
+            if (_temRelacionamentosParaRevisar()) { _mostrarPasso(3); } else { _mostrarPasso(2); }
+        } else if (_passoAtual === 3) {
             _mostrarPasso(2);
         } else {
             _mostrarPasso(1);
         }
     };
+
 
     // Captura escolhas dos checkboxes de campos (passo 2) em st.selecao.camposEscolhidos.
     // Guarda também um snapshot antes de renderPasso3 usar/limpar os checkboxes.
@@ -12782,6 +12828,29 @@ function atualizarIndicadorMemoria() {
         return '<span style="background:#fbe;color:#805;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;">PENDENTE</span>';
     }
 
+    // Rótulo consistente para um Sim vindo do mod:
+    //   "Nome Sobrenome  (mod:12345678)"
+    // Fonte do nome, em ordem:
+    //  1) cls.a/b.nome (já resolvido via _mapaModParaSite — Sim ligado ou "novo")
+    //  2) dadosMod.sims[].id === modId (Sim veio no import mas usuário optou por não trazer)
+    //  3) "Sim desconhecido" — id não aparece no import
+    function _rotuloSimMod(modId, ladoCls) {
+        const idStr = String(modId == null ? '' : modId);
+        const idCurto = idStr ? idStr.slice(0, 8) : '?';
+        let nome = '';
+        if (ladoCls && ladoCls.nome) nome = String(ladoCls.nome).trim();
+        if (!nome) {
+            const st = window._importModState;
+            const arr = (st && st.dadosMod && st.dadosMod.sims) || [];
+            const m = arr.find(x => String(x && x.id) === idStr);
+            if (m) nome = ((m.nome||'') + ' ' + (m.sobrenome||'')).trim();
+        }
+        if (!nome) nome = 'Sim desconhecido';
+        return '<strong>' + _escapeHtml(nome) + '</strong>'
+             + ' <span style="font-size:10px; color:#999; font-weight:500;">(mod:' + _escapeHtml(idCurto) + ')</span>';
+    }
+
+
     function renderPasso3() {
         const st = window._importModState;
         const body = document.getElementById('import-mod-step3-body');
@@ -12793,7 +12862,7 @@ function atualizarIndicadorMemoria() {
         st.selecao.relacionamentosClassificados = classificados;
 
         document.getElementById('import-mod-resumo').textContent =
-            'Passo 3 de 3 — Confirme quais vínculos do jogo devem ser criados na árvore.';
+            'Passo 3 de ' + _totalPassosImportMod() + ' — Confirme quais vínculos do jogo devem ser criados na árvore.';
 
         if (classificados.length === 0) {
             body.innerHTML = '<div style="padding:20px; text-align:center; color:#888; font-size:13px;">O export do mod não trouxe relacionamentos para importar.</div>';
@@ -12812,8 +12881,8 @@ function atualizarIndicadorMemoria() {
             html += '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">' + _labelTipoRel(k) + ' <span style="font-size:11px; color:#888; font-weight:600;">(' + arr.length + ')</span></summary>';
             arr.forEach(item => {
                 const r = item.rel, cls = item.cls;
-                const nomeA = _escapeHtml((cls.a && cls.a.nome) ? cls.a.nome.trim() : r.sim_id_1);
-                const nomeB = _escapeHtml((cls.b && cls.b.nome) ? cls.b.nome.trim() : r.sim_id_2);
+                const rotA = _rotuloSimMod(r.sim_id_1, cls.a);
+                const rotB = _rotuloSimMod(r.sim_id_2, cls.b);
                 const seta = k === 'parent' ? ' → ' : ' × ';
                 const canApply = (cls.estado === 'novo');
                 const disabled = !canApply ? 'disabled' : '';
@@ -12822,7 +12891,7 @@ function atualizarIndicadorMemoria() {
                 html += ''
                     + '<label style="display:flex; align-items:center; gap:8px; padding:5px 4px; font-size:12px; cursor:' + (canApply?'pointer':'default') + '; border-bottom:1px dashed #f0e8d0;">'
                     +   '<input type="checkbox" ' + checked + ' ' + disabled + ' data-import-rel="' + item.idx + '">'
-                    +   '<span style="flex:1;"><strong>' + nomeA + '</strong>' + seta + '<strong>' + nomeB + '</strong></span>'
+                    +   '<span style="flex:1;">' + rotA + '<span style="color:#888;">' + seta + '</span>' + rotB + '</span>'
                     +   _badgeEstado(cls.estado)
                     + '</label>' + motivo;
             });
@@ -12850,6 +12919,79 @@ function atualizarIndicadorMemoria() {
     };
     // Exposto para permitir testes automatizados invocarem a etapa 3 sem UI.
     window._renderPasso3 = renderPasso3;
+
+    // ---------- PASSO 4: eventos globais do export do mod ----------
+    function _labelTipoEvento(tipo) {
+        const t = String(tipo||'').toLowerCase();
+        if (t === 'aspiracao_concluida') return '🎯 Aspiração concluída';
+        if (t === 'traco_perdido')       return '🔻 Traço perdido';
+        if (t === 'comeco_namoro')       return '💞 Começo de namoro';
+        return '📌 Outro';
+    }
+
+    function renderPasso4() {
+        const st = window._importModState;
+        const body = document.getElementById('import-mod-step4-body');
+        const eventos = (st.dadosMod && Array.isArray(st.dadosMod.eventos)) ? st.dadosMod.eventos.slice() : [];
+        // guarda ordem original de referência (índice = posição em st.dadosMod.eventos)
+        const indexados = eventos.map((ev, i) => ({ ev, idx:i }));
+        // ordena por data_jogo asc (fallback: mantém ordem)
+        indexados.sort((a, b) => {
+            const da = String(a.ev && a.ev.data_jogo || '');
+            const dbb = String(b.ev && b.ev.data_jogo || '');
+            return da.localeCompare(dbb);
+        });
+
+        document.getElementById('import-mod-resumo').textContent =
+            'Passo 4 de ' + _totalPassosImportMod() + ' — Marque quais eventos devem ir para o Livro da Família (com efeitos automáticos quando aplicável).';
+
+        if (!indexados.length) {
+            body.innerHTML = '<div style="padding:20px; text-align:center; color:#888; font-size:13px;">O export do mod não trouxe eventos.</div>';
+            return;
+        }
+
+        // Agrupa por tipo para leitura mais fácil
+        const grupos = {};
+        indexados.forEach(item => {
+            const k = String((item.ev && item.ev.tipo) || 'outro');
+            (grupos[k] = grupos[k] || []).push(item);
+        });
+
+        let html = '';
+        Object.keys(grupos).forEach(tipo => {
+            const arr = grupos[tipo];
+            html += '<details open style="background:#fffdf5; border:1px solid var(--ts4-border,#e0dccb); border-radius:10px; padding:8px 12px; margin-bottom:10px;">';
+            html += '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">' + _labelTipoEvento(tipo) + ' <span style="font-size:11px; color:#888; font-weight:600;">(' + arr.length + ')</span></summary>';
+            arr.forEach(item => {
+                const ev = item.ev || {};
+                const rotSim = _rotuloSimMod(ev.sim_id, null);
+                let extra = '';
+                if (ev.tipo === 'comeco_namoro' && ev.com_sim_id) {
+                    extra = ' <span style="color:#888;">↔</span> ' + _rotuloSimMod(ev.com_sim_id, null);
+                }
+                const data = _escapeHtml(ev.data_jogo || '');
+                const titulo = _escapeHtml(ev.titulo || '(sem título)');
+                html += ''
+                    + '<label style="display:flex; align-items:flex-start; gap:8px; padding:6px 4px; font-size:12px; cursor:pointer; border-bottom:1px dashed #f0e8d0;">'
+                    +   '<input type="checkbox" checked data-import-ev="' + item.idx + '" style="margin-top:3px;">'
+                    +   '<span style="flex:1;">'
+                    +     (data ? '<span style="color:#8a7a5a; font-size:11px;">[' + data + ']</span> ' : '')
+                    +     '<span>' + titulo + '</span>'
+                    +     '<div style="margin-top:2px;">' + rotSim + extra + '</div>'
+                    +   '</span>'
+                    + '</label>';
+            });
+            html += '</details>';
+        });
+        body.innerHTML = html;
+    }
+
+    window._selecionarTodosEv = function(marcar) {
+        document.querySelectorAll('[data-import-ev]').forEach(chk => { chk.checked = !!marcar; });
+    };
+    window._renderPasso4 = renderPasso4;
+
+
 
     // Aplica um relacionamento já resolvido para IDs locais reais.
     // Retorna 'ok' | 'skip'.
@@ -12973,6 +13115,7 @@ function atualizarIndicadorMemoria() {
         if (_isVisivel(document.getElementById('import-mod-step1'))) return 1;
         if (_isVisivel(document.getElementById('import-mod-step2'))) return 2;
         if (_isVisivel(document.getElementById('import-mod-step3'))) return 3;
+        if (_isVisivel(document.getElementById('import-mod-step4'))) return 4;
         return 1;
     }
 
@@ -12984,7 +13127,6 @@ function atualizarIndicadorMemoria() {
             const nov = document.getElementById('import-mod-aba-novidades');
             if (_isVisivel(nov)) {
                 nov.querySelectorAll(':scope > div').forEach(row => {
-                    // ignora cabeçalhos (usam só <strong> sem checkbox)
                     if (row.querySelector('input[type="checkbox"]')) linhas.push({ row, texto: row.textContent });
                 });
             }
@@ -12998,9 +13140,13 @@ function atualizarIndicadorMemoria() {
         } else if (passo === 3) {
             const p3 = document.getElementById('import-mod-step3-body');
             if (_isVisivel(p3)) p3.querySelectorAll('details > label').forEach(row => linhas.push({ row, texto: row.textContent }));
+        } else if (passo === 4) {
+            const p4 = document.getElementById('import-mod-step4-body');
+            if (_isVisivel(p4)) p4.querySelectorAll('details > label').forEach(row => linhas.push({ row, texto: row.textContent }));
         }
         return linhas;
     }
+
 
     function _aplicarBuscaImportMod() {
         const inp = document.getElementById('import-mod-search');
@@ -13061,6 +13207,7 @@ function atualizarIndicadorMemoria() {
                     if (passo === 1 && typeof renderPasso1 === 'function') renderPasso1(st.diff);
                     else if (passo === 2 && typeof renderPasso2 === 'function') renderPasso2();
                     else if (passo === 3 && typeof renderPasso3 === 'function') renderPasso3();
+                    else if (passo === 4 && typeof renderPasso4 === 'function') renderPasso4();
                 } catch(e) { console.warn('re-render padrão falhou', e); }
             }
             try { _aplicarBuscaImportMod(); } catch(e){}
@@ -13093,6 +13240,13 @@ function atualizarIndicadorMemoria() {
             const p3 = document.getElementById('import-mod-step3-body');
             if (p3) {
                 p3.querySelectorAll('details').forEach(det => {
+                    _ordenarContainer(det, ':scope > label', ordem, el => el.textContent);
+                });
+            }
+        } else if (passo === 4) {
+            const p4 = document.getElementById('import-mod-step4-body');
+            if (p4) {
+                p4.querySelectorAll('details').forEach(det => {
                     _ordenarContainer(det, ':scope > label', ordem, el => el.textContent);
                 });
             }
@@ -13267,26 +13421,33 @@ function atualizarIndicadorMemoria() {
         //      - aspiracao_concluida → garante em sim.aspiracoesConcluidas
         //      - traco_perdido       → remove o traço da string sim.tracos
         //      - comeco_namoro       → cria vínculo de namoro (se ambos mapeados e livres)
-        let nEventos = 0, nEventosIgn = 0;
+        let nEventos = 0, nEventosIgn = 0, nEventosSemVinculo = 0;
         const eventos = (st.dadosMod && Array.isArray(st.dadosMod.eventos)) ? st.dadosMod.eventos : [];
-        if (eventos.length) {
-            // (re)monta o mapa mod→local (pode não existir se passo 3 não rodou)
+        // Só processa eventos EFETIVAMENTE MARCADOS pelo usuário no passo 4.
+        // Se o passo 4 nunca foi aberto (sem eventos, ou usuário não avançou),
+        // idxMarcados fica vazio → nada é aplicado.
+        const idxMarcados = new Set();
+        document.querySelectorAll('[data-import-ev]').forEach(chk => {
+            if (chk.checked) idxMarcados.add(parseInt(chk.getAttribute('data-import-ev'), 10));
+        });
+        if (eventos.length && idxMarcados.size) {
             const mapaEv = {};
             (db.sims||[]).forEach(s => { if (s.simId) mapaEv[String(s.simId)] = String(s.id); });
             Object.keys(novosLocais).forEach(k => { mapaEv[k] = novosLocais[k]; });
             const _mkEv = (id) => (typeof _marcadorSim === 'function') ? _marcadorSim(id) : (id ? ` {{SIM:${id}}}` : '');
 
-            eventos.forEach(ev => {
+            eventos.forEach((ev, i) => {
+                if (!idxMarcados.has(i)) return;
                 if (!ev || !ev.titulo) { nEventosIgn++; return; }
                 const localId = mapaEv[String(ev.sim_id)] || '';
                 const simLocal = localId ? (db.sims||[]).find(s => String(s.id) === String(localId)) : null;
+                if (!localId) nEventosSemVinculo++;
                 const data = ev.data_jogo || new Date().toLocaleDateString('pt-BR');
                 let tag = '[EVENTO]';
                 if (ev.tipo === 'aspiracao_concluida') tag = '[CONQUISTA] 🎯';
                 else if (ev.tipo === 'traco_perdido')   tag = '[MUDANÇA] 🔻';
                 else if (ev.tipo === 'comeco_namoro')   tag = '[ROMANCE] 💞';
 
-                // marcador do sim principal + (se namoro) do parceiro
                 let marcadores = _mkEv(localId);
                 if (ev.tipo === 'comeco_namoro' && ev.com_sim_id) {
                     const outroLocal = mapaEv[String(ev.com_sim_id)];
@@ -13299,7 +13460,7 @@ function atualizarIndicadorMemoria() {
                     nEventos++;
                 } catch(_) { nEventosIgn++; }
 
-                // Vínculos/efeitos por tipo
+                // Efeitos colaterais só quando o Sim principal está mapeado
                 if (simLocal) {
                     if (ev.tipo === 'aspiracao_concluida' && ev.aspiracao) {
                         const atuais = Array.isArray(simLocal.aspiracoesConcluidas) ? simLocal.aspiracoesConcluidas : [];
@@ -13325,6 +13486,7 @@ function atualizarIndicadorMemoria() {
             });
         }
 
+
         try { salvarTudo(); } catch(e) { console.warn(e); }
         try { renderTree && renderTree(); } catch(e){}
         try { renderGenList && renderGenList(); } catch(e){}
@@ -13334,7 +13496,7 @@ function atualizarIndicadorMemoria() {
         fecharModalImportMod();
         let msg = '✅ Importação concluída — ' + nNovos + ' novo(s), ' + nAtualizados + ' atualizado(s), ' + nIgnorados + ' ignorado(s).';
         if (classif.length) msg += ' 💞 ' + nVinculos + ' vínculo(s) criado(s)' + (nVinculosIgn ? ', ' + nVinculosIgn + ' ignorado(s)' : '') + '.';
-        if (nEventos || nEventosIgn) msg += ' 📖 ' + nEventos + ' evento(s) no livro' + (nEventosIgn ? ', ' + nEventosIgn + ' ignorado(s)' : '') + '.';
+        if (nEventos || nEventosIgn) msg += ' 📖 ' + nEventos + ' evento(s) no livro' + (nEventosIgn ? ', ' + nEventosIgn + ' ignorado(s)' : '') + (nEventosSemVinculo ? ' ⚠️ ' + nEventosSemVinculo + ' sem vínculo (Sim não importado).' : '.');
         try { showToast(msg); } catch(e){ alert(msg); }
     };
 })();
