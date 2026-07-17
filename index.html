@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-29-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54_31-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -953,6 +953,7 @@
             <details class="sidebar-group" data-group="sistema">
                 <summary class="sidebar-group-head">⚙️ Sistema <span class="sidebar-group-arrow">▾</span></summary>
                 <div class="sidebar-group-body">
+                    <button class="nav-btn" id="btn-nav-mod" onclick="switchTab('tab-mod-simstoria')">⬇️ Mod SimStoria</button>
                     <button class="nav-btn" id="btn-nav-config" onclick="switchTab('tab-config')">⚙️ Configurações</button>
                     <button class="nav-btn" id="btn-nav-help" onclick="switchTab('tab-help')">📖 Ajuda</button>
                     <button class="nav-btn" id="btn-nav-feedback" onclick="switchTab('tab-feedback')">💬 Enviar Feedback</button>
@@ -1420,6 +1421,35 @@
                         <button class="btn-main" style="width:auto; margin:0; padding:9px 16px; font-size:12px;" onclick="addHistoriaManual()">Registrar</button>
                     </div>
                 </details>
+
+                <!-- 🕰️ 132: Linha do Tempo — Atalhos automáticos -->
+                <details style="margin-bottom:10px; background:linear-gradient(180deg,#fffaee,#fff2d6); border:1.5px solid var(--cozy-gold,#d4af37); border-radius:10px; padding:8px 12px;">
+                    <summary style="font-size:13px; font-weight:700; color:var(--ts4-blue); cursor:pointer; list-style:none;">🕰️ Linha do Tempo — Atalhos <span style="font-size:10px; color:#8a7a5a; font-weight:600;">(gera texto no padrão automaticamente)</span></summary>
+                    <div style="margin-top:10px;">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;">
+                            <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_ltAtalho('casamento')">💍 Casamento</button>
+                            <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_ltAtalho('promocao')">💼 Promoção</button>
+                            <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_ltAtalho('nascimento')">👶 Nascimento</button>
+                            <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_ltAtalho('morte')">💀 Morte</button>
+                            <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_ltAtalho('mudanca')">📦 Mudança</button>
+                            <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_ltAtalho('habilidade')">🎯 Habilidade/Conquista</button>
+                            <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_ltAtalho('divorcio')">💔 Divórcio</button>
+                        </div>
+                        <div id="lt-form" style="display:none; padding:12px; background:#fffdf6; border:1.5px dashed var(--cozy-gold,#d4af37); border-radius:10px;">
+                            <div id="lt-form-titulo" style="font-size:13px; font-weight:700; color:var(--ts4-blue); margin-bottom:8px;"></div>
+                            <div id="lt-form-campos" style="display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end;"></div>
+                            <div style="margin-top:10px; padding:8px 10px; background:#f6ecd6; border-radius:8px; font-size:12px; color:#4a3b2a;">
+                                <strong>Prévia:</strong> <span id="lt-preview" style="font-style:italic;">—</span>
+                            </div>
+                            <div style="display:flex; gap:6px; margin-top:10px; flex-wrap:wrap;">
+                                <button class="btn-main" style="width:auto; margin:0; padding:8px 16px; font-size:12px;" onclick="_ltConfirmar()">✓ Registrar na Linha do Tempo</button>
+                                <button class="btn-main btn-sec" style="width:auto; margin:0; padding:8px 16px; font-size:12px;" onclick="_ltCancelar()">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+
 
                 <!-- Linha 3: barra de busca unificada (texto + Sim) -->
                 <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap; align-items:center;">
@@ -2091,8 +2121,66 @@
             </div>
         </div>
 
+
+<!-- ============= 133: ABA MOD SIMSTORIA ============= -->
+<div id="tab-mod-simstoria" class="tab-pane">
+    <div class="panel" style="padding: 24px;">
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+            <span style="font-size:36px;">⬇️</span>
+            <div>
+                <h2 style="margin:0;">Mod SimStoria</h2>
+                <p style="margin:2px 0 0 0; font-size:12px; color:#888;">Baixe a versão atual do mod e acompanhe o histórico de modificações.</p>
+            </div>
+        </div>
+<a href="downloads/Codigo_SimStoria_Versao_v54_31.html" download="SimStoria_v54.31.html">
+  📥 Baixar SimStoria v54.31
+</a>
+        <!-- Card de download -->
+        <div style="background:linear-gradient(135deg,#fffdf5,#fff8e7); border:2px double var(--cozy-gold,#d4af37); border-radius:16px; padding:18px 20px; margin:16px 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div style="font-size:12px; color:#8a7a5a; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Versão atual</div>
+                    <div id="mod-versao-atual" style="font-size:22px; font-weight:800; color:var(--ts4-blue); font-family:'Fredoka','Quicksand',sans-serif;">v54.31</div>
+                    <div id="mod-versao-data" style="font-size:11px; color:#888;">— </div>
+                </div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <button class="btn-main" style="width:auto; margin:0; padding:11px 20px; font-size:13px;" onclick="baixarModSimStoria()">⬇ Baixar mod SimStoria Exporter</button>
+                    <button class="btn-main btn-sec" style="width:auto; margin:0; padding:11px 20px; font-size:13px;" onclick="copiarInstrucoesMod()">📋 Copiar instruções</button>
+                </div>
+            </div>
+            <div style="margin-top:12px; padding:10px 12px; background:#fff; border-radius:10px; border:1px solid #eee; font-size:12px; color:#555; line-height:1.5;">
+                <strong>Como usar:</strong> baixe o arquivo <code>.html</code> e abra-o em qualquer navegador (Chrome, Edge, Firefox). Não precisa instalar nada — tudo roda direto no navegador. Seus dados ficam salvos no próprio navegador ou na sua conta Google Drive (opcional).
+            </div>
+        </div>
+
+        <!-- Changelog -->
+        <div style="background:var(--ts4-panel,#fffdf5); border:1.5px solid var(--ts4-border,#e6d5a8); border-radius:16px; padding:18px 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                <div>
+                    <h3 style="margin:0; color:var(--ts4-blue); font-family:'Fredoka','Quicksand',sans-serif;">📜 Modificações</h3>
+                    <p style="margin:2px 0 0 0; font-size:11px; color:#888;">Histórico de versões, mais recente no topo.</p>
+                </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_toggleChangelogEdit()">✏️ Editar (local)</button>
+                    <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_exportarChangelog()">⬇ Exportar changelog</button>
+                </div>
+            </div>
+            <div id="changelog-lista"></div>
+            <div id="changelog-edit-wrap" style="display:none; margin-top:14px; padding-top:14px; border-top:1.5px dashed var(--ts4-border,#e6d5a8);">
+                <p style="font-size:11px; color:#888; margin:0 0 6px 0;">Modo edição local — o rascunho fica salvo neste navegador (não altera o HTML). Use "Exportar changelog" para gerar o trecho pronto para colar na próxima versão do arquivo.</p>
+                <textarea id="changelog-edit-area" style="width:100%; min-height:220px; font-family:'Courier New',monospace; font-size:12px; padding:10px; border:1.5px solid var(--ts4-border,#e6d5a8); border-radius:10px; background:#fffdf6; resize:vertical;" placeholder='Cole/edite o JSON aqui. Ex:&#10;[&#10;  {"versao":"v54.32","data":"2026-08-01","itens":[{"tipo":"Novo","texto":"..."}]}&#10;]'></textarea>
+                <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                    <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_salvarChangelogLocal()">💾 Salvar rascunho</button>
+                    <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto; color:#a03030; border-color:#a03030;" onclick="_limparChangelogLocal()">🗑 Limpar rascunho</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="tab-sobre" class="tab-pane">
     <div class="panel" style="padding: 30px;">
+
                 <div style="text-align: center; margin-bottom: 30px;">
                     <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png" alt="SimStoria Logo" style="width: 80px; margin-bottom: 10px;">
                     <h2 style="color: var(--ts4-blue); margin: 0;">SimStoria - Legacy Companion</h2>
@@ -12021,7 +12109,18 @@ function atualizarIndicadorMemoria() {
                 <button type="button" class="import-mod-tab-btn" data-tab="inalterados" onclick="trocarAbaImportMod('inalterados')" style="padding:8px 14px; border:none; background:transparent; border-bottom:3px solid transparent; font-weight:600; cursor:pointer; color:var(--ts4-subtle-text,#888);">💤 Sem Alterações <span id="import-mod-count-ina">(0)</span></button>
             </div>
 
+            <!-- 🆕 Filtro por status do Sim (127) -->
+            <div id="import-mod-status-filter" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; padding:8px 4px; font-size:12px; margin-bottom:6px;">
+                <strong style="font-size:11px; color:var(--ts4-subtle-text,#666);">Filtrar por status:</strong>
+                <button type="button" class="import-mod-status-btn" data-status="jogados" onclick="_filtrarImportPorStatus('jogados')" style="margin:0; padding:5px 12px; font-size:11px; border-radius:14px; border:1.5px solid var(--cozy-accent,#7fb069); background:var(--cozy-accent,#7fb069); color:#fff; font-weight:700; cursor:pointer;">🎮 Jogados/Ativos <span data-count-jogados>(0)</span></button>
+                <button type="button" class="import-mod-status-btn" data-status="npc" onclick="_filtrarImportPorStatus('npc')" style="margin:0; padding:5px 12px; font-size:11px; border-radius:14px; border:1.5px solid var(--ts4-border,#e0dccb); background:transparent; color:var(--ts4-text,#4a3b2a); font-weight:600; cursor:pointer;">👥 NPCs <span data-count-npc>(0)</span></button>
+                <button type="button" class="import-mod-status-btn" data-status="todos" onclick="_filtrarImportPorStatus('todos')" style="margin:0; padding:5px 12px; font-size:11px; border-radius:14px; border:1.5px solid var(--ts4-border,#e0dccb); background:transparent; color:var(--ts4-text,#4a3b2a); font-weight:600; cursor:pointer;">🌐 Todos <span data-count-todos>(0)</span></button>
+                <span id="import-mod-status-info" style="margin-left:auto; font-size:11px; color:var(--ts4-subtle-text,#888);"></span>
+            </div>
+            <div id="import-mod-status-warn" style="display:none; font-size:11px; color:#a07500; background:#fff8e0; border-left:3px solid #d4af37; padding:6px 10px; margin-bottom:8px; border-radius:6px;"></div>
+
             <!-- Barra de seleção em massa -->
+
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; padding:8px 4px; font-size:12px; background:var(--ts4-secondary-bg,#fff8ec); border-radius:8px; margin-bottom:10px;">
                 <strong style="font-size:11px; color:var(--ts4-subtle-text,#666);">Seleção rápida (aba atual):</strong>
                 <button type="button" class="btn-main btn-sec" style="margin:0; padding:4px 10px; font-size:11px; width:auto;" onclick="_selecionarSimsAba(true)">☑ Selecionar todos</button>
@@ -12340,7 +12439,7 @@ function atualizarIndicadorMemoria() {
                     opts += '<option value="' + _escapeHtml(s.sim.id) + '">🔗 Vincular a: ' + nomeSim + extra + '</option>';
                 });
                 htmlNov += ''
-                    + '<div style="background:#eaffea; border-left:4px solid var(--cozy-accent,#7fb069); border-radius:10px; padding:10px 12px; margin-bottom:6px;" data-import-row="vinculo:' + idx + '">'
+                    + '<div data-sim-status="' + _statusSimImport(m) + '" style="background:#eaffea; border-left:4px solid var(--cozy-accent,#7fb069); border-radius:10px; padding:10px 12px; margin-bottom:6px;" data-import-row="vinculo:' + idx + '">'
                     +   '<label style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:13px; cursor:pointer;">'
                     +     '<input type="checkbox" checked data-import-vinculo="' + idx + '" data-aba="novidades"> ✨ ' + (nomeCompleto || '(sem nome)')
                     +   '</label>'
@@ -12362,7 +12461,7 @@ function atualizarIndicadorMemoria() {
                 const qtd = item.mudancas.length;
                 const labels = item.mudancas.map(mu => _escapeHtml(mu.label)).join(', ');
                 htmlNov += ''
-                    + '<div style="background:#fff8e0; border-left:4px solid #d4af37; border-radius:10px; padding:10px 12px; margin-bottom:6px;">'
+                    + '<div data-sim-status="' + _statusSimImport(m, s) + '" style="background:#fff8e0; border-left:4px solid #d4af37; border-radius:10px; padding:10px 12px; margin-bottom:6px;">'
                     +   '<label style="display:flex; align-items:center; gap:8px; font-weight:700; font-size:13px; cursor:pointer;">'
                     +     '<input type="checkbox" data-import-atual="' + idx + '" data-aba="novidades"> ⚡ ' + (nomeCompleto || '(sem nome)')
                     +     '<span style="margin-left:auto; font-size:11px; font-weight:600; color:#a07500; background:#fff2c2; padding:2px 8px; border-radius:10px;">' + qtd + ' campo(s)</span>'
@@ -12385,7 +12484,7 @@ function atualizarIndicadorMemoria() {
                 const s = item.simSite;
                 const nome = _escapeHtml((s.nome||'') + ' ' + (s.sobrenome||'')).trim();
                 htmlIna += ''
-                    + '<label style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-bottom:1px solid #eee; font-size:12px; color:#666; cursor:pointer;">'
+                    + '<label data-sim-status="' + _statusSimImport(s) + '" style="display:flex; align-items:center; gap:8px; padding:6px 10px; border-bottom:1px solid #eee; font-size:12px; color:#666; cursor:pointer;">'
                     +   '<input type="checkbox" data-import-ina="' + idx + '" data-aba="inalterados"> 💤 ' + nome
                     + '</label>';
             });
@@ -12399,10 +12498,20 @@ function atualizarIndicadorMemoria() {
         document.querySelectorAll('#import-mod-step1 input[type="checkbox"]').forEach(chk => {
             chk.addEventListener('change', _atualizarContadorSelecao);
         });
+        // v54.31-fix: reaplica filtro por status agora que as linhas existem.
+        try { window._aplicarFiltroImportStatus && window._aplicarFiltroImportStatus(); } catch(e){}
     }
 
     function _atualizarContadorSelecao() {
-        const marcados = document.querySelectorAll('#import-mod-step1 input[type="checkbox"]:checked').length;
+        // v54.31-fix: conta apenas as linhas de Sim visíveis (com data-aba),
+        // ignorando sub-checkboxes de mudanças/fatos novos e linhas ocultas
+        // pelo filtro de status ou pela busca.
+        let marcados = 0;
+        document.querySelectorAll('#import-mod-step1 input[type="checkbox"][data-aba]:checked').forEach(chk => {
+            const row = chk.closest('[data-sim-status]');
+            if (row && row.style.display === 'none') return;
+            marcados++;
+        });
         const info = document.getElementById('import-mod-selecao-info');
         if (info) info.textContent = marcados + ' Sim(s) selecionado(s)';
         const btnAvancar = document.getElementById('btn-import-avancar');
@@ -12412,6 +12521,10 @@ function atualizarIndicadorMemoria() {
 
     window._selecionarSimsAba = function(marcar) {
         document.querySelectorAll('#import-mod-step1 input[type="checkbox"][data-aba="' + _abaAtual + '"]').forEach(chk => {
+            // Ignora checkboxes cuja linha está oculta pelo filtro de status ou pela busca.
+            const row = chk.closest('[data-sim-status]');
+            if (row && row.style.display === 'none') return;
+            if (chk.offsetParent === null) return;
             chk.checked = !!marcar;
         });
         _atualizarContadorSelecao();
@@ -12630,9 +12743,10 @@ function atualizarIndicadorMemoria() {
     }
 
     function _temEventosParaRevisar() {
+        // Passo 4 sempre aparece no fluxo de import de mod (mesmo sem eventos
+        // detectados no diff — nesse caso o corpo mostra estado vazio amigável).
         const st = window._importModState;
-        if (!st || !st.dadosMod) return false;
-        return Array.isArray(st.dadosMod.eventos) && st.dadosMod.eventos.length > 0;
+        return !!(st && st.dadosMod);
     }
 
     function _totalPassosImportMod() {
@@ -12920,64 +13034,325 @@ function atualizarIndicadorMemoria() {
     // Exposto para permitir testes automatizados invocarem a etapa 3 sem UI.
     window._renderPasso3 = renderPasso3;
 
-    // ---------- PASSO 4: eventos globais do export do mod ----------
+    // ---------- PASSO 4: eventos de vida detectados por diff ----------
+    // Fonte da verdade: diff entre window.db e a seleção efetiva dos
+    // Passos 1/2/3. Ignoramos completamente st.dadosMod.eventos aqui —
+    // aspirações/traços/conquistas continuam entrando apenas pelo Passo 2.
     function _labelTipoEvento(tipo) {
-        const t = String(tipo||'').toLowerCase();
-        if (t === 'aspiracao_concluida') return '🎯 Aspiração concluída';
-        if (t === 'traco_perdido')       return '🔻 Traço perdido';
-        if (t === 'comeco_namoro')       return '💞 Começo de namoro';
-        return '📌 Outro';
+        const map = {
+            nascimento: '👶 Nascimento',
+            mudanca_fase_vida: '🎂 Mudança de fase de vida',
+            casamento: '💍 Casamento',
+            divorcio: '💔 Divórcio',
+            comeco_namoro: '💞 Começo de namoro',
+            termino_namoro: '💔 Término de namoro',
+            mudanca_carreira: '💼 Mudança de carreira',
+            promocao: '📈 Promoção',
+            demissao: '📉 Demissão',
+            aposentadoria: '🏖️ Aposentadoria',
+            falecimento: '⚰️ Falecimento',
+        };
+        return map[String(tipo||'').toLowerCase()] || '📌 Outro';
     }
+
+    const _FASE_LABEL = {
+        'bebe-colo':'Bebê de Colo', 'bebe':'Bebê', 'crianca':'Criança',
+        'adolescente':'Adolescente', 'jovem-adulto':'Jovem Adulto',
+        'adulto':'Adulto', 'idoso':'Idoso'
+    };
+    const _ORDEM_FASE = ['bebe-colo','bebe','crianca','adolescente','jovem-adulto','adulto','idoso'];
+    function _lbFase(f) { return _FASE_LABEL[f] || (f || '—'); }
+
+    function _parseCarreiraMod(s) {
+        const str = String(s == null ? '' : s).trim();
+        const m = str.match(/^(.*?)\s*[-–—]\s*N[ií]vel\s*(\d+)\s*$/i);
+        if (m) return { nome: m[1].trim(), nivel: parseInt(m[2], 10) };
+        return { nome: str, nivel: null };
+    }
+    function _carreiraVazia(s) {
+        const str = String(s == null ? '' : s).trim();
+        if (!str) return true;
+        return /^desempregad|^aposentad/i.test(str);
+    }
+
+    function _nomeSimMod(m) {
+        return ((m && m.nome) || '').toString().trim()
+            + ' '
+            + ((m && m.sobrenome) || '').toString().trim();
+    }
+    function _rotSimMod(modId, nome) {
+        const idCurto = String(modId == null ? '' : modId).slice(0, 8);
+        const n = (nome || '').trim() || 'Sim';
+        return n + ' (mod:' + idCurto + ')';
+    }
+
+    // Constrói o alvo de cada Sim marcado nos Passos 1/2 com o conjunto de
+    // campos que ele vai trazer, e o snapshot do Sim atual no site (para diff).
+    function _alvosImportModSelecionados() {
+        const st = window._importModState;
+        if (!st || !st.diff || !st.selecao) return { alvos: [], modIds: new Set() };
+        const sel = st.selecao;
+        const alvos = [];
+        (sel.atualizadosMarcados || []).forEach(idx => {
+            const item = st.diff.atualizados[idx];
+            if (!item) return;
+            const camposMud = (sel.camposMud && sel.camposMud[idx]) || [];
+            const keys = new Set();
+            camposMud.forEach(mi => {
+                const mu = item.mudancas[mi];
+                if (mu) keys.add(mu.key);
+            });
+            alvos.push({
+                modSim: item.modSim,
+                simSite: item.simSite,
+                localId: String(item.simSite.id),
+                isNew: false,
+                camposSet: keys
+            });
+        });
+        (sel.vinculosMarcados || []).forEach(v => {
+            const item = st.diff.semVinculo[v.idx];
+            if (!item) return;
+            if (v.escolha === '__novo__') {
+                const keys = new Set((sel.camposNovo && sel.camposNovo[v.idx]) || []);
+                alvos.push({
+                    modSim: item.modSim, simSite: null, localId: null,
+                    isNew: true, camposSet: keys
+                });
+            } else {
+                const simSite = (db.sims||[]).find(s => String(s.id) === String(v.escolha));
+                if (!simSite) return;
+                const keys = new Set((sel.camposVin && sel.camposVin[v.idx]) || []);
+                alvos.push({
+                    modSim: item.modSim, simSite, localId: String(simSite.id),
+                    isNew: false, camposSet: keys
+                });
+            }
+        });
+        const modIds = new Set(alvos.map(a => String(a.modSim.id)));
+        return { alvos, modIds };
+    }
+
+    function _calcularEventosVidaImportMod() {
+        const st = window._importModState;
+        if (!st || !st.dadosMod) return [];
+        const { alvos, modIds } = _alvosImportModSelecionados();
+        const eventos = [];
+        let _seq = 0;
+        const mkId = () => 'ev_vida_' + (++_seq);
+
+        // --- Por Sim marcado: fase, carreira, status ---
+        alvos.forEach(t => {
+            const nome = _nomeSimMod(t.modSim).trim() || 'Sim';
+            const rot = _rotSimMod(t.modSim.id, nome);
+
+            // FASE / NASCIMENTO
+            if (t.camposSet.has('fase')) {
+                const modFase = _normalizarFase(t.modSim.estagio_vida || '');
+                const siteFase = t.simSite ? (t.simSite.fase || '') : '';
+                if (modFase && modFase !== siteFase) {
+                    const siteIdx = _ORDEM_FASE.indexOf(siteFase);
+                    const modIdx = _ORDEM_FASE.indexOf(modFase);
+                    const siteEraBebe = (siteFase === '' || siteFase === 'bebe-colo' || siteFase === 'bebe');
+                    const isNascimento =
+                        (t.isNew && (modFase === 'bebe-colo' || modFase === 'bebe'))
+                        || (!t.isNew && siteEraBebe && modIdx > siteIdx);
+                    if (isNascimento) {
+                        eventos.push({
+                            id: mkId(), sim_id_mod: String(t.modSim.id),
+                            sim_id_local: t.localId, nome_sim: rot, tipo: 'nascimento',
+                            antes: siteFase ? _lbFase(siteFase) : '—',
+                            depois: _lbFase(modFase),
+                            resumo: nome + ' — Nascimento (Fase: '
+                                + (siteFase ? _lbFase(siteFase) : '—') + ' → ' + _lbFase(modFase) + ')',
+                            meta: { fase: modFase }
+                        });
+                    } else if (!t.isNew) {
+                        eventos.push({
+                            id: mkId(), sim_id_mod: String(t.modSim.id),
+                            sim_id_local: t.localId, nome_sim: rot, tipo: 'mudanca_fase_vida',
+                            antes: _lbFase(siteFase), depois: _lbFase(modFase),
+                            resumo: nome + ' — Fase: ' + _lbFase(siteFase) + ' → ' + _lbFase(modFase),
+                            meta: { fase: modFase }
+                        });
+                    }
+                }
+            }
+
+            // CARREIRA
+            if (t.camposSet.has('carreira')) {
+                const modCar = String(t.modSim.carreira || '').trim();
+                const siteCar = t.simSite ? String(t.simSite.carreira || '').trim() : '';
+                const nl = s => s.toLowerCase().trim();
+                if (nl(modCar) !== nl(siteCar)) {
+                    const a = _parseCarreiraMod(siteCar);
+                    const b = _parseCarreiraMod(modCar);
+                    const antes = siteCar || '—';
+                    const depois = modCar || '—';
+                    let tipo;
+                    if (_carreiraVazia(modCar) && !_carreiraVazia(siteCar)) {
+                        tipo = /^aposentad/i.test(modCar) ? 'aposentadoria' : 'demissao';
+                    } else if (!_carreiraVazia(modCar) && !_carreiraVazia(siteCar)
+                            && nl(a.nome) === nl(b.nome)
+                            && a.nivel != null && b.nivel != null && b.nivel > a.nivel) {
+                        tipo = 'promocao';
+                    } else {
+                        tipo = 'mudanca_carreira';
+                    }
+                    eventos.push({
+                        id: mkId(), sim_id_mod: String(t.modSim.id),
+                        sim_id_local: t.localId, nome_sim: rot, tipo,
+                        antes, depois,
+                        resumo: nome + ' — Carreira: ' + antes + ' → ' + depois,
+                        meta: { carreira: modCar }
+                    });
+                }
+            }
+
+            // STATUS / FALECIMENTO
+            if (t.camposSet.has('status')) {
+                const modStRaw = String(t.modSim.status_vida || '').toLowerCase().trim();
+                const siteSt = t.simSite ? String(t.simSite.status || '').toLowerCase().trim() : '';
+                if (modStRaw === 'falecido' && siteSt !== 'falecido') {
+                    const causa = String(t.modSim.causa_morte || '').trim();
+                    eventos.push({
+                        id: mkId(), sim_id_mod: String(t.modSim.id),
+                        sim_id_local: t.localId, nome_sim: rot, tipo: 'falecimento',
+                        antes: siteSt || 'Vivo',
+                        depois: 'Falecido' + (causa ? ' (' + causa + ')' : ''),
+                        resumo: nome + ' — Falecimento' + (causa ? ' (Causa: ' + causa + ')' : ''),
+                        meta: { causaMorte: causa }
+                    });
+                }
+            }
+        });
+
+        // --- Casamento / Começo de namoro (via classificação do Passo 3) ---
+        const classif = (st.selecao && st.selecao.relacionamentosClassificados) || [];
+        classif.forEach(item => {
+            const r = item.rel, cls = item.cls;
+            if (!r || !cls) return;
+            if (r.kind !== 'casado' && r.kind !== 'namoro') return;
+            if (cls.estado !== 'novo') return;
+            const id1 = String(r.sim_id_1), id2 = String(r.sim_id_2);
+            if (!modIds.has(id1) && !modIds.has(id2)) return;
+            const nomeA = (cls.a && cls.a.nome ? cls.a.nome : '').trim() || id1.slice(0, 8);
+            const nomeB = (cls.b && cls.b.nome ? cls.b.nome : '').trim() || id2.slice(0, 8);
+            const tipo = r.kind === 'casado' ? 'casamento' : 'comeco_namoro';
+            const verbo = r.kind === 'casado' ? ' — Casamento com ' : ' — Começou a namorar ';
+            if (modIds.has(id1)) {
+                eventos.push({
+                    id: mkId(), sim_id_mod: id1, sim_id_local: (cls.a && cls.a.localId) || null,
+                    nome_sim: _rotSimMod(id1, nomeA), tipo,
+                    antes: '—',
+                    depois: (r.kind === 'casado' ? 'Casado(a) com ' : 'Namorando ') + nomeB,
+                    resumo: nomeA + verbo + nomeB,
+                    meta: { com_mod_id: id2, com_nome: nomeB, viaPasso3: true }
+                });
+            }
+            if (modIds.has(id2)) {
+                eventos.push({
+                    id: mkId(), sim_id_mod: id2, sim_id_local: (cls.b && cls.b.localId) || null,
+                    nome_sim: _rotSimMod(id2, nomeB), tipo,
+                    antes: '—',
+                    depois: (r.kind === 'casado' ? 'Casado(a) com ' : 'Namorando ') + nomeA,
+                    resumo: nomeB + verbo + nomeA,
+                    meta: { com_mod_id: id1, com_nome: nomeA, viaPasso3: true }
+                });
+            }
+        });
+
+        // --- Divórcio / Término de namoro (site tem, mod não traz mais) ---
+        const dm = st.dadosMod;
+        const parEmMod = new Set();
+        (dm.relacionamentos || []).forEach(r => {
+            const k = _normTipoRel(r.tipo);
+            if (k === 'casado' || k === 'namoro') {
+                parEmMod.add(
+                    [String(r.sim_id_1), String(r.sim_id_2)].sort().join('|') + '|' + k
+                );
+            }
+        });
+        const dedupPares = new Set();
+        alvos.forEach(t => {
+            if (t.isNew || !t.simSite) return;
+            const spouseLocal = String(t.simSite.spouse || '');
+            const relSt = String(t.simSite.relStatus || '').toLowerCase();
+            if (!spouseLocal || (relSt !== 'casado' && relSt !== 'namorado')) return;
+            const sSp = (db.sims || []).find(s => String(s.id) === spouseLocal);
+            if (!sSp || !sSp.simId) return;
+            const spModId = String(sSp.simId);
+            const modIdSelf = String(t.modSim.id);
+            const kind = relSt === 'casado' ? 'casado' : 'namoro';
+            const key = [modIdSelf, spModId].sort().join('|') + '|' + kind;
+            if (parEmMod.has(key)) return; // vínculo ainda existe no mod
+            const dedupKey = key + '|d';
+            if (dedupPares.has(dedupKey)) return;
+            dedupPares.add(dedupKey);
+            const nomeSelf = _nomeSimMod(t.modSim).trim() || modIdSelf.slice(0, 8);
+            const nomeOutro = (((sSp.nome || '') + ' ' + (sSp.sobrenome || '')).trim())
+                || spModId.slice(0, 8);
+            const tipo = kind === 'casado' ? 'divorcio' : 'termino_namoro';
+            const verbo = kind === 'casado' ? ' — Divórcio de ' : ' — Término com ';
+            eventos.push({
+                id: mkId(), sim_id_mod: modIdSelf, sim_id_local: t.localId,
+                nome_sim: _rotSimMod(modIdSelf, nomeSelf), tipo,
+                antes: (kind === 'casado' ? 'Casado(a) com ' : 'Namorando ') + nomeOutro,
+                depois: '—',
+                resumo: nomeSelf + verbo + nomeOutro,
+                meta: { com_local_id: spouseLocal, com_nome: nomeOutro }
+            });
+        });
+
+        return eventos;
+    }
+    try { window._calcularEventosVidaImportMod = _calcularEventosVidaImportMod; } catch(e){}
 
     function renderPasso4() {
         const st = window._importModState;
         const body = document.getElementById('import-mod-step4-body');
-        const eventos = (st.dadosMod && Array.isArray(st.dadosMod.eventos)) ? st.dadosMod.eventos.slice() : [];
-        // guarda ordem original de referência (índice = posição em st.dadosMod.eventos)
-        const indexados = eventos.map((ev, i) => ({ ev, idx:i }));
-        // ordena por data_jogo asc (fallback: mantém ordem)
-        indexados.sort((a, b) => {
-            const da = String(a.ev && a.ev.data_jogo || '');
-            const dbb = String(b.ev && b.ev.data_jogo || '');
-            return da.localeCompare(dbb);
-        });
+        const eventos = _calcularEventosVidaImportMod();
+        st._eventosVidaCalc = eventos;
 
         document.getElementById('import-mod-resumo').textContent =
-            'Passo 4 de ' + _totalPassosImportMod() + ' — Marque quais eventos devem ir para o Livro da Família (com efeitos automáticos quando aplicável).';
+            'Passo 4 de ' + _totalPassosImportMod() + ' — Revise os eventos de vida detectados.';
 
-        if (!indexados.length) {
-            body.innerHTML = '<div style="padding:20px; text-align:center; color:#888; font-size:13px;">O export do mod não trouxe eventos.</div>';
+        if (!eventos.length) {
+            body.innerHTML =
+                '<div style="padding:24px 16px; text-align:center; color:#7a6a52; font-size:13px; background:#fffdf5; border:1px dashed #e6d5a8; border-radius:10px;">'
+              +   '✨ <strong>Nenhum novo evento encontrado</strong> — o site já está em dia com o que você selecionou.'
+              +   '<div style="font-size:11px; color:#a99; margin-top:6px;">Você pode aplicar a importação mesmo assim.</div>'
+              + '</div>';
             return;
         }
 
-        // Agrupa por tipo para leitura mais fácil
+        const ordem = ['nascimento','mudanca_fase_vida','casamento','divorcio',
+            'comeco_namoro','termino_namoro','mudanca_carreira','promocao',
+            'demissao','aposentadoria','falecimento'];
         const grupos = {};
-        indexados.forEach(item => {
-            const k = String((item.ev && item.ev.tipo) || 'outro');
-            (grupos[k] = grupos[k] || []).push(item);
-        });
+        eventos.forEach(ev => { (grupos[ev.tipo] = grupos[ev.tipo] || []).push(ev); });
 
         let html = '';
-        Object.keys(grupos).forEach(tipo => {
+        html += '<div style="font-size:11px; color:#8a7a5a; margin-bottom:8px; font-style:italic;">'
+             +  '📌 Casamento/namoro só viram linha no Livro aqui — a criação do vínculo em si vem do Passo 3.'
+             +  '</div>';
+        ordem.forEach(tipo => {
             const arr = grupos[tipo];
+            if (!arr || !arr.length) return;
             html += '<details open style="background:#fffdf5; border:1px solid var(--ts4-border,#e0dccb); border-radius:10px; padding:8px 12px; margin-bottom:10px;">';
-            html += '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">' + _labelTipoEvento(tipo) + ' <span style="font-size:11px; color:#888; font-weight:600;">(' + arr.length + ')</span></summary>';
-            arr.forEach(item => {
-                const ev = item.ev || {};
-                const rotSim = _rotuloSimMod(ev.sim_id, null);
-                let extra = '';
-                if (ev.tipo === 'comeco_namoro' && ev.com_sim_id) {
-                    extra = ' <span style="color:#888;">↔</span> ' + _rotuloSimMod(ev.com_sim_id, null);
-                }
-                const data = _escapeHtml(ev.data_jogo || '');
-                const titulo = _escapeHtml(ev.titulo || '(sem título)');
+            html += '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">'
+                 +  _labelTipoEvento(tipo)
+                 +  ' <span style="font-size:11px; color:#888; font-weight:600;">(' + arr.length + ')</span>'
+                 +  '</summary>';
+            arr.forEach(ev => {
                 html += ''
                     + '<label style="display:flex; align-items:flex-start; gap:8px; padding:6px 4px; font-size:12px; cursor:pointer; border-bottom:1px dashed #f0e8d0;">'
-                    +   '<input type="checkbox" checked data-import-ev="' + item.idx + '" style="margin-top:3px;">'
+                    +   '<input type="checkbox" checked data-import-ev-vida="' + _escapeHtml(ev.id) + '" style="margin-top:3px;">'
                     +   '<span style="flex:1;">'
-                    +     (data ? '<span style="color:#8a7a5a; font-size:11px;">[' + data + ']</span> ' : '')
-                    +     '<span>' + titulo + '</span>'
-                    +     '<div style="margin-top:2px;">' + rotSim + extra + '</div>'
+                    +     '<div><strong>' + _escapeHtml(ev.nome_sim) + '</strong></div>'
+                    +     '<div style="color:#666; margin-top:2px;">'
+                    +       _escapeHtml(ev.antes) + ' <span style="color:#aaa;">→</span> ' + _escapeHtml(ev.depois)
+                    +     '</div>'
                     +   '</span>'
                     + '</label>';
             });
@@ -12987,7 +13362,7 @@ function atualizarIndicadorMemoria() {
     }
 
     window._selecionarTodosEv = function(marcar) {
-        document.querySelectorAll('[data-import-ev]').forEach(chk => { chk.checked = !!marcar; });
+        document.querySelectorAll('[data-import-ev-vida]').forEach(chk => { chk.checked = !!marcar; });
     };
     window._renderPasso4 = renderPasso4;
 
@@ -13157,14 +13532,18 @@ function atualizarIndicadorMemoria() {
         if (clr) clr.style.display = termo ? '' : 'none';
         const linhas = _linhasImportModVisiveis();
         let visiveis = 0;
+        // v54.31-fix: combina busca com o filtro por status para não desfazer um ao outro.
+        const status = (typeof window._statusFiltroImportAtual === 'function')
+            ? window._statusFiltroImportAtual() : 'todos';
         linhas.forEach(({ row, texto }) => {
-            if (!termo) {
-                row.style.display = '';
-                visiveis++;
-            } else {
-                const bate = _normStr(texto).indexOf(termo) !== -1;
-                row.style.display = bate ? '' : 'none';
-                if (bate) visiveis++;
+            const s = row.getAttribute && row.getAttribute('data-sim-status');
+            const passaStatus = (status === 'todos') || !s || (s === status);
+            const bate = !termo || (_normStr(texto).indexOf(termo) !== -1);
+            const show = passaStatus && bate;
+            row.style.display = show ? '' : 'none';
+            if (show) visiveis++;
+            if (!show && row.querySelectorAll) {
+                row.querySelectorAll('input[type="checkbox"]:checked').forEach(chk => { chk.checked = false; });
             }
         });
         if (empty) empty.style.display = (termo && visiveis === 0) ? '' : 'none';
@@ -13416,75 +13795,72 @@ function atualizarIndicadorMemoria() {
             try { _inferirIrmaosPorPais(); } catch(e){ console.warn('Falha ao inferir irmãos:', e); }
         }
 
-        // 4) Eventos (chave global "eventos" do export do mod)
-        //    Registra cada evento no Livro da Família e faz vínculos por tipo:
-        //      - aspiracao_concluida → garante em sim.aspiracoesConcluidas
-        //      - traco_perdido       → remove o traço da string sim.tracos
-        //      - comeco_namoro       → cria vínculo de namoro (se ambos mapeados e livres)
+        // 4) Eventos de vida (diff) — fonte: st._eventosVidaCalc calculado no Passo 4.
+        //    Cada evento marcado vira uma linha no Livro da Família vinculada
+        //    ao Sim (via {{SIM:id}}) e, quando aplicável, atualiza o campo de
+        //    perfil correspondente (fase, carreira, status/causaMorte).
+        //    Casamento/namoro/divórcio/término só registram no Livro — o
+        //    vínculo em si vem do Passo 3.
         let nEventos = 0, nEventosIgn = 0, nEventosSemVinculo = 0;
-        const eventos = (st.dadosMod && Array.isArray(st.dadosMod.eventos)) ? st.dadosMod.eventos : [];
-        // Só processa eventos EFETIVAMENTE MARCADOS pelo usuário no passo 4.
-        // Se o passo 4 nunca foi aberto (sem eventos, ou usuário não avançou),
-        // idxMarcados fica vazio → nada é aplicado.
-        const idxMarcados = new Set();
-        document.querySelectorAll('[data-import-ev]').forEach(chk => {
-            if (chk.checked) idxMarcados.add(parseInt(chk.getAttribute('data-import-ev'), 10));
+        const eventosCalc = Array.isArray(st._eventosVidaCalc) ? st._eventosVidaCalc : [];
+        const idsMarcados = new Set();
+        document.querySelectorAll('[data-import-ev-vida]').forEach(chk => {
+            if (chk.checked) idsMarcados.add(chk.getAttribute('data-import-ev-vida'));
         });
-        if (eventos.length && idxMarcados.size) {
+        if (eventosCalc.length && idsMarcados.size) {
             const mapaEv = {};
             (db.sims||[]).forEach(s => { if (s.simId) mapaEv[String(s.simId)] = String(s.id); });
             Object.keys(novosLocais).forEach(k => { mapaEv[k] = novosLocais[k]; });
             const _mkEv = (id) => (typeof _marcadorSim === 'function') ? _marcadorSim(id) : (id ? ` {{SIM:${id}}}` : '');
+            const dataStr = new Date().toLocaleDateString('pt-BR');
+            const TAG = {
+                nascimento:        '[NASCIMENTO] 👶',
+                mudanca_fase_vida: '[FASE] 🎂',
+                casamento:         '[CASAMENTO] 💍',
+                divorcio:          '[DIVÓRCIO] 💔',
+                comeco_namoro:     '[ROMANCE] 💞',
+                termino_namoro:    '[TÉRMINO] 💔',
+                mudanca_carreira:  '[CARREIRA] 💼',
+                promocao:          '[PROMOÇÃO] 📈',
+                demissao:          '[DEMISSÃO] 📉',
+                aposentadoria:     '[APOSENTADORIA] 🏖️',
+                falecimento:       '[FALECIMENTO] ⚰️',
+            };
 
-            eventos.forEach((ev, i) => {
-                if (!idxMarcados.has(i)) return;
-                if (!ev || !ev.titulo) { nEventosIgn++; return; }
-                const localId = mapaEv[String(ev.sim_id)] || '';
+            eventosCalc.forEach(ev => {
+                if (!idsMarcados.has(ev.id)) return;
+                const localId = mapaEv[String(ev.sim_id_mod)] || ev.sim_id_local || '';
                 const simLocal = localId ? (db.sims||[]).find(s => String(s.id) === String(localId)) : null;
                 if (!localId) nEventosSemVinculo++;
-                const data = ev.data_jogo || new Date().toLocaleDateString('pt-BR');
-                let tag = '[EVENTO]';
-                if (ev.tipo === 'aspiracao_concluida') tag = '[CONQUISTA] 🎯';
-                else if (ev.tipo === 'traco_perdido')   tag = '[MUDANÇA] 🔻';
-                else if (ev.tipo === 'comeco_namoro')   tag = '[ROMANCE] 💞';
 
-                let marcadores = _mkEv(localId);
-                if (ev.tipo === 'comeco_namoro' && ev.com_sim_id) {
-                    const outroLocal = mapaEv[String(ev.com_sim_id)];
-                    if (outroLocal) marcadores += _mkEv(outroLocal);
-                }
-
+                const tag = TAG[ev.tipo] || '[EVENTO] 📌';
+                const marcador = localId ? _mkEv(localId) : '';
                 try {
                     db.historia = (db.historia || '') +
-                        `\n[${data}] ${tag} ${ev.titulo}${marcadores} [MOD-IMPORT]`;
+                        `\n[${dataStr}] ${tag} ${ev.resumo}${marcador} [MOD-IMPORT]`;
                     nEventos++;
                 } catch(_) { nEventosIgn++; }
 
-                // Efeitos colaterais só quando o Sim principal está mapeado
                 if (simLocal) {
-                    if (ev.tipo === 'aspiracao_concluida' && ev.aspiracao) {
-                        const atuais = Array.isArray(simLocal.aspiracoesConcluidas) ? simLocal.aspiracoesConcluidas : [];
-                        if (!atuais.some(x => String(x).toLowerCase() === String(ev.aspiracao).toLowerCase())) {
-                            simLocal.aspiracoesConcluidas = [...atuais, ev.aspiracao];
-                        }
-                    } else if (ev.tipo === 'traco_perdido' && ev.traco) {
-                        const alvo = String(ev.traco).toLowerCase();
-                        const lista = String(simLocal.tracos || '').split(',').map(s => s.trim()).filter(Boolean);
-                        const novos = lista.filter(t => t.toLowerCase() !== alvo);
-                        if (novos.length !== lista.length) simLocal.tracos = novos.join(', ');
-                    } else if (ev.tipo === 'comeco_namoro' && ev.com_sim_id) {
-                        const outroLocal = mapaEv[String(ev.com_sim_id)];
-                        const outro = outroLocal ? (db.sims||[]).find(s => String(s.id) === String(outroLocal)) : null;
-                        if (outro && !simLocal.spouse && !outro.spouse) {
-                            simLocal.spouse = String(outro.id);
-                            outro.spouse    = String(simLocal.id);
-                            simLocal.relStatus = 'namorado';
-                            outro.relStatus    = 'namorado';
+                    if ((ev.tipo === 'mudanca_fase_vida' || ev.tipo === 'nascimento')
+                            && ev.meta && ev.meta.fase) {
+                        simLocal.fase = ev.meta.fase;
+                    } else if ((ev.tipo === 'mudanca_carreira' || ev.tipo === 'promocao'
+                             || ev.tipo === 'demissao' || ev.tipo === 'aposentadoria')
+                            && ev.meta) {
+                        simLocal.carreira = ev.meta.carreira || '';
+                    } else if (ev.tipo === 'falecimento') {
+                        simLocal.status = 'falecido';
+                        if (ev.meta && ev.meta.causaMorte) {
+                            simLocal.causaMorte = ev.meta.causaMorte;
                         }
                     }
+                    // casamento/namoro/divorcio/termino: não mexem em
+                    // spouse/relStatus aqui — responsabilidade do Passo 3.
                 }
             });
         }
+
 
 
         try { salvarTudo(); } catch(e) { console.warn(e); }
@@ -14572,8 +14948,392 @@ function atualizarIndicadorMemoria() {
 
 })();
 </script>
+<!-- ============================================================
+     v54.31 — Novas features: filtro por status na importação,
+     Linha do Tempo no Livro da Família, aba Mod SimStoria.
+     ============================================================ -->
+<script>
+(function(){
+    'use strict';
+
+    /* ============ 127: Filtro por status no Passo 1 ============ */
+    // Normaliza status do Sim retornado pelo save/JSON do mod
+    window._statusSimImport = function(m, s){
+        // m = modSim (do save), s = simSite (existente)
+        function pick(o){
+            if (!o) return null;
+            if (o.is_npc === true || o.is_npc === 'true' || o.npc === true) return 'npc';
+            const st = (o.status_sim || o.status || '').toString().toLowerCase();
+            if (!st) return null;
+            if (st.indexOf('npc') !== -1) return 'npc';
+            // "ativo", "jogado", "jogando", "jogavel", "vivo" → jogados
+            if (st.indexOf('ativ') !== -1 || st.indexOf('jog') !== -1 || st.indexOf('viv') !== -1) return 'jogados';
+            return null;
+        }
+        return pick(m) || pick(s) || 'jogados';
+    };
+
+    const FILTER_KEY = 'simstoria_import_status_filter';
+
+    // v54.31-fix: helper compartilhado — lê o filtro ativo (default 'jogados').
+    window._statusFiltroImportAtual = function(){
+        try { return localStorage.getItem(FILTER_KEY) || 'jogados'; } catch(e){ return 'jogados'; }
+    };
+
+    window._filtrarImportPorStatus = function(status){
+        try { localStorage.setItem(FILTER_KEY, status); } catch(e){}
+        _aplicarFiltroImportStatus();
+    };
+
+    function _aplicarFiltroImportStatus(){
+        if (window.__ss_aplicandoFiltro) return;
+        window.__ss_aplicandoFiltro = true;
+        try {
+        const wrap = document.getElementById('import-mod-step1');
+        if (!wrap) return;
+        const status = window._statusFiltroImportAtual();
+        // v54.31-fix: também considera o termo de busca ativo, para não desfazer a busca.
+        let termoBusca = '';
+        try {
+            const inpB = document.getElementById('import-mod-search');
+            if (inpB && inpB.value) termoBusca = _normStr(inpB.value);
+        } catch(e){}
+
+        // Botões
+        document.querySelectorAll('.import-mod-status-btn').forEach(btn => {
+            const isActive = btn.getAttribute('data-status') === status;
+            btn.style.background = isActive ? 'var(--cozy-accent,#7fb069)' : 'transparent';
+            btn.style.color = isActive ? '#fff' : 'var(--ts4-text,#4a3b2a)';
+            btn.style.borderColor = isActive ? 'var(--cozy-accent,#7fb069)' : 'var(--ts4-border,#e0dccb)';
+            btn.style.fontWeight = isActive ? '700' : '600';
+        });
+
+        // Aplica visibilidade
+        const rows = wrap.querySelectorAll('[data-sim-status]');
+        let jog=0, npc=0, tot=0, visiveis=0;
+        rows.forEach(r => {
+            const s = r.getAttribute('data-sim-status');
+            tot++;
+            if (s === 'jogados') jog++; else if (s === 'npc') npc++;
+            let show = true;
+            if (status === 'jogados') show = (s === 'jogados');
+            else if (status === 'npc') show = (s === 'npc');
+            if (show && termoBusca) {
+                const texto = _normStr(r.textContent || '');
+                if (texto.indexOf(termoBusca) === -1) show = false;
+            }
+            r.style.display = show ? '' : 'none';
+            if (show) visiveis++;
+            // Desmarca checkboxes de linhas escondidas (para não importar sem querer)
+            if (!show) {
+                r.querySelectorAll('input[type="checkbox"]:checked').forEach(chk => { chk.checked = false; });
+            }
+        });
+
+        // Contadores
+        const setTxt = (sel,v) => { const el = wrap.querySelector(sel); if(el) el.textContent = '('+v+')'; };
+        setTxt('[data-count-jogados]', jog);
+        setTxt('[data-count-npc]', npc);
+        setTxt('[data-count-todos]', tot);
+
+        const info = document.getElementById('import-mod-status-info');
+        if (info) info.textContent = visiveis + ' de ' + tot + ' visíveis';
+
+        const warn = document.getElementById('import-mod-status-warn');
+        if (warn){
+            // v54.31-fix: aviso só reflete quem foi escondido pelo *status*, ignorando a busca.
+            let ocultosPorStatus = 0;
+            if (status !== 'todos') {
+                rows.forEach(r => {
+                    const s = r.getAttribute('data-sim-status');
+                    const passa = (status === 'jogados' && s === 'jogados') || (status === 'npc' && s === 'npc');
+                    if (!passa) ocultosPorStatus++;
+                });
+            }
+            if (status !== 'todos' && ocultosPorStatus > 0){
+                warn.style.display = 'block';
+                warn.textContent = '⚠️ ' + ocultosPorStatus + ' Sim(s) oculto(s) pelo filtro. Troque para "Todos" para vê-los.';
+            } else {
+                warn.style.display = 'none';
+            }
+        }
+
+        // Atualiza contador de selecionados existente, se houver
+        if (typeof _atualizarContadorSelecao === 'function') {
+            try { _atualizarContadorSelecao(); } catch(e){}
+        }
+        } finally { window.__ss_aplicandoFiltro = false; }
+    }
+    window._aplicarFiltroImportStatus = _aplicarFiltroImportStatus;
+
+    // v54.31-fix: MutationObserver removido — causava recursão infinita
+    // ao aplicar o filtro com muitos Sims (o filtro muta o subtree observado).
+    // O filtro agora é reaplicado explicitamente ao final de renderPasso1.
+
+    /* ============ 132: Linha do Tempo (Livro da Família) ============ */
+    const LT_TIPOS = {
+        casamento:  { icon:'💍', tag:'[CASAMENTO]',  titulo:'💍 Registrar Casamento',
+                      campos:[{k:'sim',t:'sim',label:'Sim'},{k:'parceiro',t:'text',label:'Casou-se com',ph:'Ex: Bella Goth'}],
+                      texto: v => `Casou-se com ${v.parceiro || '(?)'}` },
+        promocao:   { icon:'💼', tag:'[PROMOCAO]',   titulo:'💼 Registrar Promoção',
+                      campos:[{k:'sim',t:'sim',label:'Sim'},{k:'cargo',t:'text',label:'Foi promovido(a) a',ph:'Ex: Agente Secreto'}],
+                      texto: v => `Foi promovido(a) a ${v.cargo || '(?)'}` },
+        nascimento: { icon:'👶', tag:'[NASCIMENTO]', titulo:'👶 Registrar Nascimento',
+                      campos:[{k:'sim',t:'sim',label:'Sim (mãe/pai)'},{k:'filho',t:'text',label:'Nome do filho(a)',ph:'Ex: Mortimer'}],
+                      texto: v => `Teve um filho(a) chamado(a) ${v.filho || '(?)'}` },
+        morte:      { icon:'💀', tag:'[MORTE]',      titulo:'💀 Registrar Morte',
+                      campos:[{k:'sim',t:'sim',label:'Sim'},{k:'causa',t:'text',label:'Causa',ph:'Ex: velhice na varanda de casa'}],
+                      texto: v => `Faleceu${v.causa ? ' de ' + v.causa : ''}` },
+        mudanca:    { icon:'📦', tag:'[MUDANCA]',    titulo:'📦 Registrar Mudança',
+                      campos:[{k:'sim',t:'sim',label:'Sim'},{k:'lugar',t:'text',label:'Mudou-se para',ph:'Ex: Windenburg'}],
+                      texto: v => `Mudou-se para ${v.lugar || '(?)'}` },
+        habilidade: { icon:'🎯', tag:'[CONQUISTA]',  titulo:'🎯 Registrar Conquista',
+                      campos:[{k:'sim',t:'sim',label:'Sim'},{k:'conquista',t:'text',label:'Conquista',ph:'Ex: dominou a habilidade Culinária'}],
+                      texto: v => `${v.conquista || '(?)'}` },
+        divorcio:   { icon:'💔', tag:'[DIVORCIO]',   titulo:'💔 Registrar Divórcio',
+                      campos:[{k:'sim',t:'sim',label:'Sim'},{k:'ex',t:'text',label:'Divorciou-se de',ph:'Ex: Bella Goth'}],
+                      texto: v => `Divorciou-se de ${v.ex || '(?)'}` }
+    };
+
+    let _ltAtualId = null;
+
+    function _ltSimsDisponiveis(){
+        try {
+            if (typeof db !== 'undefined' && db && Array.isArray(db.sims)) return db.sims;
+        } catch(e){}
+        return [];
+    }
+
+    window._ltAtalho = function(id){
+        const def = LT_TIPOS[id]; if (!def) return;
+        _ltAtualId = id;
+        const form = document.getElementById('lt-form');
+        const tit  = document.getElementById('lt-form-titulo');
+        const camp = document.getElementById('lt-form-campos');
+        if (!form || !tit || !camp) return;
+        tit.textContent = def.titulo;
+
+        let html = '';
+        def.campos.forEach(c => {
+            html += '<div style="display:flex; flex-direction:column; gap:2px; min-width:150px; flex:1;">';
+            html += '  <label style="font-size:11px; color:#666; font-weight:600;">'+c.label+'</label>';
+            if (c.t === 'sim') {
+                const sims = _ltSimsDisponiveis();
+                html += '  <select data-lt-campo="'+c.k+'" style="padding:6px 8px; border-radius:6px; border:1.5px solid #e6d5a8; font-size:12px; background:#fff; margin:0;" onchange="_ltPreview()">';
+                html += '    <option value="">— selecione —</option>';
+                sims.forEach(s => {
+                    const nome = ((s.nome||'')+' '+(s.sobrenome||'')).trim() || '(sem nome)';
+                    html += '    <option value="'+(s.id||'')+'">'+nome.replace(/</g,'&lt;')+'</option>';
+                });
+                html += '  </select>';
+            } else {
+                html += '  <input type="text" data-lt-campo="'+c.k+'" placeholder="'+(c.ph||'')+'" style="padding:6px 8px; border-radius:6px; border:1.5px solid #e6d5a8; font-size:12px; background:#fff; margin:0;" oninput="_ltPreview()">';
+            }
+            html += '</div>';
+        });
+        // data
+        html += '<div style="display:flex; flex-direction:column; gap:2px; min-width:130px;">';
+        html += '  <label style="font-size:11px; color:#666; font-weight:600;">Data</label>';
+        html += '  <input type="date" data-lt-campo="data" style="padding:6px 8px; border-radius:6px; border:1.5px solid #e6d5a8; font-size:12px; background:#fff; margin:0;" oninput="_ltPreview()">';
+        html += '</div>';
+        camp.innerHTML = html;
+        form.style.display = 'block';
+        _ltPreview();
+    };
+
+    window._ltCancelar = function(){
+        _ltAtualId = null;
+        const form = document.getElementById('lt-form');
+        if (form) form.style.display = 'none';
+    };
+
+    function _ltColeta(){
+        const def = LT_TIPOS[_ltAtualId]; if (!def) return null;
+        const camp = document.getElementById('lt-form-campos');
+        if (!camp) return null;
+        const vals = {};
+        camp.querySelectorAll('[data-lt-campo]').forEach(el => {
+            vals[el.getAttribute('data-lt-campo')] = el.value;
+        });
+        return { def, vals };
+    }
+
+    function _ltMontarLinha(def, vals){
+        const sims = _ltSimsDisponiveis();
+        const sim = sims.find(s => (s.id||'') == vals.sim);
+        const nome = sim ? (((sim.nome||'')+' '+(sim.sobrenome||'')).trim() || '(sem nome)') : '(selecione um Sim)';
+        const evento = def.texto(vals);
+        const dataStr = vals.data ? new Date(vals.data+'T00:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+        return { dataStr, nome, evento, simId: vals.sim || '' };
+    }
+
+    window._ltPreview = function(){
+        const c = _ltColeta(); const el = document.getElementById('lt-preview');
+        if (!c || !el) return;
+        const { nome, evento } = _ltMontarLinha(c.def, c.vals);
+        el.textContent = nome + ': ' + evento + '.';
+    };
+
+    window._ltConfirmar = function(){
+        const c = _ltColeta(); if (!c) return;
+        if (!c.vals.sim) { if (typeof showToast==='function') showToast('Selecione um Sim.'); else alert('Selecione um Sim.'); return; }
+        const { dataStr, nome, evento, simId } = _ltMontarLinha(c.def, c.vals);
+        const marcador = (typeof _marcadorSim === 'function') ? _marcadorSim(simId) : '';
+        const linha = `\n[${dataStr}] ${c.def.tag} ${nome}: ${evento}.${marcador}`;
+        try {
+            if (typeof db === 'undefined' || !db) throw new Error('db indisponível');
+            db.historia = (db.historia || '') + linha;
+            if (typeof salvarTudo === 'function') salvarTudo();
+            if (typeof renderLivroComFiltro === 'function') renderLivroComFiltro();
+            if (typeof showToast === 'function') showToast('Marco registrado na Linha do Tempo! 🕰️');
+        } catch(e){ alert('Erro ao registrar: '+e.message); return; }
+        _ltCancelar();
+    };
+
+    /* ============ 133: Aba Mod SimStoria (download + changelog) ============ */
+    const MOD_VERSAO = 'v1.0';
+    const MOD_DATA = '2026-07-17';
+    const CHANGELOG_DEFAULT = [
+        { versao:'v1.0', data:'2026-07-17', itens:[
+            { tipo:'Novo',    texto:'' },
+        ]},
+        { versao:'v54.30', data:'2026-07-01', itens:[
+            { tipo:'Base', texto:'Versão base sobre a qual as modificações v54.31 foram construídas.' }
+        ]}
+    ];
+    const CHANGELOG_KEY = 'simstoria_changelog_local';
+
+    function _getChangelog(){
+        try {
+            const raw = localStorage.getItem(CHANGELOG_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.length) return parsed;
+            }
+        } catch(e){}
+        return CHANGELOG_DEFAULT;
+    }
+
+    function _renderChangelog(){
+        const lista = document.getElementById('changelog-lista');
+        if (!lista) return;
+        const data = _getChangelog();
+        const usaLocal = (function(){ try { return !!localStorage.getItem(CHANGELOG_KEY); } catch(e){ return false; }})();
+        let html = '';
+        if (usaLocal) {
+            html += '<div style="font-size:11px; color:#a07500; background:#fff8e0; border-left:3px solid #d4af37; padding:6px 10px; border-radius:6px; margin-bottom:10px;">📝 Você está vendo um rascunho salvo localmente (não afeta o HTML original).</div>';
+        }
+        data.forEach((v, i) => {
+            html += '<div style="padding:10px 0; '+(i<data.length-1?'border-bottom:1px dashed var(--ts4-border,#e6d5a8);':'')+'">';
+            html += '  <div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;">';
+            html += '    <strong style="font-size:14px; color:var(--ts4-blue); font-family:\'Fredoka\',sans-serif;">'+String(v.versao||'').replace(/</g,'&lt;')+'</strong>';
+            if (v.data) html += '    <span style="font-size:11px; color:#888;">— '+String(v.data).replace(/</g,'&lt;')+'</span>';
+            html += '  </div>';
+            html += '  <ul style="margin:6px 0 0 0; padding-left:22px; font-size:12px; color:#4a3b2a; line-height:1.55;">';
+            (v.itens||[]).forEach(it => {
+                const tipo = String(it.tipo||'').replace(/</g,'&lt;');
+                const cor = tipo.toLowerCase().indexOf('novo') !== -1 ? '#3a8a3a' :
+                            tipo.toLowerCase().indexOf('corr') !== -1 ? '#a03030' :
+                            tipo.toLowerCase().indexOf('melh') !== -1 ? '#2a6bb0' : '#8a7a5a';
+                html += '<li style="margin-bottom:3px;">';
+                if (tipo) html += '<span style="display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; padding:1px 6px; border-radius:8px; background:'+cor+'; color:#fff; margin-right:6px; vertical-align:middle;">'+tipo+'</span>';
+                html += String(it.texto||'').replace(/</g,'&lt;');
+                html += '</li>';
+            });
+            html += '  </ul>';
+            html += '</div>';
+        });
+        lista.innerHTML = html;
+
+        // Preenche versão atual
+        const vAtual = (data[0] && data[0].versao) || MOD_VERSAO;
+        const dAtual = (data[0] && data[0].data) || MOD_DATA;
+        const elV = document.getElementById('mod-versao-atual');
+        const elD = document.getElementById('mod-versao-data');
+        if (elV) elV.textContent = vAtual;
+        if (elD) elD.textContent = '— '+dAtual;
+    }
+
+    window.baixarModSimStoria = function(){
+        try {
+            const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            const blob = new Blob([html], { type:'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'SimStoria_'+MOD_VERSAO+'.html';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(()=>URL.revokeObjectURL(url), 2000);
+            if (typeof showToast === 'function') showToast('Download iniciado! ⬇️');
+        } catch(e){ alert('Não foi possível gerar o download: '+e.message); }
+    };
+
+    window.copiarInstrucoesMod = function(){
+        const txt = 'SimStoria — Legacy Companion ('+MOD_VERSAO+')\n\n'
+                  + 'Como usar:\n'
+                  + '1) Baixe o arquivo .html clicando em "Baixar mod (HTML)".\n'
+                  + '2) Abra o arquivo em qualquer navegador (Chrome, Edge, Firefox).\n'
+                  + '3) Não precisa instalar nada. Tudo roda direto no navegador.\n'
+                  + '4) Seus dados ficam salvos no próprio navegador (ou opcionalmente no Google Drive).\n';
+        try {
+            navigator.clipboard.writeText(txt).then(()=>{
+                if (typeof showToast==='function') showToast('Instruções copiadas! 📋');
+            });
+        } catch(e){ alert(txt); }
+    };
+
+    window._toggleChangelogEdit = function(){
+        const w = document.getElementById('changelog-edit-wrap');
+        const a = document.getElementById('changelog-edit-area');
+        if (!w || !a) return;
+        const abrir = (w.style.display === 'none');
+        w.style.display = abrir ? 'block' : 'none';
+        if (abrir) {
+            a.value = JSON.stringify(_getChangelog(), null, 2);
+        }
+    };
+
+    window._salvarChangelogLocal = function(){
+        const a = document.getElementById('changelog-edit-area'); if (!a) return;
+        try {
+            const parsed = JSON.parse(a.value);
+            if (!Array.isArray(parsed)) throw new Error('Deve ser um array [ ... ]');
+            localStorage.setItem(CHANGELOG_KEY, JSON.stringify(parsed));
+            if (typeof showToast==='function') showToast('Rascunho salvo neste navegador! 💾');
+            _renderChangelog();
+        } catch(e){ alert('JSON inválido: '+e.message); }
+    };
+
+    window._limparChangelogLocal = function(){
+        if (!confirm('Remover o rascunho local e voltar ao changelog padrão do arquivo?')) return;
+        try { localStorage.removeItem(CHANGELOG_KEY); } catch(e){}
+        _renderChangelog();
+        const a = document.getElementById('changelog-edit-area');
+        if (a) a.value = JSON.stringify(_getChangelog(), null, 2);
+    };
+
+    window._exportarChangelog = function(){
+        const data = _getChangelog();
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type:'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'SimStoria_changelog.json';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(()=>URL.revokeObjectURL(url), 2000);
+        if (typeof showToast==='function') showToast('Changelog exportado! ⬇️');
+    };
+
+    document.addEventListener('DOMContentLoaded', _renderChangelog);
+    // Fallback caso já tenha carregado
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(_renderChangelog, 200);
+    }
+})();
+</script>
 
 </body>
+
 
 </html>
 
