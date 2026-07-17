@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54_31-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54_35-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2128,52 +2128,47 @@
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
             <span style="font-size:36px;">⬇️</span>
             <div>
-                <h2 style="margin:0;">Mod SimStoria</h2>
+                <h2 style="margin:0;">Mod SimStoria Exporter</h2>
                 <p style="margin:2px 0 0 0; font-size:12px; color:#888;">Baixe a versão atual do mod e acompanhe o histórico de modificações.</p>
             </div>
         </div>
-<a href="downloads/Codigo_SimStoria_Versao_v54_31.html" download="SimStoria_v54.31.html">
-  📥 Baixar SimStoria v54.31
-</a>
         <!-- Card de download -->
         <div style="background:linear-gradient(135deg,#fffdf5,#fff8e7); border:2px double var(--cozy-gold,#d4af37); border-radius:16px; padding:18px 20px; margin:16px 0;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                 <div>
                     <div style="font-size:12px; color:#8a7a5a; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Versão atual</div>
-                    <div id="mod-versao-atual" style="font-size:22px; font-weight:800; color:var(--ts4-blue); font-family:'Fredoka','Quicksand',sans-serif;">v54.31</div>
+                    <div id="mod-versao-atual" style="font-size:22px; font-weight:800; color:var(--ts4-blue); font-family:'Fredoka','Quicksand',sans-serif;">v1.0</div>
                     <div id="mod-versao-data" style="font-size:11px; color:#888;">— </div>
                 </div>
                 <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <button class="btn-main" style="width:auto; margin:0; padding:11px 20px; font-size:13px;" onclick="baixarModSimStoria()">⬇ Baixar mod SimStoria Exporter</button>
+                    <button class="btn-main" style="width:auto; margin:0; padding:11px 20px; font-size:13px;" onclick="baixarModSimStoria()">⬇ Baixar mod SimStoria Exporter - Por SioSims</button>
                     <button class="btn-main btn-sec" style="width:auto; margin:0; padding:11px 20px; font-size:13px;" onclick="copiarInstrucoesMod()">📋 Copiar instruções</button>
                 </div>
             </div>
-            <div style="margin-top:12px; padding:10px 12px; background:#fff; border-radius:10px; border:1px solid #eee; font-size:12px; color:#555; line-height:1.5;">
-                <strong>Como usar:</strong> baixe o arquivo <code>.html</code> e abra-o em qualquer navegador (Chrome, Edge, Firefox). Não precisa instalar nada — tudo roda direto no navegador. Seus dados ficam salvos no próprio navegador ou na sua conta Google Drive (opcional).
-            </div>
+            <div style="margin-top:12px; padding:10px 12px; background:#fff; border-radius:10px; border:1px solid #eee; font-size:13px; color:#555; line-height:1.5;">
+<strong> Como usar:</strong>
+                    <li>1) Baixe o arquivo .zip clicando em "Baixar mod SimStoria Exporter - Por Siosims".</li>
+                    <li>2) Extraia o conteúdo do .zip. <strong>É importante manter a estrutura de pastas original, para organização dos arquivos do MOD.</strong></li>
+                    <li>3) Coloque a pasta com os arquivos extraídos na pasta Mods do The Sims 4 (Documentos/Electronic Arts/The Sims 4/Mods).</li>
+                    <li>4) Abra o jogo com Mods habilitados, jogue e use o mod para exportar os dados da sua família — depois importe o .json aqui no site.</li>
+                    <li>5) O arquivo será exportado em cada salvamento do jogo.</li>
+                    <li><strong>6) Você também pode exportar a qualquer momento digitando o comando (CTRL+SHIFT+C) simstoria.exportar</strong></li>
+                    <li>7) Utilizar o arquivo simstoria_export_NOME DO SEU SAVE.json</li>
+                        </div>
         </div>
 
         <!-- Changelog -->
         <div style="background:var(--ts4-panel,#fffdf5); border:1.5px solid var(--ts4-border,#e6d5a8); border-radius:16px; padding:18px 20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
                 <div>
-                    <h3 style="margin:0; color:var(--ts4-blue); font-family:'Fredoka','Quicksand',sans-serif;">📜 Modificações</h3>
+                    <h3 style="margin:0; color:var(--ts4-blue); font-family:'Fredoka','Quicksand',sans-serif;">📜 Modificações - MOD SimStoria Exporter - Por SioSims</h3>
                     <p style="margin:2px 0 0 0; font-size:11px; color:#888;">Histórico de versões, mais recente no topo.</p>
                 </div>
                 <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                    <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_toggleChangelogEdit()">✏️ Editar (local)</button>
                     <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_exportarChangelog()">⬇ Exportar changelog</button>
                 </div>
             </div>
             <div id="changelog-lista"></div>
-            <div id="changelog-edit-wrap" style="display:none; margin-top:14px; padding-top:14px; border-top:1.5px dashed var(--ts4-border,#e6d5a8);">
-                <p style="font-size:11px; color:#888; margin:0 0 6px 0;">Modo edição local — o rascunho fica salvo neste navegador (não altera o HTML). Use "Exportar changelog" para gerar o trecho pronto para colar na próxima versão do arquivo.</p>
-                <textarea id="changelog-edit-area" style="width:100%; min-height:220px; font-family:'Courier New',monospace; font-size:12px; padding:10px; border:1.5px solid var(--ts4-border,#e6d5a8); border-radius:10px; background:#fffdf6; resize:vertical;" placeholder='Cole/edite o JSON aqui. Ex:&#10;[&#10;  {"versao":"v54.32","data":"2026-08-01","itens":[{"tipo":"Novo","texto":"..."}]}&#10;]'></textarea>
-                <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
-                    <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto;" onclick="_salvarChangelogLocal()">💾 Salvar rascunho</button>
-                    <button class="btn-main btn-sec" style="margin:0; padding:6px 12px; font-size:11px; width:auto; color:#a03030; border-color:#a03030;" onclick="_limparChangelogLocal()">🗑 Limpar rascunho</button>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -15195,11 +15190,10 @@ function atualizarIndicadorMemoria() {
     const MOD_DATA = '2026-07-17';
     const CHANGELOG_DEFAULT = [
         { versao:'v1.0', data:'2026-07-17', itens:[
-            { tipo:'Novo',    texto:'' },
+            { tipo:'Novo',    texto:'Filtro por status (Jogados/Ativos, NPCs, Todos) no Passo 1 da importação — evita lista poluída com muitos Sims.' },
+            { tipo:'Novo',    texto:'Linha do Tempo no Livro da Família: atalhos para Casamento, Promoção, Nascimento, Morte, Mudança, Conquista e Divórcio, com texto padronizado.' },
+            { tipo:'Novo',    texto:'Aba "Mod SimStoria" (dentro de Sistema) com botão de download do mod e histórico de modificações editável localmente.' }
         ]},
-        { versao:'v54.30', data:'2026-07-01', itens:[
-            { tipo:'Base', texto:'Versão base sobre a qual as modificações v54.31 foram construídas.' }
-        ]}
     ];
     const CHANGELOG_KEY = 'simstoria_changelog_local';
 
@@ -15254,27 +15248,33 @@ function atualizarIndicadorMemoria() {
         if (elD) elD.textContent = '— '+dAtual;
     }
 
+    // URL do arquivo .zip do mod hospedado junto ao site (GitHub Pages).
+    // Basta subir o arquivo em: <raiz-do-repo>/mod/SimStoria_Exporter_v54_31.zip
+    // Para versionar depois, é só trocar o nome aqui e no repositório.
+    const MOD_ZIP_URL = 'mod/siosims_simstoria_exporter_v1.0.zip';
+
     window.baixarModSimStoria = function(){
         try {
-            const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-            const blob = new Blob([html], { type:'text/html;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = 'SimStoria_'+MOD_VERSAO+'.html';
+            a.href = MOD_ZIP_URL;
+            a.download = 'siosims_SimStoria_Exporter_' + MOD_VERSAO + '.zip';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            setTimeout(()=>URL.revokeObjectURL(url), 2000);
             if (typeof showToast === 'function') showToast('Download iniciado! ⬇️');
-        } catch(e){ alert('Não foi possível gerar o download: '+e.message); }
+        } catch(e){ alert('Não foi possível iniciar o download: '+e.message); }
     };
 
     window.copiarInstrucoesMod = function(){
-        const txt = 'SimStoria — Legacy Companion ('+MOD_VERSAO+')\n\n'
+        const txt = 'SimStoria — Mod Exporter ('+MOD_VERSAO+')\n\n'
                   + 'Como usar:\n'
-                  + '1) Baixe o arquivo .html clicando em "Baixar mod (HTML)".\n'
-                  + '2) Abra o arquivo em qualquer navegador (Chrome, Edge, Firefox).\n'
-                  + '3) Não precisa instalar nada. Tudo roda direto no navegador.\n'
-                  + '4) Seus dados ficam salvos no próprio navegador (ou opcionalmente no Google Drive).\n';
+                  + '1) Baixe o arquivo .zip clicando em "Baixar mod SimStoria Exporter".\n'
+                  + '2) Extraia o conteúdo do .zip. É importante manter a estrutura de pastas original, para organização dos arquivos do MOD.\n'
+                  + '3) Coloque os arquivos extraídos na pasta Mods do The Sims 4\n'
+                  + '   (Documentos/Electronic Arts/The Sims 4/Mods).\n'
+                  + '4) Abra o jogo com Mods habilitados, jogue e use o mod para exportar\n'
+                  + '   os dados da sua família — depois importe o .json aqui no site.\n'
+                  + '5) O arquivo será exportado em cada salvamento do jogo.\n'
+                  + '   Você também pode exportar a qualquer momento digitando o comando (CTRL+SHIFT+C) simstoria.exportar\n'
+                  + '   Utilizar o arquivo simstoria_export_NOME DO SEU SAVE.json\n';
         try {
             navigator.clipboard.writeText(txt).then(()=>{
                 if (typeof showToast==='function') showToast('Instruções copiadas! 📋');
