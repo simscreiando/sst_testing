@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-39-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-40-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2465,7 +2465,7 @@
                     </div>
                     <div>
                         <label style="font-weight:bold; font-size:13px;">Status Vital:</label>
-                        <select id="e-status" style="font-size:12px; padding:6px;" onchange="toggleFantasmaJogavel()">
+                        <select id="e-status" style="font-size:12px; padding:6px;" onchange="toggleFantasmaJogavel(); toggleFaseFantasma();">
                             <option value="Vivo">🟢 Vivo</option>
                             <option value="Ancestral (Morto)">💀 Ancestral (Morto)</option>
                         </select>
@@ -2487,6 +2487,7 @@
                             <option value="jovem-adulto" selected>👨 Jovem Adulto</option>
                             <option value="adulto">🧔 Adulto</option>
                             <option value="idoso">👴 Idoso</option>
+                            <option value="fantasma" data-somente-morto="1">👻 Fantasma</option>
                         </select>
                     </div>
                 </div>
@@ -5728,6 +5729,23 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
             if (!isMorto && chk) chk.checked = false;
         }
 
+        // #146: só permite a fase "Fantasma" se o Sim estiver morto.
+        function toggleFaseFantasma() {
+            const statusEl = document.getElementById('e-status');
+            const faseEl = document.getElementById('e-fase');
+            if (!statusEl || !faseEl) return;
+            const isMorto = statusEl.value === 'Ancestral (Morto)';
+            const opt = faseEl.querySelector('option[value="fantasma"]');
+            if (opt) {
+                opt.hidden = !isMorto;
+                opt.disabled = !isMorto;
+            }
+            if (!isMorto && faseEl.value === 'fantasma') {
+                faseEl.value = 'adulto';
+            }
+        }
+        try { window.toggleFaseFantasma = toggleFaseFantasma; } catch(_) {}
+
         function cancelarEdicaoSim() {
             if (currentSimId === null) {
                 fecharModal(); // criação nova: fecha o modal direto
@@ -5787,6 +5805,7 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
             const chkFJ = document.getElementById('e-fantasmaJogavel');
             if (chkFJ) chkFJ.checked = s.fantasmaJogavel || false;
             toggleFantasmaJogavel();
+            try { toggleFaseFantasma(); } catch(_) {}
         }
 
         function carregarImagemNoInputDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; document.getElementById('e-img').value = tempFotosFases[faseSel] || ""; }
@@ -7283,8 +7302,8 @@ let edgesArray = [];
                 casados:    { color: { color: '#7CD700' }, width: 4,   dashes: false,   arrows: { to: { enabled: false } }, label: '💍' },
                 separados:  { color: { color: '#FF4D4D' }, width: 3,   dashes: [8, 8],  arrows: { to: { enabled: false } }, label: '💔' },
                 viuvos:     { color: { color: '#34495E' }, width: 3,   dashes: [2, 6],  arrows: { to: { enabled: false } }, label: '🕊️' },
-                irmaosFull: { color: { color: '#FF8C00' }, width: 3,   dashes: false,   arrows: { to: { enabled: false } } },
-                meioIrmao:  { color: { color: '#FF8C00' }, width: 2.5, dashes: [6, 4],  arrows: { to: { enabled: false } } },
+                irmaosFull: { color: { color: '#FF8C00' }, width: 1.8, dashes: false,   arrows: { to: { enabled: false } }, chosen: false, smooth: { type: 'curvedCCW', roundness: 0.45 } },
+                meioIrmao:  { color: { color: '#FF8C00' }, width: 1.5, dashes: [6, 4],  arrows: { to: { enabled: false } }, chosen: false, smooth: { type: 'curvedCCW', roundness: 0.45 } },
                 npc:        { color: { color: '#aaaacc' }, width: 2,   dashes: [5, 5],  arrows: 'to' }
             };
             const EDGE_FONT = { size: 14, strokeWidth: 0, color: '#555', background: 'rgba(255,255,255,0.7)' };
@@ -7316,7 +7335,7 @@ let edgesArray = [];
                                 from: String(s.id),
                                 to: String(irmaId),
                                 ...EDGE_STYLES.irmaosFull,
-                                smooth: { type: 'curvedCW', roundness: 0.2 }
+                                smooth: { type: 'curvedCCW', roundness: 0.5 }
                             });
                             addedFundadoresEdges.add(irmaoKey1);
                         }
@@ -7377,7 +7396,7 @@ let edgesArray = [];
                         from: filhos[i],
                         to: filhos[i+1],
                         ...estiloIrm,
-                        smooth: { type: 'curvedCCW', roundness: 0.25 }
+                        smooth: { type: 'curvedCCW', roundness: 0.45 }
                     });
                 }
             });
@@ -12310,6 +12329,7 @@ function atualizarIndicadorMemoria() {
             'jovem-adulto':'jovem-adulto', 'young-adult':'jovem-adulto',
             'adulto':'adulto', 'adult':'adulto',
             'idoso':'idoso', 'elder':'idoso',
+            'fantasma':'fantasma', 'ghost':'fantasma',
         };
         return alias[s] || s;
     }
@@ -12401,6 +12421,34 @@ function atualizarIndicadorMemoria() {
         if (conq.length) partes.push('🏅 Conquistas (do jogo):\n' + conq.map(x => '• ' + x).join('\n'));
         const asp = _dedup(m && m.aspiracoes_concluidas);
         if (asp.length) partes.push('🎯 Aspirações concluídas (do jogo):\n' + asp.map(x => '• ' + x).join('\n'));
+
+        // #141: Gostos / Desgostos / Habilidades vindos do mod.
+        const _agruparPorCategoria = (arr) => {
+            if (!Array.isArray(arr) || !arr.length) return '';
+            const grupos = {};
+            arr.forEach(g => {
+                if (!g) return;
+                const cat = String(g.categoria || 'Outros').trim() || 'Outros';
+                const nome = String(g.nome || '').trim();
+                if (!nome) return;
+                if (!grupos[cat]) grupos[cat] = new Set();
+                grupos[cat].add(nome);
+            });
+            const cats = Object.keys(grupos).sort();
+            if (!cats.length) return '';
+            return cats.map(c => c + ':\n' + [...grupos[c]].map(n => '  • ' + n).join('\n')).join('\n');
+        };
+        const gostosTxt = _agruparPorCategoria(m && m.gostos);
+        if (gostosTxt) partes.push('💚 Gostos (do jogo):\n' + gostosTxt);
+        const desgostosTxt = _agruparPorCategoria(m && m.desgostos);
+        if (desgostosTxt) partes.push('💔 Desgostos (do jogo):\n' + desgostosTxt);
+        if (Array.isArray(m && m.habilidades) && m.habilidades.length) {
+            const habs = m.habilidades
+                .filter(h => h && h.nome)
+                .map(h => '• ' + String(h.nome).trim() + (h.nivel != null ? ' — Nível ' + h.nivel : ''));
+            if (habs.length) partes.push('🎓 Habilidades (do jogo):\n' + habs.join('\n'));
+        }
+
         const outras = _outrasInfoLimpas(m && m.outras_informacoes);
         if (outras) partes.push('📝 Outras informações (do jogo):\n' + outras.split('\n').map(x => '• ' + x).join('\n'));
         return partes.join('\n\n');
@@ -14073,7 +14121,9 @@ function atualizarIndicadorMemoria() {
                             && ev.meta) {
                         simLocal.carreira = ev.meta.carreira || '';
                     } else if (ev.tipo === 'falecimento') {
-                        simLocal.status = 'falecido';
+                        simLocal.status = 'Ancestral (Morto)';
+                        // #146: ao falecer, entra na nova fase "Fantasma".
+                        simLocal.fase = 'fantasma';
                         if (ev.meta && ev.meta.causaMorte) {
                             simLocal.causaMorte = ev.meta.causaMorte;
                         }
@@ -14093,6 +14143,8 @@ function atualizarIndicadorMemoria() {
         try { renderLivroComFiltro && renderLivroComFiltro(); } catch(e){}
 
         fecharModalImportMod();
+        // #142: mostra o botão "Desfazer importação" com timer de 15s.
+        try { atualizarBotaoUndo(true); } catch(_) {}
         let msg = '✅ Importação concluída — ' + nNovos + ' novo(s), ' + nAtualizados + ' atualizado(s), ' + nIgnorados + ' ignorado(s).';
         if (classif.length) msg += ' 💞 ' + nVinculos + ' vínculo(s) criado(s)' + (nVinculosIgn ? ', ' + nVinculosIgn + ' ignorado(s)' : '') + '.';
         if (nEventos || nEventosIgn) msg += ' 📖 ' + nEventos + ' evento(s) no livro' + (nEventosIgn ? ', ' + nEventosIgn + ' ignorado(s)' : '') + (nEventosSemVinculo ? ' ⚠️ ' + nEventosSemVinculo + ' sem vínculo (Sim não importado).' : '.');
@@ -14151,7 +14203,7 @@ function atualizarIndicadorMemoria() {
 </style>
 
 <button id="fab-collapse-toggle" type="button" title="Retrair/expandir FAB" aria-label="Retrair FAB">−</button>
-<div id="btn-undo-import" title="Desfazer última importação de dados do mod"><span id="btn-undo-import-label" style="cursor:pointer;">↩ Desfazer importação</span><span id="btn-undo-import-dismiss" role="button" tabindex="0" title="Dispensar (não desfaz nada)" aria-label="Fechar">✕</span></div>
+<div id="btn-undo-import" title="Desfazer última importação de dados do mod"><span id="btn-undo-import-label" style="cursor:pointer;">↩ Desfazer importação</span><span id="btn-undo-import-timer" style="font-weight:700; color:#a0791f; background:rgba(212,175,55,0.15); padding:2px 8px; border-radius:10px; font-size:11px; min-width:26px; text-align:center;">15s</span><span id="btn-undo-import-dismiss" role="button" tabindex="0" title="Dispensar (não desfaz nada)" aria-label="Fechar">✕</span></div>
 
 <!-- Modal criar roleta (dashboard) — 2 passos: nome -> opções -->
 <div id="modal-nova-roleta" style="display:none; position:fixed; inset:0; z-index:9800; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; padding:16px;">
@@ -14268,16 +14320,42 @@ function atualizarIndicadorMemoria() {
     if (!bks.length) return 0;
     return Number(bks[bks.length-1].replace('db_backup_pre_import_','')) || 0;
   }
-  function atualizarBotaoUndo(){
+  var _undoTimerHandle = null;
+  var _undoTimerDeadline = 0;
+  function _pararUndoTimer(){
+    if (_undoTimerHandle) { clearInterval(_undoTimerHandle); _undoTimerHandle = null; }
+  }
+  function _iniciarUndoTimer(segundos){
+    const btn = document.getElementById('btn-undo-import');
+    const tmr = document.getElementById('btn-undo-import-timer');
+    if (!btn || !tmr) return;
+    _pararUndoTimer();
+    _undoTimerDeadline = Date.now() + segundos * 1000;
+    tmr.style.display = 'inline-flex';
+    tmr.textContent = segundos + 's';
+    _undoTimerHandle = setInterval(function(){
+      const restante = Math.max(0, Math.ceil((_undoTimerDeadline - Date.now())/1000));
+      tmr.textContent = restante + 's';
+      if (restante <= 0) {
+        _pararUndoTimer();
+        btn.style.display = 'none';
+      }
+    }, 250);
+  }
+  // #142: botão só aparece quando 'mostrarAgora' é true (após importação).
+  // Na carga da página fica escondido, mesmo com backups em localStorage.
+  function atualizarBotaoUndo(mostrarAgora){
     const btn = document.getElementById('btn-undo-import');
     if (!btn) return;
-    // #134: remove trava legada de "dispensado" (persistia entre sessoes
-    // e escondia o botao para sempre) e mostra sempre que houver backup.
     try { localStorage.removeItem('simstoria.undo.dismissed'); } catch(_) {}
-    if (btn.dataset.hiddenSession === '1') { btn.style.display = 'none'; return; }
+    if (!mostrarAgora) { _pararUndoTimer(); btn.style.display = 'none'; return; }
     const ultima = _ultimoBackupTs();
-    btn.style.display = ultima ? 'inline-flex' : 'none';
+    if (!ultima) { btn.style.display = 'none'; return; }
+    delete btn.dataset.hiddenSession;
+    btn.style.display = 'inline-flex';
+    _iniciarUndoTimer(15);
   }
+  try { window.atualizarBotaoUndo = atualizarBotaoUndo; } catch(_) {}
   window.desfazerUltimaImportacao = function(){
     const bks = _listarBackups();
     if (!bks.length) { alert('Nenhuma importação recente para desfazer.'); return; }
@@ -14318,10 +14396,9 @@ function atualizarIndicadorMemoria() {
     if (lbl) lbl.addEventListener('click', function(e){ e.stopPropagation(); window.desfazerUltimaImportacao(); });
     function _dispensar(e){
       e && e.stopPropagation();
-      // #134: dispensar so oculta na sessao atual; no proximo carregamento
-      // o botao volta a aparecer enquanto houver backup.
       const btn = document.getElementById('btn-undo-import');
       if (btn) { btn.dataset.hiddenSession = '1'; btn.style.display = 'none'; }
+      try { _pararUndoTimer(); } catch(_) {}
     }
     if (dis) {
       dis.addEventListener('click', _dispensar);
@@ -14434,7 +14511,7 @@ function atualizarIndicadorMemoria() {
   }
 
   // Init tudo
-  function init(){ initFab(); atualizarBotaoUndo(); injetarCardCriar(); }
+  function init(){ initFab(); atualizarBotaoUndo(false); injetarCardCriar(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
@@ -14997,7 +15074,8 @@ function atualizarIndicadorMemoria() {
     ['adolescente','🧑 Adolescente'],
     ['jovem-adulto','👨 Jovem Adulto'],
     ['adulto','🧔 Adulto'],
-    ['idoso','👴 Idoso']
+    ['idoso','👴 Idoso'],
+    ['fantasma','👻 Fantasma']
   ];
   var OCULTO_OPTIONS = [
     ['humano','👤 Humano'],['vampiro','🧛 Vampiro'],['bruxo','🧙 Bruxo / Feiticeiro'],
@@ -15037,7 +15115,8 @@ function atualizarIndicadorMemoria() {
       if (!span) return;
       var field = span.closest('.profile-field');
       if (!field) return;
-      if (field.classList.contains('ss-inline-edit')) return;
+      // #144: idempotente — se já tem lápis, não adiciona outro.
+      if (field.querySelector('.ss-inline-pencil')) return;
       field.classList.add('ss-inline-edit');
       var pencil = document.createElement('span');
       pencil.className = 'ss-inline-pencil';
@@ -15045,10 +15124,12 @@ function atualizarIndicadorMemoria() {
       pencil.title = 'Editar rapidamente';
       pencil.addEventListener('click', function(ev){
         ev.stopPropagation();
+        ev.preventDefault();
         openInlineEditor(field, span, f);
       });
-      var strong = field.querySelector('strong');
-      if (strong) strong.appendChild(pencil); else field.appendChild(pencil);
+      // #144: inserir o lápis fora do <strong> (como último filho do field)
+      // sobrevive a re-renders que reescrevem o conteúdo do strong.
+      field.appendChild(pencil);
     });
   }
 
@@ -15165,13 +15246,21 @@ function atualizarIndicadorMemoria() {
       return r;
     };
   }
+  // #144: MutationObserver reativo + fallback curto.
+  (function(){
+    var view = document.getElementById('mode-view');
+    if (view && typeof MutationObserver !== 'undefined') {
+      var mo = new MutationObserver(function(){ decorateInlineFields(); });
+      mo.observe(view, { childList:true, subtree:true });
+    }
+  })();
   setInterval(function(){
     var modal = document.getElementById('modal-sim');
     var view = document.getElementById('mode-view');
     if (modal && view && modal.style.display!=='none' && view.style.display!=='none'){
       decorateInlineFields();
     }
-  }, 1500);
+  }, 400);
 
 })();
 </script>
