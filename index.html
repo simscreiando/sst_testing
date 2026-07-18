@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-43- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-44- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -12536,7 +12536,7 @@ function atualizarIndicadorMemoria() {
             const modNpc = _modEhNpc(modSim);
             const modFalecido = /morto|morta|falecid|dead/i.test(String(modSim.status_vida||'')) || !!modSim.causa_morte;
             const sugestoes = sims
-                .filter(s => !s.simId && (!!s.isNpc === modNpc))
+                .filter(s => !s.simId)
                 .map(s => {
                     let score = 0;
                     if (_norm(s.nome).toLowerCase() === nomeMod && nomeMod) score += 2;
