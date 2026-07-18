@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-42- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-43- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -7407,14 +7407,14 @@ let edgesArray = [];
                     hierarchical: {
                         direction: 'UD',
                         sortMethod: 'directed',
-                        nodeSpacing: 245,
-                        levelSeparation: 290,
-                        treeSpacing: 300,
+                        nodeSpacing: 310,
+                        levelSeparation: 360,
+                        treeSpacing: 380,
                         blockShifting: false,
                         edgeMinimization: false
                     }
                 },
-                physics: { hierarchicalRepulsion: { nodeDistance: 245, springLength: 150 }, solver: 'hierarchicalRepulsion' },
+                physics: { hierarchicalRepulsion: { nodeDistance: 310, springLength: 200 }, solver: 'hierarchicalRepulsion' },
                 interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true, navigationButtons: true },
                 nodes: { chosen: { node: function(values, id, selected, hovering) { if (hovering || selected) values.size = 88; } } },
                 edges: { smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.65 }, shadow: { enabled: true, color: 'rgba(0,0,0,0.15)', size: 6, x: 0, y: 2 }, hoverWidth: 1.2 }
@@ -7426,14 +7426,14 @@ let edgesArray = [];
                         hierarchical: {
                             direction: 'LR',
                             sortMethod: 'directed',
-                            nodeSpacing: 220,
-                            levelSeparation: 345,
-                            treeSpacing: 250,
+                            nodeSpacing: 290,
+                            levelSeparation: 420,
+                            treeSpacing: 330,
                             blockShifting: false,
                             edgeMinimization: false
                         }
                     },
-                    physics: { hierarchicalRepulsion: { nodeDistance: 220, springLength: 150 }, solver: 'hierarchicalRepulsion' },
+                    physics: { hierarchicalRepulsion: { nodeDistance: 290, springLength: 200 }, solver: 'hierarchicalRepulsion' },
                     interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true, navigationButtons: true },
                     nodes: { chosen: { node: function(values, id, selected, hovering) { if (hovering || selected) values.size = 88; } } },
                     edges: { smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.65 }, shadow: { enabled: true, color: 'rgba(0,0,0,0.15)', size: 6, x: 0, y: 2 }, hoverWidth: 1.2 }
@@ -7444,7 +7444,7 @@ let edgesArray = [];
                     physics: {
                         enabled: true,
                         solver: 'forceAtlas2Based',
-                        forceAtlas2Based: { gravitationalConstant: -80, springLength: 320, springConstant: 0.04, damping: 0.5 },
+                        forceAtlas2Based: { gravitationalConstant: -140, springLength: 420, springConstant: 0.04, damping: 0.5 },
                         stabilization: { iterations: 200 }
                     },
                     interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true, navigationButtons: true },
@@ -7459,9 +7459,9 @@ let edgesArray = [];
                         solver: 'barnesHut',
                         barnesHut: {
                             centralGravity: 0.008, 
-                            springLength: 500,
+                            springLength: 620,
                             springConstant: 0.02,
-                            gravitationalConstant: -28000, 
+                            gravitationalConstant: -38000, 
                             damping: 0.25,
                             avoidOverlap: 1
                         },
@@ -7478,14 +7478,14 @@ let edgesArray = [];
                         hierarchical: {
                             direction: 'UD',
                             sortMethod: 'directed',
-                            nodeSpacing: 270,
-                            levelSeparation: 325,
-                            treeSpacing: 350,
+                            nodeSpacing: 340,
+                            levelSeparation: 395,
+                            treeSpacing: 430,
                             blockShifting: false,
                             edgeMinimization: false
                         }
                     },
-                    physics: { hierarchicalRepulsion: { nodeDistance: 270, springLength: 150 }, solver: 'hierarchicalRepulsion' },
+                    physics: { hierarchicalRepulsion: { nodeDistance: 340, springLength: 200 }, solver: 'hierarchicalRepulsion' },
                     interaction: { dragNodes: true, dragView: true, zoomView: true, hover: true, navigationButtons: true },
                     nodes: { chosen: { node: function(values, id, selected, hovering) { if (hovering || selected) values.size = 88; } } },
                     edges: { smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.65 }, shadow: { enabled: true, color: 'rgba(0,0,0,0.15)', size: 6, x: 0, y: 2 }, hoverWidth: 1.2 }
@@ -7631,9 +7631,11 @@ let edgesArray = [];
             cyContainer.innerHTML = '';
 
             const NODE_W = 150, NODE_H = 190;
-            const H_GAP = 36;
-            const COUPLE_GAP = 28;
-            const V_GAP = 72;
+            const H_GAP = 48;
+            const COUPLE_GAP = 36;
+            const V_GAP = 88;
+            const FAMILY_GAP = H_GAP * 4;
+            const COUPLE_SIBLING_PAD = H_GAP;
             const HUB_GAP = 70;
             const SIB_BAR_GAP = 28; // distância do union até a barra de irmandade
             const PALETTE = ['#e3f2fd','#e8f5e9','#fff8e1','#fce4ec','#ede7f6','#fbe9e7','#e0f7fa','#f3e5f5'];
@@ -7787,7 +7789,7 @@ let edgesArray = [];
                 if (seen.has(uk)) return unitWidth[uk] || NODE_W;
                 seen.add(uk);
                 const u = units[uk];
-                const own = (u.type === 'couple') ? (NODE_W * 2 + COUPLE_GAP) : NODE_W;
+                const own = (u.type === 'couple') ? (NODE_W * 2 + COUPLE_GAP + COUPLE_SIBLING_PAD * 2) : NODE_W;
                 const { hubItems, childKs, looseChildren } = layoutItemsOf(u);
                 let total = 0;
                 hubItems.forEach(hi => { total += calcHubGroupWidth(hi.hubSim, hi.unions, seen) + H_GAP; });
@@ -7919,7 +7921,7 @@ let edgesArray = [];
                         placeUnit(uk, cursor + uw / 2, memberY);
                         cursor += uw + H_GAP;
                     });
-                    xOffset += w + H_GAP * 3;
+                    xOffset += w + FAMILY_GAP;
                 });
                 rootUnits.forEach(u => {
                     const w = unitWidth[u.key] || NODE_W;
@@ -12530,14 +12532,18 @@ function atualizarIndicadorMemoria() {
             }
             const nomeMod = _norm(modSim.nome).toLowerCase();
             const sobMod = _norm(modSim.sobrenome).toLowerCase();
+            const _modEhNpc = m => !!(m && (m.is_npc === true || m.is_npc === 'true' || m.npc === true));
+            const modNpc = _modEhNpc(modSim);
+            const modFalecido = /morto|morta|falecid|dead/i.test(String(modSim.status_vida||'')) || !!modSim.causa_morte;
             const sugestoes = sims
-                .filter(s => !s.simId)
+                .filter(s => !s.simId && (!!s.isNpc === modNpc))
                 .map(s => {
                     let score = 0;
                     if (_norm(s.nome).toLowerCase() === nomeMod && nomeMod) score += 2;
                     if (_norm(s.sobrenome).toLowerCase() === sobMod && sobMod) score += 2;
                     if (_norm(s.familia||'').toLowerCase() === _norm(modSim.familia||'').toLowerCase() && modSim.familia) score += 1;
-                    return { sim: s, score };
+                    if (modNpc && modFalecido && (s.npcStatus === 'falecido' || s.status === 'Ancestral (Morto)')) score += 1;
+                    return { sim: s, score, isNpc: !!s.isNpc };
                 })
                 .sort((a,b) => b.score - a.score);
             semVinculo.push({ modSim, sugestoes });
@@ -12569,7 +12575,9 @@ function atualizarIndicadorMemoria() {
                 item.sugestoes.forEach(s => {
                     const nomeSim = _escapeHtml((s.sim.nome||'') + ' ' + (s.sim.sobrenome||'')).trim();
                     const extra = s.sim.estagio ? ' (' + _escapeHtml(s.sim.estagio) + ')' : '';
-                    opts += '<option value="' + _escapeHtml(s.sim.id) + '">🔗 Vincular a: ' + nomeSim + extra + '</option>';
+                    const morto = (s.sim.npcStatus === 'falecido' || s.sim.status === 'Ancestral (Morto)') ? ' 🪦' : '';
+                    const rotulo = s.isNpc ? ('🔗 Vincular ao NPC: ' + nomeSim + morto) : ('🔗 Vincular a: ' + nomeSim + extra);
+                    opts += '<option value="' + _escapeHtml(s.sim.id) + '">' + rotulo + '</option>';
                 });
                 htmlNov += ''
                     + '<div data-sim-status="' + _statusSimImport(m) + '" style="background:#eaffea; border-left:4px solid var(--cozy-accent,#7fb069); border-radius:10px; padding:10px 12px; margin-bottom:6px;" data-import-row="vinculo:' + idx + '">'
