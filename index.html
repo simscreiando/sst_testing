@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54_35-MOD-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54_36-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -503,7 +503,7 @@
         .tree-container::after {
             content: '';
             position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-image: url('https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png');
+            background-image: url('https://raw.githubusercontent.com/simscreiando/SimStoria/21009aaa5c93a6dba53eee67855b694b89be6c4a/SimStoria.png');
             background-repeat: no-repeat;
             background-position: center center;
             background-size: contain;
@@ -916,7 +916,7 @@
         </div>
 
         <h1 style="display: flex; align-items: center; gap: 9px;">
-            <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png" alt="SimStoria" style="width: 50px; height: 50px; object-fit: contain; flex-shrink: 0;">
+            <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/21009aaa5c93a6dba53eee67855b694b89be6c4a/SimStoria.png" alt="SimStoria" style="width: 50px; height: 50px; object-fit: contain; flex-shrink: 0;">
             SimStoria - Legacy Companion
         </h1>
 
@@ -953,7 +953,7 @@
             <details class="sidebar-group" data-group="sistema">
                 <summary class="sidebar-group-head">⚙️ Sistema <span class="sidebar-group-arrow">▾</span></summary>
                 <div class="sidebar-group-body">
-                    <button class="nav-btn" id="btn-nav-mod" onclick="switchTab('tab-mod-simstoria')">⬇️ Mod SimStoria</button>
+                    <button class="nav-btn" id="btn-nav-mod" onclick="switchTab('tab-mod-simstoria')">⬇️ Mod SimStoria Exporter</button>
                     <button class="nav-btn" id="btn-nav-config" onclick="switchTab('tab-config')">⚙️ Configurações</button>
                     <button class="nav-btn" id="btn-nav-help" onclick="switchTab('tab-help')">📖 Ajuda</button>
                     <button class="nav-btn" id="btn-nav-feedback" onclick="switchTab('tab-feedback')">💬 Enviar Feedback</button>
@@ -1028,51 +1028,49 @@
 
         <div id="tab-home" class="tab-pane active">
             <div style="text-align: center; max-width: 900px; margin: 1px auto; padding: 1px;">
-                <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png" alt="SimStoria" style="width: 153px; height: 102px; margin-bottom: 1px; animation: fadeIn 0.6s ease;">
+                <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/21009aaa5c93a6dba53eee67855b694b89be6c4a/SimStoria.png" alt="SimStoria" style="width: 111px; height: 33px; margin-bottom: -20px; animation: fadeIn 0.6s ease;">
                 <h2 style="font-size: 32px; color: var(--ts4-blue); margin-bottom: 1px; font-weight: 900;">Olá, Simmer! 👋</h2>
-                <p style="font-size: 16px; color: var(--ts4-subtle-text); margin-bottom: 1px; font-weight: 600;">O que você quer fazer hoje no seu legado?</p>
+                <p style="font-size: 16px; color: var(--ts4-subtle-text); margin-bottom: 1px; margin-top: -5px; font-weight: 600;">O que você quer fazer hoje no seu legado?</p>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; text-align: left;">
                     
                     <div class="welcome-card" onclick="document.getElementById('btn-nav-history').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid var(--ts4-blue); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                        <div style="font-size: 36px; margin-bottom: 15px;">📖</div>
-                        <strong style="font-size: 18px; color: var(--ts4-blue); display: block; margin-bottom: 8px;">Registrar Eventos</strong>
-                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Escreva no Livro da Família, valide os objetivos da geração atual e atualize seu diário de bordo.</span>
+                        <strong style="font-size: 18px; color: var(--ts4-blue); display: block; margin-bottom: 8px;">📖 Registrar Eventos</strong>
+                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Escreva no Livro da Família, valide os objetivos da geração atual, registre e acompanhe metas. Faça para cada sim ou no geral.</span>
                     </div>
 
                     <div class="welcome-card" onclick="document.getElementById('btn-nav-dash').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid var(--ts4-purple); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                        <div style="font-size: 36px; margin-bottom: 15px;">🔮</div>
-                        <strong style="font-size: 18px; color: var(--ts4-purple); display: block; margin-bottom: 8px;">Diversifique seu jogo</strong>
+                        <strong style="font-size: 18px; color: var(--ts4-purple); display: block; margin-bottom: 8px;">🔮 Diversifique seu jogo</strong>
                         <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">O sistema definitivo para enriquecer a narrativa e a jogabilidade do seu The Sims 4. Role os dados, enfrente o destino e documente o legado dos seus Sims.</span>
                     </div>
 
                     <div class="welcome-card" onclick="document.getElementById('btn-nav-tree').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid var(--ts4-green); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                        <div style="font-size: 36px; margin-bottom: 15px;">🌳</div>
-                        <strong style="font-size: 18px; color: var(--ts4-green); display: block; margin-bottom: 8px;">Ver Árvore Genealógica</strong>
+                        <strong style="font-size: 18px; color: var(--ts4-green); display: block; margin-bottom: 8px;">🌳Árvore Genealógica</strong>
                         <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Abra o mapa de conexões ("Árvore Genealógica") para gerenciar laços de sangue, cônjuges e linhagens completas.</span>
                     </div>
 
-                    <div class="welcome-card" onclick="document.getElementById('btn-nav-conquistas').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid var(--cozy-gold,#d4af37); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                        <div style="font-size: 36px; margin-bottom: 15px;">🏅</div>
-                        <strong style="font-size: 18px; color: var(--cozy-gold,#d4af37); display: block; margin-bottom: 8px;">Conquistas &amp; Stats</strong>
-                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Veja o Espelho da Família, desbloqueie badges e calcule o score do desafio de legado com base nos seus eventos.</span>
+                    <div class="welcome-card" onclick="document.getElementById('btn-nav-mod').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid var(--cozy-green,#2a6040); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                        <strong style="font-size: 18px; color: var(--cozy-green,#2a6040); display: block; margin-bottom: 8px;">⬇️ Baixe o Mod SimStoria Exporter</strong>
+                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Faça o download do Mod para importar as informações do seu save para o site e organize seu legado.</span>
                     </div>
 
                     <div class="welcome-card" onclick="document.getElementById('btn-nav-feedback').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid #ffcc00; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                        <div style="font-size: 36px; margin-bottom: 15px;">💬</div>
-                        <strong style="font-size: 18px; color: #c79a00; display: block; margin-bottom: 8px;">Enviar Feedback</strong>
-                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Conte ideias, reporte bugs ou sugira melhorias. Sua opinião ajuda a guiar o futuro do SimStoria.</span>
+                        <strong style="font-size: 18px; color: #c79a00; display: block; margin-bottom: 8px;">💬 Enviar Feedback</strong>
+                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Conte ideias, reporte bugs ou sugira melhorias. Sua opinião ajuda a guiar o futuro do SimStoria. Fale-nos sobre o site e o mod simstoria exporter.</span>
                     </div>
 
                     <div class="welcome-card" onclick="document.getElementById('btn-nav-apoio').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid var(--ts4-green); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                        <div style="font-size: 36px; margin-bottom: 15px;">💖</div>
-                        <strong style="font-size: 18px; color: var(--ts4-green); display: block; margin-bottom: 8px;">Apoie o Projeto</strong>
+                        <strong style="font-size: 18px; color: var(--ts4-green); display: block; margin-bottom: 8px;">💖 Apoie o Projeto</strong>
                         <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Ajude a manter o SimStoria vivo e em evolução. Cada contribuição faz diferença no legado!</span>
                     </div>
 
+                    <div class="welcome-card" onclick="document.getElementById('btn-nav-conquistas').click()" style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); cursor: pointer; border-bottom: 4px solid var(--cozy-gold,#d4af37); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                        <strong style="font-size: 18px; color: var(--cozy-gold,#d4af37); display: block; margin-bottom: 8px;">🏅 Conquistas &amp; Stats</strong>
+                        <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">Veja o Espelho da Família, desbloqueie badges e calcule o score do desafio de legado com base nos seus eventos.</span>
+                    </div>
+
                     <div style="padding: 25px; border-radius: 20px; background: var(--ts4-panel); border-bottom: 4px solid var(--cozy-accent); box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                        <div style="font-size: 36px; margin-bottom: 15px;">📜</div>
-                        <strong style="font-size: 18px; color: var(--cozy-accent); display: block; margin-bottom: 8px;">Termos & Privacidade</strong>
+                        <strong style="font-size: 18px; color: var(--cozy-accent); display: block; margin-bottom: 8px;">📜 Termos & Privacidade</strong>
                         <span style="font-size: 13px; color: var(--ts4-subtle-text); line-height: 1.5; display: block;">
                             Ao continuar, você concorda com nossos <a href="privacidade.html" target="_blank" rel="noopener" style="color: var(--cozy-accent); text-decoration: none; font-weight: 700; border-bottom: 1px solid var(--cozy-accent);">Termos de Uso e Política de Privacidade</a>.
                         </span>
@@ -2128,7 +2126,7 @@
         <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
             <span style="font-size:36px;">⬇️</span>
             <div>
-                <h2 style="margin:0;">Mod SimStoria Exporter</h2>
+                <h2 style="margin:0;">Mod SimStoria Exporter - Por SioSims</h2>
                 <p style="margin:2px 0 0 0; font-size:12px; color:#888;">Baixe a versão atual do mod e acompanhe o histórico de modificações.</p>
             </div>
         </div>
@@ -2154,9 +2152,29 @@
                     <li>5) O arquivo será exportado em cada salvamento do jogo.</li>
                     <li><strong>6) Você também pode exportar a qualquer momento digitando o comando (CTRL+SHIFT+C) simstoria.exportar</strong></li>
                     <li>7) Utilizar o arquivo simstoria_export_NOME DO SEU SAVE.json</li>
+                    <li>8) Ao importar no site, abre-se um formulário para você selecionar quais informações quer importar, escolhendo vincular a um sim que você já cadastrou ou criar um novo sim.</li>
                         </div>
         </div>
-
+        <!-- Sobre o Mod -->
+        <div style="background:linear-gradient(135deg,#eefffe,#bbdff8); border:2px double var(--cozy-accent-2,#aed7f2); border-radius:16px; padding:18px 20px; margin:16px 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div style="font-size:20px; color:#5a4d32; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Sobre o Mod</div>
+                </div>
+            </div>
+            <div style="margin-top:12px; padding:10px 12px; background:#fff; border-radius:10px; border:1px solid #eee; font-size:13px; color:#555; line-height:1.5;">
+                    <li> Sua família de Sims já vive uma história. O SimStoria só escreve ela por você.</li>
+                    <li> A cada vez que você salva o jogo, o SimStoria Exporter registra quem nasceu, quem se casou, quem mudou de carreira, quem realizou a aspiração da vida, e informações dos sims do seu save, pronto para importar no site.</li>
+                    <li> O SimStoria Exporter traz a ficha completa do Sim: traços, gostos e desgostos (com categoria); habilidades em destaque; carreira, aspiração e conquistas; fase de vida, status e causa da morte</li>
+                    <li> Traz também relações & família - Quem é filho de quem, quem casou com quem, pais e filhos, casamentos, noivados e divórcios, namoros e viuvez</li>
+                    <li> Linha do tempo automática - Após a importação do arquivo .json gerado pelo mod no site, o SimStoria compara cada exportação com a anterior e escreve o que mudou, no livro da família. Nascimentos e mortes, mudanças de carreira e de fase de vida, traços ganhos ou perdidos</li>
+                    <li> Joga mais de uma dinastia? Cada save tem seus próprios arquivos. Nome do save + identificador único, Índice central de todos os saves exportados.</li>
+                    <li> O SimStoria Exporter não demonstra incompatibilidades com outros mods, pois não altera nenhum funcionalidade do jogo.</li>
+                    <li> Não salvamos nenhum dado pessoal ou sensível, apenas as informações do seu save, e tudo estará sobre seu controle.</li>
+                    <li> O SimStoria Exporter está em desenvolvimento, podendo apresentar traços em inglês e outros resquícios. Para melhorarmos isso, é necessário o seu feedback e contribuição.</li>
+                    <li> Algumas informações ainda não vão aparecer no perfil dos sims agora, ou aparecerão desorganizadas, mas estamos trabalhando para essa atualização na próxima versão do site.</li>
+                </div>
+        </div>
         <!-- Changelog -->
         <div style="background:var(--ts4-panel,#fffdf5); border:1.5px solid var(--ts4-border,#e6d5a8); border-radius:16px; padding:18px 20px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
@@ -2177,7 +2195,7 @@
     <div class="panel" style="padding: 30px;">
 
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png" alt="SimStoria Logo" style="width: 80px; margin-bottom: 10px;">
+                    <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/21009aaa5c93a6dba53eee67855b694b89be6c4a/SimStoria.png" alt="SimStoria Logo" style="width: 80px; margin-bottom: 10px;">
                     <h2 style="color: var(--ts4-blue); margin: 0;">SimStoria - Legacy Companion</h2>
                     <p style="color: #666; font-size: 14px;">Versão Atual: v53 (Sims Edition)</p>
                 </div>
@@ -9967,7 +9985,7 @@ function atualizarIndicadorMemoria() {
         <div style="position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center; padding:20px 35px; border-bottom:1px solid rgba(255,255,255,0.07);">
             <div style="display:flex; align-items:center; gap:14px;">
 
-                <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png" style="width:30px; height:30px; opacity:0.8; object-fit:contain;">
+                <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/21009aaa5c93a6dba53eee67855b694b89be6c4a/SimStoria.png" style="width:30px; height:30px; opacity:0.8; object-fit:contain;">
                 <div>
                     <div style="font-size:10px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.4); font-family:'Nunito',sans-serif; font-weight:700;">SimStoria</div>
                     <div id="apres-familia-nome" style="font-size:16px; color:rgba(255,255,255,0.85); font-family:'Nunito',sans-serif; font-weight:800; line-height:1.1;"></div>
@@ -10592,7 +10610,7 @@ function atualizarIndicadorMemoria() {
         await new Promise((res) => {
             logoImg.onload = res;
             logoImg.onerror = res;
-            logoImg.src = 'https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png';
+            logoImg.src = 'https://raw.githubusercontent.com/simscreiando/SimStoria/21009aaa5c93a6dba53eee67855b694b89be6c4a/SimStoria.png';
         });
 
         // Tenta usar webm via codec disponível
@@ -11273,7 +11291,7 @@ function atualizarIndicadorMemoria() {
     <!-- Step 1: boas-vindas -->
     <div class="ob-step" id="ob-step-1">
       <div style="text-align:center; margin-bottom:18px;">
-        <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/208c2f51f672e48f356b19785956b7384654d442/SimStoria.png" alt="SimStoria" style="width:110px; margin-bottom:6px;">
+        <img src="https://raw.githubusercontent.com/simscreiando/SimStoria/21009aaa5c93a6dba53eee67855b694b89be6c4a/SimStoria.png" alt="SimStoria" style="width:110px; margin-bottom:6px;">
         <h2 style="font-family:'Fredoka','Quicksand',sans-serif; font-size:26px; color:#0079C1; margin:0 0 6px;">Bem-vindo ao SimStoria! 🌟</h2>
         <p style="font-size:13px; color:#7a6a54; margin:0 0 18px; line-height:1.6;">
           Aqui você registra e visualiza o legado genealógico dos seus Sims.<br>
@@ -15190,9 +15208,7 @@ function atualizarIndicadorMemoria() {
     const MOD_DATA = '2026-07-17';
     const CHANGELOG_DEFAULT = [
         { versao:'v1.0', data:'2026-07-17', itens:[
-            { tipo:'Novo',    texto:'Filtro por status (Jogados/Ativos, NPCs, Todos) no Passo 1 da importação — evita lista poluída com muitos Sims.' },
-            { tipo:'Novo',    texto:'Linha do Tempo no Livro da Família: atalhos para Casamento, Promoção, Nascimento, Morte, Mudança, Conquista e Divórcio, com texto padronizado.' },
-            { tipo:'Novo',    texto:'Aba "Mod SimStoria" (dentro de Sistema) com botão de download do mod e histórico de modificações editável localmente.' }
+            { tipo:'Novo',    texto:'Versão inicial do mod' },
         ]},
     ];
     const CHANGELOG_KEY = 'simstoria_changelog_local';
