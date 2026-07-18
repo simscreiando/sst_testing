@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-40-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-41-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -7299,11 +7299,11 @@ let edgesArray = [];
             // Dicionário central de estilos — espelha 100% a legenda
             const EDGE_STYLES = {
                 paiFilho:   { color: { color: '#0079C1' }, width: 3,   dashes: false,   arrows: 'to' },
-                casados:    { color: { color: '#7CD700' }, width: 4,   dashes: false,   arrows: { to: { enabled: false } }, label: '💍' },
-                separados:  { color: { color: '#FF4D4D' }, width: 3,   dashes: [8, 8],  arrows: { to: { enabled: false } }, label: '💔' },
-                viuvos:     { color: { color: '#34495E' }, width: 3,   dashes: [2, 6],  arrows: { to: { enabled: false } }, label: '🕊️' },
-                irmaosFull: { color: { color: '#FF8C00' }, width: 1.8, dashes: false,   arrows: { to: { enabled: false } }, chosen: false, smooth: { type: 'curvedCCW', roundness: 0.45 } },
-                meioIrmao:  { color: { color: '#FF8C00' }, width: 1.5, dashes: [6, 4],  arrows: { to: { enabled: false } }, chosen: false, smooth: { type: 'curvedCCW', roundness: 0.45 } },
+                casados:    { color: { color: '#7CD700' }, width: 4,   dashes: false,   arrows: { to: { enabled: false } }, label: '💍', smooth: { type: 'curvedCW', roundness: 0.55 } },
+                separados:  { color: { color: '#FF4D4D' }, width: 3,   dashes: [8, 8],  arrows: { to: { enabled: false } }, label: '💔', smooth: { type: 'curvedCW', roundness: 0.55 } },
+                viuvos:     { color: { color: '#34495E' }, width: 3,   dashes: [2, 6],  arrows: { to: { enabled: false } }, label: '🕊️', smooth: { type: 'curvedCW', roundness: 0.55 } },
+                irmaosFull: { color: { color: '#FF8C00' }, width: 1.8, dashes: false,   arrows: { to: { enabled: false } }, chosen: false, smooth: { enabled: false } },
+                meioIrmao:  { color: { color: '#FF8C00' }, width: 1.5, dashes: [6, 4],  arrows: { to: { enabled: false } }, chosen: false, smooth: { enabled: false } },
                 npc:        { color: { color: '#aaaacc' }, width: 2,   dashes: [5, 5],  arrows: 'to' }
             };
             const EDGE_FONT = { size: 14, strokeWidth: 0, color: '#555', background: 'rgba(255,255,255,0.7)' };
@@ -7335,7 +7335,7 @@ let edgesArray = [];
                                 from: String(s.id),
                                 to: String(irmaId),
                                 ...EDGE_STYLES.irmaosFull,
-                                smooth: { type: 'curvedCCW', roundness: 0.5 }
+                                smooth: { enabled: false }
                             });
                             addedFundadoresEdges.add(irmaoKey1);
                         }
@@ -7359,7 +7359,7 @@ let edgesArray = [];
                             to: String(s.spouse),
                             ...estilo,
                             font: EDGE_FONT,
-                            smooth: { type: 'curvedCW', roundness: 0.3 }
+                            smooth: { type: 'curvedCW', roundness: 0.55 }
                         });
                         addedSpouses.add(spKey1);
                     }
@@ -7396,7 +7396,7 @@ let edgesArray = [];
                         from: filhos[i],
                         to: filhos[i+1],
                         ...estiloIrm,
-                        smooth: { type: 'curvedCCW', roundness: 0.45 }
+                        smooth: { enabled: false }
                     });
                 }
             });
@@ -12289,7 +12289,6 @@ function atualizarIndicadorMemoria() {
             }
             // Novo backup: limpa o "dispensado" para que o botão volte a aparecer
             try { localStorage.removeItem('simstoria.undo.dismissed'); } catch(_) {}
-            try { if (typeof atualizarBotaoUndo === 'function') atualizarBotaoUndo(); } catch(_) {}
         } catch(e) { console.warn('Backup pré-import falhou:', e); }
     }
 
@@ -12302,7 +12301,12 @@ function atualizarIndicadorMemoria() {
         { key:'tipoSim',    label:'Tipo de Sim',     from: m => m.tipo_sim || '' },
         { key:'carreira',   label:'Carreira',        from: m => m.carreira || '' },
         { key:'aspiracao',  label:'Aspiração',       from: m => m.aspiracao_atual || '' },
-        { key:'status',     label:'Status de Vida',  from: m => m.status_vida || '' },
+        { key:'status',     label:'Status de Vida',  from: m => {
+            const raw = String(m.status_vida || '').toLowerCase().trim();
+            if (!raw || raw === 'vivo' || raw === 'alive' || raw === 'living') return 'Vivo';
+            if (/morto|morta|falecid|dead|ghost|fantasma|ancestral/.test(raw)) return 'Ancestral (Morto)';
+            return 'Vivo';
+        } },
         { key:'causaMorte', label:'Causa da Morte',  from: m => m.causa_morte || '' },
         { key:'familia',    label:'Família',         from: m => m.familia || '' },
         { key:'isNpc',      label:'É NPC',           from: m => !!m.is_npc },
@@ -13932,6 +13936,19 @@ function atualizarIndicadorMemoria() {
         const st = window._importModState;
         if (!st || !st.selecao) return;
         _backupPreImport();
+        // #145 v54_41: mostra o botão de desfazer imediatamente (antes de qualquer render).
+        try { atualizarBotaoUndo(true); } catch(_) {}
+        // Saneamento: status nunca deve ser algo fora de Vivo / Ancestral (Morto).
+        try {
+            (db.sims || []).forEach(function(s){
+                if (!s) return;
+                var v = String(s.status || '').toLowerCase().trim();
+                if (s.status === 'Vivo' || s.status === 'Ancestral (Morto)') return;
+                if (!v) { s.status = 'Vivo'; return; }
+                if (/morto|morta|falecid|dead|ghost|fantasma|ancestral/.test(v)) s.status = 'Ancestral (Morto)';
+                else s.status = 'Vivo';
+            });
+        } catch(_){}
 
         let nNovos = 0, nAtualizados = 0, nIgnorados = 0, nVinculos = 0, nVinculosIgn = 0;
         // Rastreia (modId → localId) para novos sims criados agora, para resolver relacionamentos depois.
@@ -14170,6 +14187,8 @@ function atualizarIndicadorMemoria() {
     align-items: center; gap: 8px;
   }
   #btn-undo-import:hover { background: #fff8e0; }
+  @keyframes undoPulseAnim { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  #btn-undo-import.undo-pulse { animation: undoPulseAnim 0.9s ease-in-out; }
   #btn-undo-import-dismiss {
     display: inline-flex; align-items: center; justify-content: center;
     width: 20px; height: 20px; border-radius: 50%;
@@ -14350,10 +14369,16 @@ function atualizarIndicadorMemoria() {
     try { localStorage.removeItem('simstoria.undo.dismissed'); } catch(_) {}
     if (!mostrarAgora) { _pararUndoTimer(); btn.style.display = 'none'; return; }
     const ultima = _ultimoBackupTs();
-    if (!ultima) { btn.style.display = 'none'; return; }
+    if (!ultima) { try { console.warn('[undo] sem backup em localStorage'); } catch(_){} btn.style.display = 'none'; return; }
+    try { console.log('[undo] mostrando botão, backup ts=', ultima); } catch(_){}
     delete btn.dataset.hiddenSession;
     btn.style.display = 'inline-flex';
-    _iniciarUndoTimer(15);
+    btn.classList.remove('undo-pulse');
+    // força reflow para reiniciar animação
+    void btn.offsetWidth;
+    btn.classList.add('undo-pulse');
+    setTimeout(function(){ if (btn) btn.classList.remove('undo-pulse'); }, 900);
+    _iniciarUndoTimer(30);
   }
   try { window.atualizarBotaoUndo = atualizarBotaoUndo; } catch(_) {}
   window.desfazerUltimaImportacao = function(){
@@ -14554,8 +14579,8 @@ function atualizarIndicadorMemoria() {
     st.textContent = [
       '.ss-highlight { background: linear-gradient(transparent 55%, var(--cozy-gold-soft, #f0d97a) 55%); padding: 0 2px; border-radius: 3px; font-weight: 700; color: inherit; }',
       '.ss-inline-edit.open { outline: 2px dashed #d4af37; outline-offset:2px; border-radius:8px; }',
-      '.ss-inline-pencil { display:inline-block; margin-left:6px; opacity:.35; cursor:pointer; font-size:12px; transition: opacity .15s; user-select:none; }',
-      '.profile-field:hover .ss-inline-pencil { opacity:.95; }',
+      '.ss-inline-pencil-btn { display:inline-flex; align-items:center; gap:4px; margin-top:6px; padding:2px 8px; border-radius:8px; border:1px solid var(--ts4-blue,#0079C1); background:rgba(0,121,193,0.08); color:var(--ts4-blue,#0079C1); font-size:11px; font-weight:700; cursor:pointer; line-height:1.4; user-select:none; }',
+      '.ss-inline-pencil-btn:hover { background:rgba(0,121,193,0.18); }',
       '.ss-inline-editor { margin-top:8px; display:flex; flex-direction:column; gap:6px; }',
       '.ss-inline-editor select, .ss-inline-editor input, .ss-inline-editor textarea { font-size:12px; padding:6px 8px; border-radius:8px; border:1px solid #d4af37; font-family:inherit; width:100%; box-sizing:border-box; }',
       '.ss-inline-actions { display:flex; gap:6px; flex-wrap:wrap; }',
@@ -15115,20 +15140,21 @@ function atualizarIndicadorMemoria() {
       if (!span) return;
       var field = span.closest('.profile-field');
       if (!field) return;
-      // #144: idempotente — se já tem lápis, não adiciona outro.
-      if (field.querySelector('.ss-inline-pencil')) return;
+      // #144 v54_41: botão sempre visível (não depende de hover).
+      if (field.querySelector('.ss-inline-pencil-btn')) return;
       field.classList.add('ss-inline-edit');
-      var pencil = document.createElement('span');
-      pencil.className = 'ss-inline-pencil';
-      pencil.textContent = '✎';
+      var pencil = document.createElement('button');
+      pencil.type = 'button';
+      pencil.className = 'ss-inline-pencil-btn';
+      pencil.textContent = '✎ editar';
       pencil.title = 'Editar rapidamente';
-      pencil.addEventListener('click', function(ev){
-        ev.stopPropagation();
-        ev.preventDefault();
+      var _openIt = function(ev){
+        if (ev) { ev.stopPropagation(); ev.preventDefault(); }
+        try { console.log('[inline-edit] click', f.prop); } catch(_){}
         openInlineEditor(field, span, f);
-      });
-      // #144: inserir o lápis fora do <strong> (como último filho do field)
-      // sobrevive a re-renders que reescrevem o conteúdo do strong.
+      };
+      pencil.addEventListener('click', _openIt);
+      pencil.addEventListener('mousedown', function(ev){ ev.stopPropagation(); });
       field.appendChild(pencil);
     });
   }
