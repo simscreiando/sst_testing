@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54_36-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-37-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -10979,9 +10979,12 @@ function atualizarIndicadorMemoria() {
             <option value="[DRAMA]">🎭 Drama</option>
             <option value="[META]">🎯 Meta</option>
         </select>
-        <label for="fab-evento-sim">Sim vinculado (opcional)</label>
+        <label>Sims vinculados (opcional — marque um ou mais)</label>
         <input type="text" id="fab-evento-sim-busca" placeholder="🔍 Buscar Sim..." style="margin-bottom:4px;">
-        <select id="fab-evento-sim"><option value="">— Nenhum —</option></select>
+        <div id="fab-evento-sim-list" style="max-height:160px; overflow:auto; border:1px solid #e6d5a8; border-radius:10px; background:#fffdf6; padding:6px 8px; font-size:13px; color:#4a3b2a;">
+            <div style="color:#8a7a5a; font-size:11px;">Nenhum Sim cadastrado.</div>
+        </div>
+        <div id="fab-evento-sim-hint" style="font-size:10px; color:#8a7a5a; margin-top:4px;">Nenhum Sim selecionado</div>
         <label for="fab-evento-texto">O que aconteceu?</label>
         <textarea id="fab-evento-texto" placeholder="Descreva o evento..."></textarea>
         <div class="fab-actions">
@@ -11030,20 +11033,44 @@ function atualizarIndicadorMemoria() {
     // ========================================================
     // #73 — FAB Registrar evento
     // ========================================================
-    function fabPopularSims(){
-        const sel = document.getElementById('fab-evento-sim');
-        if (!sel || typeof db === 'undefined') return;
+    // #135: seleção multipla de Sims via checkboxes filtraveis.
+    function _fabEscape(s){ return String(s||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+    function _fabAtualizarHint(){
+        const hint = document.getElementById('fab-evento-sim-hint');
+        if (!hint) return;
+        const marcados = document.querySelectorAll('#fab-evento-sim-list input[type="checkbox"]:checked');
+        if (!marcados.length) { hint.textContent = 'Nenhum Sim selecionado'; return; }
+        const nomes = Array.from(marcados).map(c => c.getAttribute('data-nome') || '').filter(Boolean);
+        hint.textContent = marcados.length + ' Sim(s) selecionado(s)' + (nomes.length ? ': ' + nomes.join(', ') : '');
+    }
+    function fabPopularSims(preselectIds){
+        const box = document.getElementById('fab-evento-sim-list');
+        if (!box || typeof db === 'undefined') return;
         const cur = (typeof currentSimId !== 'undefined') ? currentSimId : '';
+        const pre = new Set((preselectIds && preselectIds.length ? preselectIds : (cur ? [cur] : [])).map(String));
         const sims = Array.isArray(db.sims) ? db.sims.slice() : [];
         sims.sort((a,b) => String(a.nome||'').localeCompare(String(b.nome||'')));
-        sel.innerHTML = '<option value="">— Nenhum —</option>' +
-            sims.map(s => `<option value="${s.id}">${(s.nome||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))}</option>`).join('');
-        if (cur) sel.value = String(cur);
+        if (!sims.length) {
+            box.innerHTML = '<div style="color:#8a7a5a; font-size:11px;">Nenhum Sim cadastrado.</div>';
+            _fabAtualizarHint();
+            return;
+        }
+        box.innerHTML = sims.map(s => {
+            const id = _fabEscape(s.id);
+            const nome = _fabEscape(s.nome || '(sem nome)');
+            const checked = pre.has(String(s.id)) ? 'checked' : '';
+            return `<label class="fab-sim-row" data-nome-lower="${nome.toLowerCase()}" style="display:flex; align-items:center; gap:8px; padding:4px 2px; cursor:pointer; border-radius:6px;">`
+                 + `<input type="checkbox" value="${id}" data-nome="${nome}" ${checked} style="margin:0;">`
+                 + `<span>${nome}</span></label>`;
+        }).join('');
+        _fabAtualizarHint();
     }
     window.fabAbrirEvento = function(){
         fabPopularSims();
         const tx = document.getElementById('fab-evento-texto'); if (tx) tx.value = '';
         const bs = document.getElementById('fab-evento-sim-busca'); if (bs) bs.value = '';
+        // reaplica filtro vazio (mostra tudo)
+        document.querySelectorAll('#fab-evento-sim-list .fab-sim-row').forEach(r => r.style.display = '');
         document.getElementById('fab-evento-modal').classList.add('open');
         setTimeout(() => { const t = document.getElementById('fab-evento-texto'); if (t) t.focus(); }, 50);
     };
@@ -11052,12 +11079,16 @@ function atualizarIndicadorMemoria() {
     };
     window.fabSalvarEvento = function(){
         const tag = document.getElementById('fab-evento-tag').value || '[OUTRO]';
-        const simId = document.getElementById('fab-evento-sim').value || '';
+        // #135: coleta todos os Sims marcados (0..N)
+        const ids = Array.from(document.querySelectorAll('#fab-evento-sim-list input[type="checkbox"]:checked'))
+            .map(c => c.value).filter(Boolean);
         const texto = (document.getElementById('fab-evento-texto').value || '').trim();
         if (!texto) { alert('Escreva o que aconteceu antes de salvar.'); return; }
         try {
             const dataStr = new Date().toLocaleDateString('pt-BR');
-            const marcador = (typeof _marcadorSim === 'function') ? _marcadorSim(simId) : (simId ? ` @sim:${simId}` : '');
+            const marcador = ids.map(id => {
+                return (typeof _marcadorSim === 'function') ? _marcadorSim(id) : ` @sim:${id}`;
+            }).join('');
             if (typeof db !== 'undefined') {
                 db.historia = (db.historia || '') + `\n[${dataStr}] ${tag} ${texto}${marcador}`;
                 if (typeof salvarTudo === 'function') salvarTudo();
@@ -11071,15 +11102,20 @@ function atualizarIndicadorMemoria() {
             alert('Não foi possível salvar agora.');
         }
     };
-    // Filtro de busca no select
+    // #135: filtro em cima da lista de checkboxes (preserva selecoes)
     document.addEventListener('input', function(e){
         if (e.target && e.target.id === 'fab-evento-sim-busca') {
-            const q = (e.target.value || '').toLowerCase();
-            const sel = document.getElementById('fab-evento-sim');
-            if (!sel || typeof db === 'undefined') return;
-            const sims = (db.sims||[]).filter(s => (s.nome||'').toLowerCase().includes(q));
-            sel.innerHTML = '<option value="">— Nenhum —</option>' +
-                sims.map(s => `<option value="${s.id}">${(s.nome||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))}</option>`).join('');
+            const q = (e.target.value || '').toLowerCase().trim();
+            document.querySelectorAll('#fab-evento-sim-list .fab-sim-row').forEach(row => {
+                const nl = row.getAttribute('data-nome-lower') || '';
+                row.style.display = (!q || nl.includes(q)) ? '' : 'none';
+            });
+        }
+    });
+    // Atualiza o contador ao marcar/desmarcar
+    document.addEventListener('change', function(e){
+        if (e.target && e.target.matches && e.target.matches('#fab-evento-sim-list input[type="checkbox"]')) {
+            _fabAtualizarHint();
         }
     });
     // Fecha clicando fora
@@ -13241,6 +13277,7 @@ function atualizarIndicadorMemoria() {
         });
 
         // --- Casamento / Começo de namoro (via classificação do Passo 3) ---
+        // #135: gera UMA unica entrada simetrica por par (evita duplicar no Livro).
         const classif = (st.selecao && st.selecao.relacionamentosClassificados) || [];
         classif.forEach(item => {
             const r = item.rel, cls = item.cls;
@@ -13252,27 +13289,19 @@ function atualizarIndicadorMemoria() {
             const nomeA = (cls.a && cls.a.nome ? cls.a.nome : '').trim() || id1.slice(0, 8);
             const nomeB = (cls.b && cls.b.nome ? cls.b.nome : '').trim() || id2.slice(0, 8);
             const tipo = r.kind === 'casado' ? 'casamento' : 'comeco_namoro';
-            const verbo = r.kind === 'casado' ? ' — Casamento com ' : ' — Começou a namorar ';
-            if (modIds.has(id1)) {
-                eventos.push({
-                    id: mkId(), sim_id_mod: id1, sim_id_local: (cls.a && cls.a.localId) || null,
-                    nome_sim: _rotSimMod(id1, nomeA), tipo,
-                    antes: '—',
-                    depois: (r.kind === 'casado' ? 'Casado(a) com ' : 'Namorando ') + nomeB,
-                    resumo: nomeA + verbo + nomeB,
-                    meta: { com_mod_id: id2, com_nome: nomeB, viaPasso3: true }
-                });
-            }
-            if (modIds.has(id2)) {
-                eventos.push({
-                    id: mkId(), sim_id_mod: id2, sim_id_local: (cls.b && cls.b.localId) || null,
-                    nome_sim: _rotSimMod(id2, nomeB), tipo,
-                    antes: '—',
-                    depois: (r.kind === 'casado' ? 'Casado(a) com ' : 'Namorando ') + nomeA,
-                    resumo: nomeB + verbo + nomeA,
-                    meta: { com_mod_id: id1, com_nome: nomeA, viaPasso3: true }
-                });
-            }
+            const verbo = r.kind === 'casado' ? ' casaram-se' : ' começaram a namorar';
+            eventos.push({
+                id: mkId(),
+                sim_id_mod: id1, sim_id_local: (cls.a && cls.a.localId) || null,
+                sim_id_mod_b: id2, sim_id_local_b: (cls.b && cls.b.localId) || null,
+                nome_sim: _rotSimMod(id1, nomeA),
+                nome_sim_b: _rotSimMod(id2, nomeB),
+                tipo,
+                antes: '—',
+                depois: r.kind === 'casado' ? 'Casados' : 'Namorando',
+                resumo: nomeA + ' e ' + nomeB + verbo,
+                meta: { com_mod_id: id2, com_nome: nomeB, par: [id1, id2], viaPasso3: true }
+            });
         });
 
         // --- Divórcio / Término de namoro (site tem, mod não traz mais) ---
@@ -13306,13 +13335,16 @@ function atualizarIndicadorMemoria() {
             const nomeOutro = (((sSp.nome || '') + ' ' + (sSp.sobrenome || '')).trim())
                 || spModId.slice(0, 8);
             const tipo = kind === 'casado' ? 'divorcio' : 'termino_namoro';
-            const verbo = kind === 'casado' ? ' — Divórcio de ' : ' — Término com ';
+            const verboFim = kind === 'casado' ? ' se divorciaram' : ' terminaram o namoro';
             eventos.push({
                 id: mkId(), sim_id_mod: modIdSelf, sim_id_local: t.localId,
-                nome_sim: _rotSimMod(modIdSelf, nomeSelf), tipo,
+                sim_id_local_b: spouseLocal, // #135: linha unica com ambos os marcadores
+                nome_sim: _rotSimMod(modIdSelf, nomeSelf),
+                nome_sim_b: nomeOutro,
+                tipo,
                 antes: (kind === 'casado' ? 'Casado(a) com ' : 'Namorando ') + nomeOutro,
                 depois: '—',
-                resumo: nomeSelf + verbo + nomeOutro,
+                resumo: nomeSelf + ' e ' + nomeOutro + verboFim,
                 meta: { com_local_id: spouseLocal, com_nome: nomeOutro }
             });
         });
@@ -13405,8 +13437,9 @@ function atualizarIndicadorMemoria() {
             const pai = String(sA.id);
             const paisAtuais = [String(sB.p1||''), String(sB.p2||'')];
             if (paisAtuais.indexOf(pai) >= 0) return 'skip';
-            if (!sB.p1) { sB.p1 = pai; _logLivro(`[NASCIMENTO] 👶 ${sA.nome||'?'} reconhecido(a) como pai/mãe de ${sB.nome||'?'}.${_mk(sB.id)}${_mk(sA.id)}`); return 'ok'; }
-            if (!sB.p2) { sB.p2 = pai; _logLivro(`[NASCIMENTO] 👶 ${sA.nome||'?'} reconhecido(a) como pai/mãe de ${sB.nome||'?'}.${_mk(sB.id)}${_mk(sA.id)}`); return 'ok'; }
+            // #136: vinculo estrutural pai/mae -> nao vira linha no Livro.
+            if (!sB.p1) { sB.p1 = pai; return 'ok'; }
+            if (!sB.p2) { sB.p2 = pai; return 'ok'; }
             return 'skip'; // conflito
         }
         if (rel.kind === 'casado' || rel.kind === 'namoro') {
@@ -13428,7 +13461,7 @@ function atualizarIndicadorMemoria() {
             const jaEra = sA.irmaos.indexOf(String(sB.id)) >= 0 && sB.irmaos.indexOf(String(sA.id)) >= 0;
             if (sA.irmaos.indexOf(String(sB.id)) < 0) sA.irmaos.push(String(sB.id));
             if (sB.irmaos.indexOf(String(sA.id)) < 0) sB.irmaos.push(String(sA.id));
-            if (!jaEra) _logLivro(`[FAMÍLIA] 👫 ${sA.nome||'?'} e ${sB.nome||'?'} são irmãos.${_mk(sA.id)}${_mk(sB.id)}`);
+            // #136: vinculo estrutural de irmaos -> nao vira linha no Livro.
             return 'ok';
         }
         return 'skip';
@@ -13454,10 +13487,7 @@ function atualizarIndicadorMemoria() {
                 const par = [String(a.id), String(b.id)].sort().join('|');
                 if (novo && !jaLogado.has(par)) {
                     jaLogado.add(par);
-                    try {
-                        db.historia = (db.historia || '') +
-                            `\n[${_dataStr}] [FAMÍLIA] 👫 ${a.nome||'?'} e ${b.nome||'?'} são irmãos (via pais em comum).${_mk(a.id)}${_mk(b.id)} [MOD-IMPORT]`;
-                    } catch(_) {}
+                    // #136: inferencia estrutural -- nao escreve mais no Livro da Familia.
                 }
             });
         });
@@ -13847,7 +13877,11 @@ function atualizarIndicadorMemoria() {
                 if (!localId) nEventosSemVinculo++;
 
                 const tag = TAG[ev.tipo] || '[EVENTO] 📌';
-                const marcador = localId ? _mkEv(localId) : '';
+                let marcador = localId ? _mkEv(localId) : '';
+                // #135: eventos simetricos (casamento/namoro/divorcio/termino) recebem
+                // marcador dos dois participantes -> uma unica entrada no Livro.
+                const localIdB = ev.sim_id_local_b || (ev.sim_id_mod_b ? mapaEv[String(ev.sim_id_mod_b)] : '');
+                if (localIdB && String(localIdB) !== String(localId)) marcador += _mkEv(localIdB);
                 try {
                     db.historia = (db.historia || '') +
                         `\n[${dataStr}] ${tag} ${ev.resumo}${marcador} [MOD-IMPORT]`;
@@ -14061,10 +14095,12 @@ function atualizarIndicadorMemoria() {
   function atualizarBotaoUndo(){
     const btn = document.getElementById('btn-undo-import');
     if (!btn) return;
+    // #134: remove trava legada de "dispensado" (persistia entre sessoes
+    // e escondia o botao para sempre) e mostra sempre que houver backup.
+    try { localStorage.removeItem('simstoria.undo.dismissed'); } catch(_) {}
+    if (btn.dataset.hiddenSession === '1') { btn.style.display = 'none'; return; }
     const ultima = _ultimoBackupTs();
-    let dismissed = 0;
-    try { dismissed = Number(localStorage.getItem('simstoria.undo.dismissed')||0) || 0; } catch(_) {}
-    btn.style.display = (ultima && ultima > dismissed) ? 'inline-flex' : 'none';
+    btn.style.display = ultima ? 'inline-flex' : 'none';
   }
   window.desfazerUltimaImportacao = function(){
     const bks = _listarBackups();
@@ -14106,8 +14142,10 @@ function atualizarIndicadorMemoria() {
     if (lbl) lbl.addEventListener('click', function(e){ e.stopPropagation(); window.desfazerUltimaImportacao(); });
     function _dispensar(e){
       e && e.stopPropagation();
-      try { localStorage.setItem('simstoria.undo.dismissed', String(_ultimoBackupTs() || Date.now())); } catch(_) {}
-      const btn = document.getElementById('btn-undo-import'); if (btn) btn.style.display = 'none';
+      // #134: dispensar so oculta na sessao atual; no proximo carregamento
+      // o botao volta a aparecer enquanto houver backup.
+      const btn = document.getElementById('btn-undo-import');
+      if (btn) { btn.dataset.hiddenSession = '1'; btn.style.display = 'none'; }
     }
     if (dis) {
       dis.addEventListener('click', _dispensar);
