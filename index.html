@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-37-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-38-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1395,6 +1395,7 @@
                                 <option value="[GERAL]">[GERAL]</option>
                                 <option value="[NASCIMENTO]">👶 NASCIMENTO</option>
                                 <option value="[FASES DE VIDA]">🎂 FASE</option>
+                                <option value="[DESENVOLVIMENTO]">🌱 DESENVOLVIMENTO</option>
                                 <option value="[MORTE]">💀 MORTE</option>
                                 <option value="[CASAMENTO]">💍 CASAMENTO</option>
                                 <option value="[SEPARAÇÃO]">💔 SEPARAÇÃO</option>
@@ -1464,6 +1465,7 @@
                     <button class="filter-btn active" onclick="filtrarLivro('TODOS', this)">Todos</button>
                     <button class="filter-btn" onclick="filtrarLivro('NASCIMENTO', this)">Nascimentos</button>
                     <button class="filter-btn" onclick="filtrarLivro('FASES DE VIDA', this)">Fases</button>
+                    <button class="filter-btn" onclick="filtrarLivro('DESENVOLVIMENTO', this)">🌱 Desenvolvimento</button>
                     <button class="filter-btn" onclick="filtrarLivro('MORTE', this)">Mortes</button>
                     <button class="filter-btn" onclick="filtrarLivro('CASAMENTO', this)">Casamentos</button>
                     <button class="filter-btn" onclick="filtrarLivro('DRAMA', this)">Dramas</button>
@@ -13035,14 +13037,36 @@ function atualizarIndicadorMemoria() {
         const grupos = { parent:[], casado:[], namoro:[], irmao:[], outro:[] };
         classificados.forEach((c, idx) => { (grupos[c.rel.kind] || grupos.outro).push({ ...c, idx }); });
 
+        // #139: dentro de cada grupo, ordenar por estado (novo -> pendente -> resto)
+        //       e separar visualmente "Novos" de "Pendentes" quando ambos existirem.
+        const _pesoEstado = (e) => (e === 'novo' ? 0 : e === 'pendente' ? 1 : 2);
+        Object.keys(grupos).forEach(k => {
+            grupos[k].sort((x, y) => _pesoEstado(x.cls.estado) - _pesoEstado(y.cls.estado));
+        });
+
         const ordem = ['parent','casado','namoro','irmao','outro'];
         let html = '';
+        // #139: cada relacionamento em UMA linha, sem colidir com o badge
+        const _rowStyle = (canApply) =>
+            'display:grid; grid-template-columns:auto 1fr auto; column-gap:8px; align-items:center;'
+          + ' padding:6px 4px; font-size:12px; border-top:1px dashed #f0e8d0; min-height:32px;'
+          + ' cursor:' + (canApply ? 'pointer' : 'default') + ';';
+        const _subHead = (txt) =>
+            '<div style="font-size:10px; font-weight:800; letter-spacing:0.4px;'
+          + ' color:#7a6a52; text-transform:uppercase; margin:8px 0 2px;">— ' + txt + ' —</div>';
+
         ordem.forEach(k => {
             const arr = grupos[k];
             if (!arr.length) return;
             html += '<details open style="background:#fffdf5; border:1px solid var(--ts4-border,#e0dccb); border-radius:10px; padding:8px 12px; margin-bottom:10px;">';
             html += '<summary style="font-weight:700; font-size:13px; cursor:pointer; list-style:none;">' + _labelTipoRel(k) + ' <span style="font-size:11px; color:#888; font-weight:600;">(' + arr.length + ')</span></summary>';
-            arr.forEach(item => {
+
+            const novos = arr.filter(it => it.cls.estado === 'novo');
+            const pendentes = arr.filter(it => it.cls.estado === 'pendente');
+            const outros = arr.filter(it => it.cls.estado !== 'novo' && it.cls.estado !== 'pendente');
+            const temAmbos = novos.length && (pendentes.length || outros.length);
+
+            const renderItem = (item) => {
                 const r = item.rel, cls = item.cls;
                 const rotA = _rotuloSimMod(r.sim_id_1, cls.a);
                 const rotB = _rotuloSimMod(r.sim_id_2, cls.b);
@@ -13050,14 +13074,28 @@ function atualizarIndicadorMemoria() {
                 const canApply = (cls.estado === 'novo');
                 const disabled = !canApply ? 'disabled' : '';
                 const checked = canApply ? 'checked' : '';
-                const motivo = cls.motivo ? ('<div style="font-size:10px; color:#a06400; margin-left:26px;">⚠ ' + _escapeHtml(cls.motivo) + '</div>') : '';
-                html += ''
-                    + '<label style="display:flex; align-items:center; gap:8px; padding:5px 4px; font-size:12px; cursor:' + (canApply?'pointer':'default') + '; border-bottom:1px dashed #f0e8d0;">'
+                const motivo = cls.motivo
+                    ? ('<div style="font-size:10px; color:#a06400; margin-left:26px; padding-bottom:4px;">⚠ ' + _escapeHtml(cls.motivo) + '</div>')
+                    : '';
+                return ''
+                    + '<div style="display:block;">'
+                    + '<label style="' + _rowStyle(canApply) + '">'
                     +   '<input type="checkbox" ' + checked + ' ' + disabled + ' data-import-rel="' + item.idx + '">'
-                    +   '<span style="flex:1;">' + rotA + '<span style="color:#888;">' + seta + '</span>' + rotB + '</span>'
+                    +   '<span style="min-width:0; word-break:break-word; line-height:1.35;">' + rotA + '<span style="color:#888;">' + seta + '</span>' + rotB + '</span>'
                     +   _badgeEstado(cls.estado)
-                    + '</label>' + motivo;
-            });
+                    + '</label>' + motivo
+                    + '</div>';
+
+            };
+
+            if (temAmbos) html += _subHead('Novos (' + novos.length + ')');
+            novos.forEach(item => { html += renderItem(item); });
+            if (temAmbos && (pendentes.length || outros.length)) {
+                html += _subHead('Pendentes / já existentes (' + (pendentes.length + outros.length) + ')');
+            }
+            pendentes.forEach(item => { html += renderItem(item); });
+            outros.forEach(item => { html += renderItem(item); });
+
             html += '</details>';
         });
 
@@ -13182,6 +13220,92 @@ function atualizarIndicadorMemoria() {
         return { alvos, modIds };
     }
 
+    // #137: rótulos narrativos para fases de vida no Livro da Família
+    function _faseNarrativa(f) {
+        const map = {
+            'bebe-colo': 'bebê', 'bebe': 'bebê', 'crianca': 'criança',
+            'adolescente': 'adolescente', 'jovem-adulto': 'jovem adulto',
+            'adulto': 'adulto', 'idoso': 'idoso'
+        };
+        return map[f] || (typeof _lbFase === 'function' ? _lbFase(f) : (f || '—'));
+    }
+
+    // #137: monta a linha narrativa para eventos de carreira do mod
+    function _resumoCarreiraNarr(nome, tipo, a, b, antes, depois) {
+        const carreiraNome = (b && b.nome) ? b.nome : (depois && depois !== '—' ? depois : '');
+        const carreiraNomeAntes = (a && a.nome) ? a.nome : (antes && antes !== '—' ? antes : '');
+        const nivel = (b && b.nivel != null) ? b.nivel : null;
+        if (tipo === 'promocao') {
+            const alvo = carreiraNome || 'sua carreira';
+            return nome + ' foi promovido(a) para o nível ' + (nivel != null ? nivel : '?') + ' da carreira ' + alvo + '.';
+        }
+        if (tipo === 'aposentadoria') {
+            return nome + ' se aposentou' + (carreiraNomeAntes ? ' da carreira ' + carreiraNomeAntes : '') + '.';
+        }
+        if (tipo === 'demissao') {
+            return nome + ' saiu da carreira ' + (carreiraNomeAntes || '—') + '.';
+        }
+        // mudanca_carreira (inclui entrada nova em uma carreira)
+        if (carreiraNome) {
+            if (nivel != null) {
+                return nome + ' está no nível ' + nivel + ' da carreira ' + carreiraNome + '.';
+            }
+            return nome + ' agora trabalha em ' + carreiraNome + '.';
+        }
+        return nome + ' mudou de carreira.';
+    }
+
+    // #137: apos calcular os eventos, se o Passo 3 traz pais reconhecidos para
+    // o filho recem-nascido, mescla-os no evento de nascimento como UMA unica
+    // frase (ex.: "Silvio e Karen tiveram um(a) filho(a) chamado(a) Silren.").
+    function _mesclarPaisEmNascimentos(eventos, st) {
+        if (!eventos || !eventos.length || !st || !st.selecao) return;
+        const classif = st.selecao.relacionamentosClassificados || [];
+        const paisPorFilho = new Map(); // modIdFilho -> [{modId, nome, localId}]
+        classif.forEach(item => {
+            const r = item.rel, cls = item.cls;
+            if (!r || !cls || r.kind !== 'parent' || cls.estado !== 'novo') return;
+            const filhoModId = String(r.sim_id_2);
+            const paiModId = String(r.sim_id_1);
+            const paiNome = (cls.a && (cls.a.nome || cls.a.rotulo)) || paiModId.slice(0, 8);
+            if (!paisPorFilho.has(filhoModId)) paisPorFilho.set(filhoModId, []);
+            const arr = paisPorFilho.get(filhoModId);
+            if (!arr.some(p => p.modId === paiModId)) {
+                arr.push({
+                    modId: paiModId,
+                    nome: String(paiNome).trim(),
+                    localId: (cls.a && cls.a.localId) || null
+                });
+            }
+        });
+        if (!paisPorFilho.size) return;
+
+        eventos.forEach(ev => {
+            if (ev.tipo !== 'nascimento') return;
+            const pais = paisPorFilho.get(String(ev.sim_id_mod));
+            if (!pais || !pais.length) return;
+            const nomeFilho = ev._nomeBase || ev.nome_sim || 'o(a) bebê';
+            let resumo;
+            if (pais.length >= 2) {
+                resumo = pais[0].nome + ' e ' + pais[1].nome
+                       + ' tiveram um(a) filho(a) chamado(a) ' + nomeFilho + '.';
+            } else {
+                resumo = pais[0].nome + ' e ' + nomeFilho
+                       + ' — ' + nomeFilho + ' nasceu (filho(a) de ' + pais[0].nome + ').';
+            }
+            ev.resumo = resumo;
+            ev._paisReconhecidos = pais;
+            // Marcadores extras: garante que os pais tambem sejam vinculados no Livro.
+            if (!ev.sim_id_local_b && pais[0].localId) {
+                ev.sim_id_local_b = pais[0].localId;
+                ev.sim_id_mod_b = pais[0].modId;
+            }
+            if (pais.length >= 2 && pais[1].localId) {
+                ev._sim_id_local_c = pais[1].localId;
+            }
+        });
+    }
+
     function _calcularEventosVidaImportMod() {
         const st = window._importModState;
         if (!st || !st.dadosMod) return [];
@@ -13212,8 +13336,10 @@ function atualizarIndicadorMemoria() {
                             sim_id_local: t.localId, nome_sim: rot, tipo: 'nascimento',
                             antes: siteFase ? _lbFase(siteFase) : '—',
                             depois: _lbFase(modFase),
-                            resumo: nome + ' — Nascimento (Fase: '
-                                + (siteFase ? _lbFase(siteFase) : '—') + ' → ' + _lbFase(modFase) + ')',
+                            // #137: narrativa; caso pai/mae venham do Passo 3, o resumo
+                            // eh reescrito depois em _mesclarPaisEmNascimentos().
+                            resumo: nome + ' nasceu.',
+                            _nomeBase: nome,
                             meta: { fase: modFase }
                         });
                     } else if (!t.isNew) {
@@ -13221,7 +13347,8 @@ function atualizarIndicadorMemoria() {
                             id: mkId(), sim_id_mod: String(t.modSim.id),
                             sim_id_local: t.localId, nome_sim: rot, tipo: 'mudanca_fase_vida',
                             antes: _lbFase(siteFase), depois: _lbFase(modFase),
-                            resumo: nome + ' — Fase: ' + _lbFase(siteFase) + ' → ' + _lbFase(modFase),
+                            // #137: narrativa
+                            resumo: nome + ' agora é ' + _faseNarrativa(modFase) + '.',
                             meta: { fase: modFase }
                         });
                     }
@@ -13252,7 +13379,8 @@ function atualizarIndicadorMemoria() {
                         id: mkId(), sim_id_mod: String(t.modSim.id),
                         sim_id_local: t.localId, nome_sim: rot, tipo,
                         antes, depois,
-                        resumo: nome + ' — Carreira: ' + antes + ' → ' + depois,
+                        // #137: narrativa por tipo de mudança de carreira
+                        resumo: _resumoCarreiraNarr(nome, tipo, a, b, antes, depois),
                         meta: { carreira: modCar }
                     });
                 }
@@ -13269,7 +13397,8 @@ function atualizarIndicadorMemoria() {
                         sim_id_local: t.localId, nome_sim: rot, tipo: 'falecimento',
                         antes: siteSt || 'Vivo',
                         depois: 'Falecido' + (causa ? ' (' + causa + ')' : ''),
-                        resumo: nome + ' — Falecimento' + (causa ? ' (Causa: ' + causa + ')' : ''),
+                        // #137: narrativa
+                        resumo: nome + ' faleceu' + (causa ? ' (Causa: ' + causa + ')' : '') + '.',
                         meta: { causaMorte: causa }
                     });
                 }
@@ -13289,7 +13418,8 @@ function atualizarIndicadorMemoria() {
             const nomeA = (cls.a && cls.a.nome ? cls.a.nome : '').trim() || id1.slice(0, 8);
             const nomeB = (cls.b && cls.b.nome ? cls.b.nome : '').trim() || id2.slice(0, 8);
             const tipo = r.kind === 'casado' ? 'casamento' : 'comeco_namoro';
-            const verbo = r.kind === 'casado' ? ' casaram-se' : ' começaram a namorar';
+            // #137/#138: narrativa unificada (a mesma frase usada no aplicador foi removida)
+            const verbo = r.kind === 'casado' ? ' se casaram.' : ' começaram a namorar.';
             eventos.push({
                 id: mkId(),
                 sim_id_mod: id1, sim_id_local: (cls.a && cls.a.localId) || null,
@@ -13335,7 +13465,8 @@ function atualizarIndicadorMemoria() {
             const nomeOutro = (((sSp.nome || '') + ' ' + (sSp.sobrenome || '')).trim())
                 || spModId.slice(0, 8);
             const tipo = kind === 'casado' ? 'divorcio' : 'termino_namoro';
-            const verboFim = kind === 'casado' ? ' se divorciaram' : ' terminaram o namoro';
+            // #137: narrativa com ponto final
+            const verboFim = kind === 'casado' ? ' se divorciaram.' : ' terminaram o namoro.';
             eventos.push({
                 id: mkId(), sim_id_mod: modIdSelf, sim_id_local: t.localId,
                 sim_id_local_b: spouseLocal, // #135: linha unica com ambos os marcadores
@@ -13349,6 +13480,8 @@ function atualizarIndicadorMemoria() {
             });
         });
 
+        // #137: mescla pais reconhecidos (Passo 3) em uma unica linha de nascimento
+        try { _mesclarPaisEmNascimentos(eventos, st); } catch(_) {}
         return eventos;
     }
     try { window._calcularEventosVidaImportMod = _calcularEventosVidaImportMod; } catch(e){}
@@ -13448,11 +13581,8 @@ function atualizarIndicadorMemoria() {
             sB.spouse = String(sA.id);
             const st = rel.kind === 'casado' ? 'casado' : 'namorado';
             sA.relStatus = st; sB.relStatus = st;
-            if (rel.kind === 'casado') {
-                _logLivro(`[CASAMENTO] 💍 ${sA.nome||'?'} e ${sB.nome||'?'} se casaram!${_mk(sA.id)}${_mk(sB.id)}`);
-            } else {
-                _logLivro(`[ROMANCE] 💞 ${sA.nome||'?'} e ${sB.nome||'?'} começaram a namorar.${_mk(sA.id)}${_mk(sB.id)}`);
-            }
+            // #138: a linha do Livro para casamento/namoro eh escrita apenas
+            //        pelo Passo 4 (evento simetrico) — evita duplicidade.
             return 'ok';
         }
         if (rel.kind === 'irmao') {
@@ -13858,7 +13988,7 @@ function atualizarIndicadorMemoria() {
             const dataStr = new Date().toLocaleDateString('pt-BR');
             const TAG = {
                 nascimento:        '[NASCIMENTO] 👶',
-                mudanca_fase_vida: '[FASE] 🎂',
+                mudanca_fase_vida: '[DESENVOLVIMENTO] 🌱',
                 casamento:         '[CASAMENTO] 💍',
                 divorcio:          '[DIVÓRCIO] 💔',
                 comeco_namoro:     '[ROMANCE] 💞',
@@ -13869,6 +13999,15 @@ function atualizarIndicadorMemoria() {
                 aposentadoria:     '[APOSENTADORIA] 🏖️',
                 falecimento:       '[FALECIMENTO] ⚰️',
             };
+
+            // #138: guarda antiduplicidade — mesmo dia + tipo + pares envolvidos + resumo normalizado
+            const _dedupKeysMod = new Set();
+            const _histAtual = String(db.historia || '');
+            const _normResumo = (s) => String(s || '')
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+            // Buffer de debug (nao renderizado no Livro)
+            if (!Array.isArray(db._importModDebug)) db._importModDebug = [];
 
             eventosCalc.forEach(ev => {
                 if (!idsMarcados.has(ev.id)) return;
@@ -13882,10 +14021,36 @@ function atualizarIndicadorMemoria() {
                 // marcador dos dois participantes -> uma unica entrada no Livro.
                 const localIdB = ev.sim_id_local_b || (ev.sim_id_mod_b ? mapaEv[String(ev.sim_id_mod_b)] : '');
                 if (localIdB && String(localIdB) !== String(localId)) marcador += _mkEv(localIdB);
+                // #137: quando o nascimento absorve dois pais, adiciona o terceiro marcador
+                if (ev._sim_id_local_c && String(ev._sim_id_local_c) !== String(localId)
+                        && String(ev._sim_id_local_c) !== String(localIdB)) {
+                    marcador += _mkEv(ev._sim_id_local_c);
+                }
+
+                // #138: chave de deduplicação por dia+tipo+pares+resumo
+                const _paresKey = [String(ev.sim_id_mod||''), String(ev.sim_id_mod_b||''),
+                                   String(ev._sim_id_local_c||'')].filter(Boolean).sort().join(':');
+                const _dedupKey = dataStr + '|' + ev.tipo + '|' + _paresKey + '|' + _normResumo(ev.resumo);
+                const _linhaNova = `\n[${dataStr}] ${tag} ${ev.resumo}${marcador} [MOD-IMPORT]`;
+                if (_dedupKeysMod.has(_dedupKey) || _histAtual.indexOf(_linhaNova) >= 0) {
+                    // Duplicidade — vai para o buffer de debug e nao para o Livro
+                    try {
+                        db._importModDebug.push({
+                            ts: Date.now(), dedup: true,
+                            dedupKey: _dedupKey, linha: _linhaNova
+                        });
+                        if (db._importModDebug.length > 500) db._importModDebug.splice(0, db._importModDebug.length - 500);
+                    } catch(_) {}
+                    nEventosIgn++;
+                    return;
+                }
+                _dedupKeysMod.add(_dedupKey);
+
                 try {
-                    db.historia = (db.historia || '') +
-                        `\n[${dataStr}] ${tag} ${ev.resumo}${marcador} [MOD-IMPORT]`;
+                    db.historia = (db.historia || '') + _linhaNova;
                     nEventos++;
+                    db._importModDebug.push({ ts: Date.now(), dedup: false, dedupKey: _dedupKey, linha: _linhaNova });
+                    if (db._importModDebug.length > 500) db._importModDebug.splice(0, db._importModDebug.length - 500);
                 } catch(_) { nEventosIgn++; }
 
                 if (simLocal) {
