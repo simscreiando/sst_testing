@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-38-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-39-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -4176,6 +4176,14 @@ if (fase === 'recem_nascido') {
         let filtroTextoLivro = ''; // #57 — busca por texto livre no Livro da Família
         function _marcadorSim(simId){ return simId ? ` {{SIM:${simId}}}` : ''; }
         function _extrairSimIdDaLinha(linha){ const m = linha.match(/\{\{SIM:([^}]+)\}\}/); return m ? m[1] : ''; }
+        // v54.39 (#140): extrai TODOS os {{SIM:id}} da linha (eventos multi-sim)
+        function _extrairSimIdsDaLinha(linha){
+            const ids = [];
+            const re = /\{\{SIM:([^}]+)\}\}/g;
+            let m;
+            while ((m = re.exec(linha)) !== null) ids.push(m[1]);
+            return ids;
+        }
         function _limparMarcadorSim(linha){ return linha.replace(/\s*\{\{SIM:[^}]+\}\}/g, ''); }
         function popularSelectsSimLivro(){
             const escapar = (typeof _escapeHtml === 'function') ? _escapeHtml : (x => String(x));
@@ -4213,8 +4221,9 @@ if (fase === 'recem_nascido') {
                 const passaTag = (filtroAtivoLivro === 'TODOS' || linha.includes(`[${filtroAtivoLivro}]`));
                 let passaSim = true;
                 if (filtroSimLivro) {
-                    const idLinha = _extrairSimIdDaLinha(linha);
-                    if (idLinha) passaSim = String(idLinha) === String(filtroSimLivro);
+                    // v54.39 (#140): eventos podem envolver vários sims — casa se qualquer id bater
+                    const idsLinha = _extrairSimIdsDaLinha(linha);
+                    if (idsLinha.length) passaSim = idsLinha.some(id => String(id) === String(filtroSimLivro));
                     else passaSim = regexNome ? regexNome.test(_limparMarcadorSim(linha)) : false;
                 }
                 const passaTexto = !textoFiltroLower || _limparMarcadorSim(linha).toLowerCase().includes(textoFiltroLower);
@@ -4234,8 +4243,10 @@ if (fase === 'recem_nascido') {
                     if(tag.includes("NASCIMENTO")) corTag = "#e83e8c"; else if(tag.includes("MORTE")) corTag = "#343a40"; else if(tag.includes("CASAMENTO")) corTag = "#fd7e14"; else if(tag.includes("DRAMA") || tag.includes("SEPARAÇÃO")) corTag = "#dc3545"; else if(tag.includes("FASES")) corTag = "#17a2b8"; else if(tag.includes("CONQUISTA")) corTag = "#28a745"; else if(tag.includes("CARREIRA")) corTag = "#6f42c1"; else if(tag.includes("RELACIONAMENTOS")) corTag = "#d63384"; else if(tag.includes("META-DESISTIDA")) corTag = "#7f8c8d"; else if(tag.includes("META")) corTag = "#0079C1";
                     else if (db.custom && db.custom.tags && db.custom.tags.some(t => tag.includes(t))) corTag = "#9B59B6";
 
-                    const nomeSimVinc = simIdLinha ? _nomeSimPorId(simIdLinha) : '';
-                    const chipSim = nomeSimVinc ? `<span style="font-size:10px; font-weight:bold; color:#4a3b2a; background:#f0d97a; padding:2px 8px; border-radius:10px; margin-right:4px;">👤 ${nomeSimVinc}</span>` : '';
+                    // v54.39 (#140): renderiza um chip por sim vinculado (eventos multi-sim)
+                    const idsLinhaAll = _extrairSimIdsDaLinha(item.texto);
+                    const nomesVinc = idsLinhaAll.map(id => _nomeSimPorId(id)).filter(Boolean);
+                    const chipSim = nomesVinc.map(n => `<span style="font-size:10px; font-weight:bold; color:#4a3b2a; background:#f0d97a; padding:2px 8px; border-radius:10px; margin-right:4px;">👤 ${n}</span>`).join('');
 
                     html += `
                     <div id="livro-item-${item.idx}" style="position:relative; margin-bottom:15px; background:white; padding:10px 15px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.05); border:1px solid #eee;">
