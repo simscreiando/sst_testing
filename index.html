@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-41-SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-42- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -8303,27 +8303,35 @@ let edgesArray = [];
                         'curve-style': 'straight', 'target-arrow-shape': 'none'
                     }},
                     { selector: 'edge[kind = "sibling"]', style: {
-                        'width': 3, 'line-color': '#0079C1',
+                        'width': 1.8, 'line-color': '#0079C1',
                         'curve-style': 'taxi', 'taxi-direction': 'downward', 'taxi-turn': 1, 'taxi-turn-min-distance': 6,
-                        'target-arrow-shape': 'none'
+                        'target-arrow-shape': 'none',
+                        'z-index': 1, 'z-compound-depth': 'bottom', 'z-index-compare': 'manual'
                     }},
                     { selector: 'edge[kind = "sibtrunk"]', style: {
-                        'width': 3, 'line-color': '#0079C1',
-                        'curve-style': 'straight', 'target-arrow-shape': 'none'
+                        'width': 1.8, 'line-color': '#0079C1',
+                        'curve-style': 'straight', 'target-arrow-shape': 'none',
+                        'z-index': 1, 'z-compound-depth': 'bottom', 'z-index-compare': 'manual'
                     }},
                     { selector: 'edge[kind = "sibling"][relType = "half"]', style: {
-                        'width': 3, 'line-color': '#FF8C00', 'line-style': 'dashed', 'line-dash-pattern': [8, 5]
+                        'width': 1.8, 'line-color': '#FF8C00', 'line-style': 'dashed', 'line-dash-pattern': [8, 5],
+                        'z-index': 1, 'z-compound-depth': 'bottom', 'z-index-compare': 'manual'
                     }},
                     { selector: 'edge[kind = "sibtrunk"][relType = "half"]', style: {
-                        'width': 3, 'line-color': '#FF8C00', 'line-style': 'dashed', 'line-dash-pattern': [8, 5]
+                        'width': 1.8, 'line-color': '#FF8C00', 'line-style': 'dashed', 'line-dash-pattern': [8, 5],
+                        'z-index': 1, 'z-compound-depth': 'bottom', 'z-index-compare': 'manual'
                     }},
                     { selector: 'edge[kind = "spouse"]', style: {
-                        'width': 4, 'line-color': 'data(color)', 'curve-style': 'unbundled-bezier', 'control-point-distances': [0], 'target-arrow-shape': 'none',
+                        'width': 4, 'line-color': 'data(color)',
+                        'curve-style': 'unbundled-bezier',
+                        'control-point-distances': [-55], 'control-point-weights': [0.5],
+                        'target-arrow-shape': 'none',
                         'label': 'data(emoji)', 'font-size': 24, 'color': '#5a3a1a',
                         'text-background-color': '#fff8e7', 'text-background-opacity': 1,
                         'text-background-shape': 'roundrectangle', 'text-background-padding': '5px',
                         'text-border-width': 1.5, 'text-border-color': '#d4af37', 'text-border-opacity': 1,
-                        'text-rotation': 0, 'text-margin-y': -4
+                        'text-rotation': 0, 'text-margin-y': -28,
+                        'z-index': 20, 'z-compound-depth': 'top', 'z-index-compare': 'manual'
                     }},
                     { selector: 'edge[kind = "spouse"][dashed = 1]', style: { 'line-style': 'dashed' }},
                     { selector: 'edge[kind = "spouse"][dashed = 2]', style: { 'line-style': 'dotted' }},
@@ -8344,9 +8352,10 @@ let edgesArray = [];
                         'target-arrow-shape': 'none'
                     }},
                     { selector: 'edge[kind = "siblingLink"]', style: {
-                        'width': 2.5, 'line-color': '#FF8C00', 'line-opacity': 0.85,
-                        'curve-style': 'unbundled-bezier', 'control-point-distances': [30], 'control-point-weights': [0.5],
-                        'target-arrow-shape': 'none'
+                        'width': 1.8, 'line-color': '#FF8C00', 'line-opacity': 0.75,
+                        'curve-style': 'unbundled-bezier', 'control-point-distances': [22], 'control-point-weights': [0.5],
+                        'target-arrow-shape': 'none',
+                        'z-index': 1, 'z-compound-depth': 'bottom', 'z-index-compare': 'manual'
                     }}
                 ],
                 layout: { name: 'preset', fit: true, padding: 60 }
@@ -12292,6 +12301,21 @@ function atualizarIndicadorMemoria() {
         } catch(e) { console.warn('Backup pré-import falhou:', e); }
     }
 
+    // #145 v54_42: infere status de vida a partir de múltiplos sinais do mod.
+    // Nunca retorna 'Fantasma' — fantasma é fase, não status vital.
+    function _inferStatusDoMod(m) {
+        if (!m) return 'Vivo';
+        const raw = String(m.status_vida || '').toLowerCase().trim();
+        const fase = String(m.estagio_vida || '').toLowerCase().trim();
+        const causa = String(m.causa_morte || '').trim();
+        const eventos = Array.isArray(m.eventos) ? m.eventos : [];
+        const temFalecimento = eventos.some(e => e && String(e.tipo || '').toLowerCase() === 'falecimento');
+        const DEAD_RX = /morto|morta|falecid|dead|ghost|fantasma|ancestral/;
+        if (DEAD_RX.test(raw) || DEAD_RX.test(fase) || causa || temFalecimento) return 'Ancestral (Morto)';
+        return 'Vivo';
+    }
+    try { window._inferStatusDoMod = _inferStatusDoMod; } catch(_){}
+
     // Mapeamento (mod → site) — campos comparáveis vindos do jogo
     const CAMPOS = [
         { key:'nome',       label:'Nome',            from: m => m.nome || '' },
@@ -12301,12 +12325,7 @@ function atualizarIndicadorMemoria() {
         { key:'tipoSim',    label:'Tipo de Sim',     from: m => m.tipo_sim || '' },
         { key:'carreira',   label:'Carreira',        from: m => m.carreira || '' },
         { key:'aspiracao',  label:'Aspiração',       from: m => m.aspiracao_atual || '' },
-        { key:'status',     label:'Status de Vida',  from: m => {
-            const raw = String(m.status_vida || '').toLowerCase().trim();
-            if (!raw || raw === 'vivo' || raw === 'alive' || raw === 'living') return 'Vivo';
-            if (/morto|morta|falecid|dead|ghost|fantasma|ancestral/.test(raw)) return 'Ancestral (Morto)';
-            return 'Vivo';
-        } },
+        { key:'status',     label:'Status de Vida',  from: m => _inferStatusDoMod(m) },
         { key:'causaMorte', label:'Causa da Morte',  from: m => m.causa_morte || '' },
         { key:'familia',    label:'Família',         from: m => m.familia || '' },
         { key:'isNpc',      label:'É NPC',           from: m => !!m.is_npc },
@@ -13943,10 +13962,14 @@ function atualizarIndicadorMemoria() {
             (db.sims || []).forEach(function(s){
                 if (!s) return;
                 var v = String(s.status || '').toLowerCase().trim();
-                if (s.status === 'Vivo' || s.status === 'Ancestral (Morto)') return;
-                if (!v) { s.status = 'Vivo'; return; }
-                if (/morto|morta|falecid|dead|ghost|fantasma|ancestral/.test(v)) s.status = 'Ancestral (Morto)';
-                else s.status = 'Vivo';
+                var faseV = String(s.fase || '').toLowerCase().trim();
+                if (s.status !== 'Vivo' && s.status !== 'Ancestral (Morto)') {
+                    if (!v) s.status = 'Vivo';
+                    else if (/morto|morta|falecid|dead|ghost|fantasma|ancestral/.test(v)) s.status = 'Ancestral (Morto)';
+                    else s.status = 'Vivo';
+                }
+                // Se a fase é fantasma, o status precisa ser Ancestral (Morto).
+                if (faseV === 'fantasma' && s.status === 'Vivo') s.status = 'Ancestral (Morto)';
             });
         } catch(_){}
 
@@ -14578,11 +14601,6 @@ function atualizarIndicadorMemoria() {
     st.id = 'ss-v5427-css';
     st.textContent = [
       '.ss-highlight { background: linear-gradient(transparent 55%, var(--cozy-gold-soft, #f0d97a) 55%); padding: 0 2px; border-radius: 3px; font-weight: 700; color: inherit; }',
-      '.ss-inline-edit.open { outline: 2px dashed #d4af37; outline-offset:2px; border-radius:8px; }',
-      '.ss-inline-pencil-btn { display:inline-flex; align-items:center; gap:4px; margin-top:6px; padding:2px 8px; border-radius:8px; border:1px solid var(--ts4-blue,#0079C1); background:rgba(0,121,193,0.08); color:var(--ts4-blue,#0079C1); font-size:11px; font-weight:700; cursor:pointer; line-height:1.4; user-select:none; }',
-      '.ss-inline-pencil-btn:hover { background:rgba(0,121,193,0.18); }',
-      '.ss-inline-editor { margin-top:8px; display:flex; flex-direction:column; gap:6px; }',
-      '.ss-inline-editor select, .ss-inline-editor input, .ss-inline-editor textarea { font-size:12px; padding:6px 8px; border-radius:8px; border:1px solid #d4af37; font-family:inherit; width:100%; box-sizing:border-box; }',
       '.ss-inline-actions { display:flex; gap:6px; flex-wrap:wrap; }',
       '.ss-inline-actions button { border:0; border-radius:8px; padding:5px 10px; font-weight:700; cursor:pointer; font-size:11px; font-family:inherit; }',
       '.ss-btn-save { background: var(--ts4-green, #7fb069); color:#fff; }',
@@ -14825,20 +14843,16 @@ function atualizarIndicadorMemoria() {
   if (typeof _origSwitchTab === 'function'){
     window.switchTab = function(id){
       var self = this;
-      var inlineOpen = !!document.querySelector('.ss-inline-edit.open');
-      if (window.__formDirty.active || inlineOpen){
+      if (window.__formDirty.active){
         var nome = window.__formDirty.simNome || 'este Sim';
-        var msg = inlineOpen
-          ? '✏️ Há um campo do perfil sendo editado. Salve ou cancele antes de trocar de aba.'
-          : '✏️ Você tem alterações não salvas em '+ nome +'.';
+        var msg = '✏️ Você tem alterações não salvas em '+ nome +'.';
         var host = ensureToastHost();
         var el = document.createElement('div');
         el.style.cssText = 'pointer-events:auto;min-width:280px;max-width:380px;background:#7a5a1a;color:#fff8e7;border-radius:14px;padding:12px 14px;box-shadow:0 10px 28px rgba(0,0,0,.3);font-family:Nunito,Quicksand,sans-serif;font-size:13px;';
         el.innerHTML =
           '<div style="line-height:1.35;margin-bottom:10px;">'+esc(msg)+'</div>' +
           '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">' +
-            (inlineOpen ? '' :
-              '<button data-act="descartar" style="background:#c97064;color:#fff;border:0;border-radius:10px;padding:6px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">Descartar e sair</button>') +
+            '<button data-act="descartar" style="background:#c97064;color:#fff;border:0;border-radius:10px;padding:6px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">Descartar e sair</button>' +
             '<button data-act="ficar" style="background:#f0d97a;color:#4a3b2a;border:0;border-radius:10px;padding:6px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:12px;">Continuar editando</button>' +
           '</div>';
         host.appendChild(el);
@@ -15088,205 +15102,6 @@ function atualizarIndicadorMemoria() {
     box.parentNode.insertBefore(snipEl, box);
   }
 
-  // =========================================================
-  // 83 — Edição inline no perfil (view mode) + rename Natureza→Tipo de Sim
-  // =========================================================
-  var FASE_OPTIONS = [
-    ['recem_nascido','👶 Recém-nascido'],
-    ['bebe-colo','👶 Bebê de Colo'],
-    ['bebe','🍼 Bebê'],
-    ['crianca','🧒 Criança'],
-    ['adolescente','🧑 Adolescente'],
-    ['jovem-adulto','👨 Jovem Adulto'],
-    ['adulto','🧔 Adulto'],
-    ['idoso','👴 Idoso'],
-    ['fantasma','👻 Fantasma']
-  ];
-  var OCULTO_OPTIONS = [
-    ['humano','👤 Humano'],['vampiro','🧛 Vampiro'],['bruxo','🧙 Bruxo / Feiticeiro'],
-    ['lobisim','🐺 Lobisim'],['sereia','🧜 Sereia'],['alien','👽 Alien'],
-    ['fantasma','👻 Fantasma'],['robo','🤖 Servo / Robô'],['planta','🌱 PlantaSim'],['outro','✨ Outro']
-  ];
-
-  var INLINE_FIELDS = [
-    { id:'v-fase',      prop:'fase',      kind:'select',    options: FASE_OPTIONS, label:'Fase de Vida' },
-    { id:'v-oculto',    prop:'oculto',    kind:'select',    options: OCULTO_OPTIONS, label:'Tipo de Sim' },
-    { id:'v-tracos',    prop:'tracos',    kind:'text',      label:'Traços' },
-    { id:'v-aspiracao', prop:'aspiracao', kind:'aspiracao', label:'Aspiração' },
-    { id:'v-extra',     prop:'extra',     kind:'textarea',  label:'Anotações / História' }
-  ];
-
-  function findSim(){
-    if (!window.db || !window.currentSimId) return null;
-    return db.sims.find(function(x){ return String(x.id)===String(window.currentSimId); }) || null;
-  }
-  function getAspiracaoPool(){
-    try {
-      var comum = (typeof POOLS!=='undefined' && POOLS.aspiracoes) ? (POOLS.aspiracoes.comum || []) : [];
-      var extras = (window.db && db.custom && db.custom.aspiracoes) ? db.custom.aspiracoes : [];
-      var all = comum.concat(extras);
-      var seen = {}, out = [];
-      all.forEach(function(a){ if (!seen[a]){ seen[a]=1; out.push(a); } });
-      return out;
-    } catch(_){ return []; }
-  }
-
-  function decorateInlineFields(){
-    var modal = document.getElementById('modal-sim');
-    var view = document.getElementById('mode-view');
-    if (!modal || !view || modal.style.display==='none' || view.style.display==='none') return;
-    INLINE_FIELDS.forEach(function(f){
-      var span = document.getElementById(f.id);
-      if (!span) return;
-      var field = span.closest('.profile-field');
-      if (!field) return;
-      // #144 v54_41: botão sempre visível (não depende de hover).
-      if (field.querySelector('.ss-inline-pencil-btn')) return;
-      field.classList.add('ss-inline-edit');
-      var pencil = document.createElement('button');
-      pencil.type = 'button';
-      pencil.className = 'ss-inline-pencil-btn';
-      pencil.textContent = '✎ editar';
-      pencil.title = 'Editar rapidamente';
-      var _openIt = function(ev){
-        if (ev) { ev.stopPropagation(); ev.preventDefault(); }
-        try { console.log('[inline-edit] click', f.prop); } catch(_){}
-        openInlineEditor(field, span, f);
-      };
-      pencil.addEventListener('click', _openIt);
-      pencil.addEventListener('mousedown', function(ev){ ev.stopPropagation(); });
-      field.appendChild(pencil);
-    });
-  }
-
-  function openInlineEditor(field, span, f){
-    if (field.querySelector('.ss-inline-editor')) return;
-    var sim = findSim();
-    if (!sim) return;
-    field.classList.add('open');
-    var oldDisplay = span.style.display;
-    span.style.display = 'none';
-
-    var wrap = document.createElement('div');
-    wrap.className = 'ss-inline-editor';
-    var input;
-
-    if (f.kind === 'select'){
-      input = document.createElement('select');
-      f.options.forEach(function(o){
-        var op = document.createElement('option'); op.value = o[0]; op.textContent = o[1];
-        input.appendChild(op);
-      });
-      input.value = sim[f.prop] || (f.options[0] && f.options[0][0]) || '';
-    } else if (f.kind === 'aspiracao'){
-      var pool = getAspiracaoPool();
-      input = document.createElement('select');
-      var opN = document.createElement('option'); opN.value=''; opN.textContent='— Nenhuma —';
-      input.appendChild(opN);
-      pool.forEach(function(a){ var op = document.createElement('option'); op.value=a; op.textContent=a; input.appendChild(op); });
-      if (sim.aspiracao && pool.indexOf(sim.aspiracao) < 0){
-        var opX = document.createElement('option'); opX.value=sim.aspiracao; opX.textContent=sim.aspiracao+' (personalizada)';
-        input.appendChild(opX);
-      }
-      input.value = sim.aspiracao || '';
-    } else if (f.kind === 'textarea'){
-      input = document.createElement('textarea');
-      input.rows = 4;
-      input.value = sim[f.prop] || '';
-      input.style.minHeight = '80px';
-      var autoResize = function(){
-        input.style.height = 'auto';
-        input.style.height = Math.min(400, input.scrollHeight + 4) + 'px';
-      };
-      input.addEventListener('input', autoResize);
-      setTimeout(autoResize, 20);
-    } else {
-      input = document.createElement('input');
-      input.type = 'text';
-      input.value = sim[f.prop] || '';
-    }
-    wrap.appendChild(input);
-
-    var actions = document.createElement('div');
-    actions.className = 'ss-inline-actions';
-
-    if (f.kind === 'aspiracao'){
-      var srt = document.createElement('button');
-      srt.type='button'; srt.className='ss-btn-cancel';
-      srt.style.background = '#fbe4ec'; srt.style.color = '#7a5a1a';
-      srt.textContent = '🎲 Sortear';
-      srt.addEventListener('click', function(){
-        var pool2 = getAspiracaoPool();
-        if (!pool2.length) return;
-        var pick = pool2[Math.floor(Math.random()*pool2.length)];
-        var exists = Array.prototype.some.call(input.options, function(o){ return o.value===pick; });
-        if (!exists){ var op = document.createElement('option'); op.value=pick; op.textContent=pick; input.appendChild(op); }
-        input.value = pick;
-      });
-      actions.appendChild(srt);
-    }
-
-    var save = document.createElement('button');
-    save.type='button'; save.className='ss-btn-save'; save.textContent='💾 Salvar';
-    save.addEventListener('click', function(){
-      var v = input.value;
-      sim[f.prop] = v;
-      safeSalvar();
-      close();
-      // Log opcional para fase (importante)
-      if (f.prop === 'fase' && window.db){
-        var label = (FASE_OPTIONS.find(function(o){return o[0]===v;})||[])[1] || v;
-        var marc = (typeof _marcadorSim==='function')?_marcadorSim(sim.id):'';
-        db.historia = (db.historia||'') + '\n['+new Date().toLocaleDateString('pt-BR')+'] [FASES] '+(sim.nome||'Sim')+' agora está na fase: '+label + marc;
-        safeSalvar();
-        try { renderLivroComFiltro(); } catch(_){}
-      }
-      try { if (typeof abrirPerfil==='function') abrirPerfil(window.currentSimId); } catch(_){}
-      try { if (typeof renderTree==='function') renderTree(); } catch(_){}
-      try { if (typeof renderGenList==='function') renderGenList(); } catch(_){}
-      if (typeof showToast==='function') showToast('✓ '+f.label+' atualizado(a)!');
-    });
-
-    var cancel = document.createElement('button');
-    cancel.type='button'; cancel.className='ss-btn-cancel'; cancel.textContent='Cancelar';
-    cancel.addEventListener('click', close);
-
-    actions.appendChild(save);
-    actions.appendChild(cancel);
-    wrap.appendChild(actions);
-    field.appendChild(wrap);
-    setTimeout(function(){ try { input.focus(); if (input.select) input.select(); } catch(_){} }, 30);
-
-    function close(){
-      if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
-      span.style.display = oldDisplay || '';
-      field.classList.remove('open');
-    }
-  }
-
-  var _origAbrirPerfil = window.abrirPerfil;
-  if (typeof _origAbrirPerfil === 'function'){
-    window.abrirPerfil = function(id){
-      var r = _origAbrirPerfil.apply(this, arguments);
-      setTimeout(decorateInlineFields, 40);
-      return r;
-    };
-  }
-  // #144: MutationObserver reativo + fallback curto.
-  (function(){
-    var view = document.getElementById('mode-view');
-    if (view && typeof MutationObserver !== 'undefined') {
-      var mo = new MutationObserver(function(){ decorateInlineFields(); });
-      mo.observe(view, { childList:true, subtree:true });
-    }
-  })();
-  setInterval(function(){
-    var modal = document.getElementById('modal-sim');
-    var view = document.getElementById('mode-view');
-    if (modal && view && modal.style.display!=='none' && view.style.display!=='none'){
-      decorateInlineFields();
-    }
-  }, 400);
 
 })();
 </script>
