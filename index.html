@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-44- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-45- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2365,6 +2365,7 @@
                     <option value="jovem-adulto" selected>Jovem Adulto</option>
                     <option value="adulto">Adulto</option>
                     <option value="idoso">Idoso</option>
+                    <option value="fantasma" id="opt-v-foto-fantasma">👻 Fantasma</option>
                 </select>
             </div>
 
@@ -2436,6 +2437,9 @@
                 <label style="font-weight:bold; font-size:13px;">Nome Completo:</label>
                 <input type="text" id="e-nome" placeholder="Nome do personagem...">
 
+                <label style="font-weight:bold; font-size:13px; margin-top:8px; display:block;">Sobrenome:</label>
+                <input type="text" id="e-sobrenome" placeholder="Sobrenome do personagem..." title="Preenchido automaticamente ao importar do mod. Também pode ser digitado manualmente.">
+
                 <label style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:bold; color:#555; margin-top:8px; cursor:pointer;">
                     <input type="checkbox" id="e-isNpc" style="width:16px; height:16px; cursor:pointer;">
                     👤 Este Sim é NPC (não jogável)
@@ -2456,11 +2460,18 @@
                             <option value="jovem-adulto" selected>Jovem Adulto</option>
                             <option value="adulto">Adulto</option>
                             <option value="idoso">Idoso</option>
+                            <option value="fantasma" id="opt-foto-fantasma" data-somente-morto="1">👻 Fantasma</option>
                         </select>
                         <div style="display:flex; gap:5px;">
                             <input type="hidden" id="e-img" onchange="salvarImagemNaMemoriaDaFase()">
                             <input type="file" id="e-img-file" accept="image/*" style="font-size:10px; padding: 5px;" onchange="carregarImagemComputador(event)">
                             <button class="btn-main btn-sec" style="width:auto; margin:0; padding:5px; font-size:12px;" onclick="removerImagemDaFase()" title="Excluir foto desta fase">🗑️</button>
+                        </div>
+                        <div style="display:flex; gap:5px; margin-top:6px; align-items:center;">
+                            <select id="e-foto-fase-origem" style="flex:1; font-size:11px; padding:5px;" title="Escolha uma fase que já tem foto para reutilizá-la nesta fase.">
+                                <option value="">Ou copiar foto de outra fase...</option>
+                            </select>
+                            <button class="btn-main btn-sec" style="width:auto; margin:0; padding:5px; font-size:11px;" onclick="copiarFotoDeOutraFase()" title="Usa a mesma foto da fase escolhida acima nesta fase.">📋 Copiar</button>
                         </div>
                     </div>
                     <div>
@@ -3504,7 +3515,36 @@
         }
 
         let lastRotation = {};
-        let currentSimId = null;
+        // v54.44-fix(155): ordem natural das fases da vida, usada para escolher a
+        // foto de fallback mais adequada quando a fase atual não tem foto própria.
+        // Antes o fallback usava Object.values(img).find(...), que pega a PRIMEIRA
+        // chave não-vazia na ordem de inserção do objeto (tipicamente bebê/bebê de
+        // colo) — por isso, ao envelhecer o Sim, a foto "voltava" para bebê.
+        // Agora preferimos a fase mais próxima e mais MADURA (adiante na vida) e só
+        // depois caímos para fases mais jovens como último recurso.
+        var FASE_ORDEM_FOTO = ['recem_nascido','bebe-colo','bebe','crianca','adolescente','jovem-adulto','adulto','idoso','fantasma'];
+        function fotoMaisApropriadaFase(imgObj, faseAtual) {
+            if (!imgObj) return '';
+            faseAtual = faseAtual || 'jovem-adulto';
+            if (imgObj[faseAtual]) return imgObj[faseAtual];
+            var idx = FASE_ORDEM_FOTO.indexOf(faseAtual);
+            if (idx === -1) {
+                // Fase fora da ordem conhecida (ex: "fantasma"): prioriza jovem-adulto/adulto/idoso.
+                return imgObj['jovem-adulto'] || imgObj['adulto'] || imgObj['idoso'] || Object.values(imgObj).find(function(i){ return i; }) || '';
+            }
+            var d;
+            for (d = 1; d < FASE_ORDEM_FOTO.length; d++) {
+                var adiante = FASE_ORDEM_FOTO[idx + d];
+                if (adiante && imgObj[adiante]) return imgObj[adiante];
+            }
+            for (d = 1; d < FASE_ORDEM_FOTO.length; d++) {
+                var atras = FASE_ORDEM_FOTO[idx - d];
+                if (atras && imgObj[atras]) return imgObj[atras];
+            }
+            return '';
+        }
+        var currentSimId = null; // v54.44-fix(150): precisa ser "var" (não "let") para virar window.currentSimId,
+                                  // já que o excluirSim mais recente (script separado) lê window.currentSimId.
 
         function autenticarGoogle() {
             if(CLIENT_ID.includes('SEU_CLIENT_ID')) return alert("Configure seu Client ID");
@@ -5743,6 +5783,18 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
             if (!isMorto && faseEl.value === 'fantasma') {
                 faseEl.value = 'adulto';
             }
+            // v54.44-fix(157): mesma regra para a opção "Fantasma" no seletor de
+            // Foto por Fase de Vida — só disponível quando o Sim está morto.
+            const fotoFaseEl = document.getElementById('e-foto-fase-select');
+            const optFoto = document.getElementById('opt-foto-fantasma');
+            if (optFoto) {
+                optFoto.hidden = !isMorto;
+                optFoto.disabled = !isMorto;
+            }
+            if (fotoFaseEl && !isMorto && fotoFaseEl.value === 'fantasma') {
+                fotoFaseEl.value = 'jovem-adulto';
+                carregarImagemNoInputDaFase();
+            }
         }
         try { window.toggleFaseFantasma = toggleFaseFantasma; } catch(_) {}
 
@@ -5761,10 +5813,10 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
         }
 
         function preencherFormEdicao() {
-            const defaultImgObj = {"recem_nascido":"","bebe-colo":"","bebe":"","crianca":"","adolescente":"","jovem-adulto":"","adulto":"","idoso":""};
+            const defaultImgObj = {"recem_nascido":"","bebe-colo":"","bebe":"","crianca":"","adolescente":"","jovem-adulto":"","adulto":"","idoso":"","fantasma":""};
             const s = db.sims.find(x => String(x.id) === String(currentSimId)) || { nome: "", status: "Vivo", p1: "", p2: "", spouse: "", relStatus: "solteiro", crush: "", tracos: "", extra: "", img: defaultImgObj, traicao: false, fase: "jovem-adulto", historico_relacionamentos: [], p1NpcNome: "", p2NpcNome: "" };
             
-            ['e-nome','e-status','e-crush','e-tracos','e-aspiracao','e-extra'].forEach(id => {
+            ['e-nome','e-sobrenome','e-status','e-crush','e-tracos','e-aspiracao','e-extra'].forEach(id => {
                 if(document.getElementById(id)) document.getElementById(id).value = s[id.replace('e-','')] || "";
             });
             if(document.getElementById('e-oculto')) document.getElementById('e-oculto').value = s.oculto || 'humano';
@@ -5808,7 +5860,32 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
             try { toggleFaseFantasma(); } catch(_) {}
         }
 
-        function carregarImagemNoInputDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; document.getElementById('e-img').value = tempFotosFases[faseSel] || ""; }
+        function carregarImagemNoInputDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; document.getElementById('e-img').value = tempFotosFases[faseSel] || ""; popularSelectOrigemFoto(); }
+
+        // v54.44-fix(154): permite reaproveitar a foto já cadastrada em outra fase da vida.
+        const FASES_LABELS_FOTO = { 'bebe-colo':'Bebê de Colo', 'bebe':'Bebê', 'crianca':'Criança', 'adolescente':'Adolescente', 'jovem-adulto':'Jovem Adulto', 'adulto':'Adulto', 'idoso':'Idoso', 'fantasma':'👻 Fantasma' };
+        function popularSelectOrigemFoto() {
+            const sel = document.getElementById('e-foto-fase-origem');
+            if (!sel) return;
+            const faseAtual = document.getElementById('e-foto-fase-select')?.value || '';
+            let opts = '<option value="">Ou copiar foto de outra fase...</option>';
+            Object.keys(FASES_LABELS_FOTO).forEach(f => {
+                if (f === faseAtual) return;
+                if (tempFotosFases[f]) opts += `<option value="${f}">${FASES_LABELS_FOTO[f]}</option>`;
+            });
+            sel.innerHTML = opts;
+        }
+        function copiarFotoDeOutraFase() {
+            const selOrigem = document.getElementById('e-foto-fase-origem');
+            const origem = selOrigem ? selOrigem.value : '';
+            if (!origem) { showToast('Escolha uma fase de origem primeiro.'); return; }
+            const foto = tempFotosFases[origem];
+            if (!foto) { showToast('Essa fase ainda não tem foto salva.'); return; }
+            const faseAtual = document.getElementById('e-foto-fase-select').value;
+            tempFotosFases[faseAtual] = foto;
+            document.getElementById('e-img').value = foto;
+            showToast('📋 Foto copiada da fase "' + (FASES_LABELS_FOTO[origem] || origem) + '"!');
+        }
 
         function popularListaIrmaos(irmaosIds) {
             const container = document.getElementById('lista-sims-irmaos');
@@ -5902,12 +5979,13 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
             aviso.style.display = semResultado ? 'inline' : 'none';
         }
 
-        function salvarImagemNaMemoriaDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; tempFotosFases[faseSel] = document.getElementById('e-img').value; }
+        function salvarImagemNaMemoriaDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; tempFotosFases[faseSel] = document.getElementById('e-img').value; popularSelectOrigemFoto(); }
         
         function removerImagemDaFase() {
             let faseSel = document.getElementById('e-foto-fase-select').value;
             tempFotosFases[faseSel] = "";
             document.getElementById('e-img').value = "";
+            popularSelectOrigemFoto();
             showToast("Foto removida da memória temporária.");
         }
 
@@ -6142,6 +6220,7 @@ function salvarSim() {
             const s = {
                 id: currentSimId ? String(currentSimId) : String(Date.now()), 
                 nome: nomeSim, 
+                sobrenome: (document.getElementById('e-sobrenome')?.value || '').trim(),
                 status: statusVital, 
                 img: JSON.parse(JSON.stringify(tempFotosFases)), 
                 p1: document.getElementById('e-p1').value, 
@@ -6353,7 +6432,7 @@ function salvarSim() {
             const imgEl = document.getElementById('v-img');
             if (!s || !imgEl) return;
             const fase = document.getElementById('v-seletor-foto-fase').value;
-            const src = (s.img && (s.img[fase] || s.img['jovem-adulto'] || Object.values(s.img).find(i => i))) || "";
+            const src = (s.img && fotoMaisApropriadaFase(s.img, fase)) || "";
             imgEl.innerHTML = src ? `<img src="${src}" alt="${s.nome}">` : '👤';
         }
 
@@ -6361,7 +6440,13 @@ function salvarSim() {
             currentSimId = id; const s = db.sims.find(x => String(x.id) === String(id));
             toggleEditMode(false);
             
-            document.getElementById('v-nome').innerText = s.nome;
+            document.getElementById('v-nome').innerText = s.sobrenome ? (s.nome + ' ' + s.sobrenome) : s.nome;
+            const optVFantasma = document.getElementById('opt-v-foto-fantasma');
+            if (optVFantasma) {
+                const isMortoView = s.status === 'Ancestral (Morto)';
+                optVFantasma.hidden = !isMortoView;
+                optVFantasma.disabled = !isMortoView;
+            }
             document.getElementById('v-seletor-foto-fase').value = s.fase || "jovem-adulto";
             atualizarFotoExibicaoPerfil();
             renderAlbumFotos(s);
@@ -7101,7 +7186,7 @@ function importarArquivo(event) {
             let faseAtual = sim.fase || "jovem-adulto";
             let imgData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
             if (sim.img) {
-                imgData = sim.img[faseAtual] || sim.img["jovem-adulto"] || sim.img["adulto"] || Object.values(sim.img).find(i => i !== "") || imgData;
+                imgData = fotoMaisApropriadaFase(sim.img, faseAtual) || imgData;
             }
 
             let icons = [];
@@ -7110,6 +7195,15 @@ function importarArquivo(event) {
             if (sim.relStatus === 'viuvo') icons.push('🥀');
             if (sim.crush) icons.push('💕');
             let iconStr = icons.join(' ');
+
+            // v54.44-fix(153): nome do cônjuge ao lado do símbolo 💍 no card.
+            let spouseNameShort = '';
+            if (sim.relStatus === 'casado' && sim.spouse) {
+                const spSim = db.sims.find(x => String(x.id) === String(sim.spouse));
+                if (spSim && spSim.nome) {
+                    spouseNameShort = spSim.nome.length > 16 ? spSim.nome.substring(0, 14) + '…' : spSim.nome;
+                }
+            }
 
             const xmlEsc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
             const MAX_LINE = 12;
@@ -7173,7 +7267,7 @@ function importarArquivo(event) {
                 <text x="110" y="210" font-family="'Nunito', Arial, sans-serif" font-size="28" font-weight="bold" fill="${nameColor}" text-anchor="middle">${nameL1}</text>
                 ${nameL2 ? `<text x="110" y="240" font-family="'Nunito', Arial, sans-serif" font-size="28" font-weight="bold" fill="${nameColor}" text-anchor="middle">${nameL2}</text>` : ''}
                 
-                <text x="110" y="262" font-family="Arial, sans-serif" font-size="16" fill="#2B2B2B" text-anchor="middle">${iconStr}</text>
+                <text x="110" y="262" font-family="Arial, sans-serif" font-size="16" fill="#2B2B2B" text-anchor="middle">${iconStr}${spouseNameShort ? `<tspan font-family="'Nunito', Arial, sans-serif" font-size="11" font-weight="bold" fill="#555555"> ${xmlEsc(spouseNameShort)}</tspan>` : ''}</text>
                 ${exTextElement}
                 ${renderGenBadgeSVG(sim)}
                 ${sim.isNpc ? `<rect x="55" y="6" width="110" height="26" rx="13" ry="13" fill="#888899" filter="url(#shadow)"/>
@@ -7535,12 +7629,7 @@ let edgesArray = [];
 
                     const isDead = sim.status === 'Ancestral (Morto)';
                     const _faseAtual = sim.fase || 'jovem-adulto';
-                    const foto = (sim.img && (
-                        sim.img[_faseAtual] ||
-                        sim.img['jovem-adulto'] ||
-                        sim.img['adulto'] ||
-                        Object.values(sim.img).find(Boolean)
-                    )) || '';
+                    const foto = (sim.img && fotoMaisApropriadaFase(sim.img, _faseAtual)) || '';
                     const esc = str => String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
                     const imgHtml = foto
@@ -8404,8 +8493,7 @@ let edgesArray = [];
                 function _getFoto(sim) {
                     if (!sim.img) return '';
                     const fase = sim.fase || 'jovem-adulto';
-                    return sim.img[fase] || sim.img['jovem-adulto'] || sim.img['adulto'] ||
-                        Object.values(sim.img).find(Boolean) || '';
+                    return fotoMaisApropriadaFase(sim.img, fase);
                 }
 
                 function _placeTip(mx, my) {
@@ -8581,7 +8669,7 @@ let edgesArray = [];
             const gallery = document.getElementById('sim-album-gallery');
             if (!albumSection || !gallery) return;
 
-            const FASES_ORDEM = ["recem_nascido", "bebe-colo", "bebe", "crianca", "adolescente", "jovem-adulto", "adulto", "idoso"];
+            const FASES_ORDEM = ["recem_nascido", "bebe-colo", "bebe", "crianca", "adolescente", "jovem-adulto", "adulto", "idoso", "fantasma"];
             const FASES_LABELS = {
 		"recem_nascido": "👶 Recém-Nascido",
                 "bebe-colo":    "👶 Bebê de Colo",
@@ -8590,7 +8678,8 @@ let edgesArray = [];
                 "adolescente":  "🧑 Adolescente",
                 "jovem-adulto": "👨 Jovem Adulto",
                 "adulto":       "🧔 Adulto",
-                "idoso":        "👴 Idoso"
+                "idoso":        "👴 Idoso",
+                "fantasma":     "👻 Fantasma"
             };
 
             if (!sim.img) { albumSection.style.display = 'none'; _albumFotos = []; return; }
@@ -9466,7 +9555,7 @@ function exportarPerfilSim(simId) {
     // Posições e Margens Controladas
     let avatarX = 85, avatarY = 95, avatarR = 55;
     let faseAtual = s.fase || 'jovem-adulto';
-    let imgSrc = s.img && (s.img[faseAtual] || s.img['jovem-adulto'] || Object.values(s.img).find(v=>v)) || null;
+    let imgSrc = (s.img && fotoMaisApropriadaFase(s.img, faseAtual)) || null;
 
     const drawCardContent = () => {
         // Renderiza Imagem do Sim
@@ -12486,6 +12575,31 @@ function atualizarIndicadorMemoria() {
         return String(v).trim();
     }
 
+    // v54.44-fix(156): calcula só o que é NOVO no bloco de "Anotações / História
+    // do Sim" vindo do mod, comparado ao que já existe no site — evitando
+    // duplicar o bloco inteiro toda vez que a importação roda de novo.
+    // _notasSimCompletas() separa cada seção (Conquistas, Aspirações, Gostos...)
+    // por linha em branco, com um cabeçalho na primeira linha; então comparamos
+    // bloco a bloco e, dentro de cada bloco, item a item.
+    function _extrasDelta(atual, novo) {
+        const atualStr = String(atual || '');
+        const atualLower = atualStr.toLowerCase();
+        const blocos = String(novo || '').split('\n\n').filter(b => b.trim() !== '');
+        const novosBlocos = [];
+        blocos.forEach(bloco => {
+            const linhas = bloco.split('\n');
+            const header = linhas[0];
+            const itens = linhas.slice(1).filter(l => l.trim() !== '');
+            if (itens.length) {
+                const itensNovos = itens.filter(l => atualLower.indexOf(l.trim().toLowerCase()) === -1);
+                if (itensNovos.length) novosBlocos.push([header, ...itensNovos].join('\n'));
+            } else if (header.trim() && atualLower.indexOf(header.trim().toLowerCase()) === -1) {
+                novosBlocos.push(header);
+            }
+        });
+        return novosBlocos.join('\n\n');
+    }
+
     function _escapeHtml(s) {
         return String(s == null ? '' : s)
             .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -12500,11 +12614,14 @@ function atualizarIndicadorMemoria() {
             const nn = _norm(novo);
             const na = _norm(atual);
             if (nn === '' || nn === na) return;
-            // "Notas Extras" nunca sobrescreve — vira acréscimo (append).
+            // "Notas Extras": por padrão vira acréscimo (só o que é novo), mas o
+            // usuário pode escolher "Substituir" na tela de revisão (Passo 2).
             if (c.tipo === 'extra' && na !== '') {
                 // Se o conteúdo do mod já estiver dentro das notas atuais, não é mudança.
                 if (na.toLowerCase().indexOf(nn.toLowerCase()) !== -1) return;
-                mudancas.push({ key:c.key, label:c.label, tipo:c.tipo||'', atual, novo, append:true });
+                const delta = _extrasDelta(atual, novo);
+                if (!delta) return; // nada realmente novo para acrescentar
+                mudancas.push({ key:c.key, label:c.label, tipo:c.tipo||'', atual, novo, novoDelta: delta, append:true });
                 return;
             }
             mudancas.push({ key:c.key, label:c.label, tipo:c.tipo||'', atual, novo });
@@ -12655,9 +12772,12 @@ function atualizarIndicadorMemoria() {
         });
         const info = document.getElementById('import-mod-selecao-info');
         if (info) info.textContent = marcados + ' Sim(s) selecionado(s)';
+        // v54.44-fix(151): não bloqueia mais o avanço com 0 Sims marcados —
+        // a pessoa pode querer pular a seleção de Sims e ir direto para
+        // eventos/história (Passo 4).
         const btnAvancar = document.getElementById('btn-import-avancar');
-        if (btnAvancar) btnAvancar.disabled = (marcados === 0);
-        if (btnAvancar) btnAvancar.style.opacity = (marcados === 0) ? '0.5' : '1';
+        if (btnAvancar) btnAvancar.disabled = false;
+        if (btnAvancar) btnAvancar.style.opacity = '1';
     }
 
     window._selecionarSimsAba = function(marcar) {
@@ -12754,7 +12874,9 @@ function atualizarIndicadorMemoria() {
                     } else {
                         mudancas.forEach((mu, muIdx) => {
                             const antes = _escapeHtml(_norm(mu.atual) || '—');
-                            const depois = _escapeHtml(_norm(mu.novo) || '—');
+                            const ehExtra = mu.tipo === 'extra';
+                            const depoisTexto = ehExtra ? (mu.novoDelta || mu.novo) : mu.novo;
+                            const depois = _escapeHtml(_norm(depoisTexto) || '—');
                             const chkAttr = mu.append ? '' : 'checked';
                             const sep = mu.append
                                 ? ' <span style="color:#a07500; font-weight:700;">＋ Acrescentar</span> '
@@ -12763,10 +12885,16 @@ function atualizarIndicadorMemoria() {
                                 ? '<span style="color:#666;">' + (antes.length > 80 ? antes.slice(0,80) + '…' : antes) + '</span>'
                                 : '<span style="color:#a03;">' + antes + '</span>';
                             const depoisHtml = '<span style="color:#070; white-space:pre-line;">' + depois + '</span>';
+                            const modoToggle = ehExtra
+                                ? '<div style="margin:4px 0 2px 0; font-size:11px; color:#666; display:flex; gap:12px;">'
+                                +   '<label style="cursor:pointer;"><input type="radio" name="extra-modo-vin-' + v.idx + '" data-import-extra-modo-vin="' + v.idx + '" value="acrescentar" checked style="vertical-align:middle;"> ➕ Acrescentar (só o que é novo)</label>'
+                                +   '<label style="cursor:pointer;"><input type="radio" name="extra-modo-vin-' + v.idx + '" data-import-extra-modo-vin="' + v.idx + '" value="substituir" style="vertical-align:middle;"> 🔁 Substituir tudo</label>'
+                                + '</div>'
+                                : '';
                             subitens += ''
                                 + '<label style="display:flex; align-items:flex-start; gap:8px; padding:4px 0; font-size:12px; cursor:pointer;">'
                                 +   '<input type="checkbox" ' + chkAttr + ' data-import-vin="' + v.idx + ':' + mu.key + '" style="margin-top:2px;">'
-                                +   '<span><strong>' + _escapeHtml(mu.label) + ':</strong> ' + antesHtml + sep + depoisHtml + '</span>'
+                                +   '<span style="flex:1;"><strong>' + _escapeHtml(mu.label) + ':</strong> ' + antesHtml + sep + depoisHtml + modoToggle + '</span>'
                                 + '</label>';
                         });
                     }
@@ -12797,7 +12925,9 @@ function atualizarIndicadorMemoria() {
                 let subitens = '';
                 item.mudancas.forEach((mu, muIdx) => {
                     const antes = _escapeHtml(_norm(mu.atual) || '—');
-                    const depois = _escapeHtml(_norm(mu.novo) || '—');
+                    const ehExtra = mu.tipo === 'extra';
+                    const depoisTexto = ehExtra ? (mu.novoDelta || mu.novo) : mu.novo;
+                    const depois = _escapeHtml(_norm(depoisTexto) || '—');
                     const chkAttr = mu.append ? '' : 'checked';
                     const sep = mu.append
                         ? ' <span style="color:#a07500; font-weight:700;">＋ Acrescentar</span> '
@@ -12806,10 +12936,16 @@ function atualizarIndicadorMemoria() {
                         ? '<span style="color:#666;">' + (antes.length > 80 ? antes.slice(0,80) + '…' : antes) + '</span>'
                         : '<span style="color:#a03;">' + antes + '</span>';
                     const depoisHtml = '<span style="color:#070; white-space:pre-line;">' + depois + '</span>';
+                    const modoToggle = ehExtra
+                        ? '<div style="margin:4px 0 2px 0; font-size:11px; color:#666; display:flex; gap:12px;">'
+                        +   '<label style="cursor:pointer;"><input type="radio" name="extra-modo-mud-' + idx + '" data-import-extra-modo-mud="' + idx + '" value="acrescentar" checked style="vertical-align:middle;"> ➕ Acrescentar (só o que é novo)</label>'
+                        +   '<label style="cursor:pointer;"><input type="radio" name="extra-modo-mud-' + idx + '" data-import-extra-modo-mud="' + idx + '" value="substituir" style="vertical-align:middle;"> 🔁 Substituir tudo</label>'
+                        + '</div>'
+                        : '';
                     subitens += ''
                         + '<label style="display:flex; align-items:flex-start; gap:8px; padding:4px 0; font-size:12px; cursor:pointer;">'
                         +   '<input type="checkbox" ' + chkAttr + ' data-import-mud="' + idx + ':' + muIdx + '" style="margin-top:2px;">'
-                        +   '<span><strong>' + _escapeHtml(mu.label) + ':</strong> ' + antesHtml + sep + depoisHtml + '</span>'
+                        +   '<span style="flex:1;"><strong>' + _escapeHtml(mu.label) + ':</strong> ' + antesHtml + sep + depoisHtml + modoToggle + '</span>'
                         + '</label>';
                 });
                 html += ''
@@ -12899,8 +13035,8 @@ function atualizarIndicadorMemoria() {
 
     window._avancarPassoImportMod = function() {
         if (_passoAtual === 1) {
-            const marcados = document.querySelectorAll('#import-mod-step1 input[type="checkbox"]:checked').length;
-            if (marcados === 0) { alert('Selecione pelo menos um Sim para prosseguir.'); return; }
+            // v54.44-fix(151): não exige mais Sim selecionado — a pessoa pode
+            // querer avançar só para registrar eventos/história (Passo 4).
             renderPasso2();
             _mostrarPasso(2);
         } else if (_passoAtual === 2) {
@@ -13920,24 +14056,30 @@ function atualizarIndicadorMemoria() {
 
 
     // Aplica um Sim do mod nos campos do Sim do site (só campos escolhidos)
-    function _aplicarCamposMod(simSite, modSim, chaves) {
+    function _aplicarCamposMod(simSite, modSim, chaves, modos) {
+        modos = modos || {};
         chaves.forEach(k => {
             const c = CAMPOS.find(x => x.key === k);
             if (!c) return;
             const val = c.from(modSim);
-            // Notas Extras: nunca sobrescreve. Concatena se já existir conteúdo,
-            // evitando duplicar quando o mesmo bloco já está lá.
+            // Notas Extras: por padrão só acrescenta o que é NOVO (evita duplicar
+            // o bloco inteiro a cada import). Se o usuário escolher "Substituir"
+            // na tela de revisão, o campo é sobrescrito com o texto completo do mod.
             if (c.tipo === 'extra') {
                 const atual = String(simSite[k] || '');
                 const novo = String(val || '');
                 if (!novo) return;
+                const modo = modos[k] || 'acrescentar';
+                if (modo === 'substituir') { simSite[k] = novo; return; }
                 if (!atual) { simSite[k] = novo; return; }
                 if (atual.toLowerCase().indexOf(novo.toLowerCase()) !== -1) return;
+                const delta = _extrasDelta(atual, novo);
+                if (!delta) return; // nada realmente novo para acrescentar
                 const cabecalho = '\n\n--- Do jogo (import) ---\n';
                 if (atual.indexOf(cabecalho.trim()) !== -1) {
-                    simSite[k] = atual + '\n' + novo;
+                    simSite[k] = atual + '\n' + delta;
                 } else {
-                    simSite[k] = atual + cabecalho + novo;
+                    simSite[k] = atual + cabecalho + delta;
                 }
                 return;
             }
@@ -14023,7 +14165,9 @@ function atualizarIndicadorMemoria() {
                     }
                     return;
                 }
-                _aplicarCamposMod(simSite, item.modSim, chaves);
+                _aplicarCamposMod(simSite, item.modSim, chaves, {
+                    extra: ((document.querySelector('input[data-import-extra-modo-vin="' + v.idx + '"]:checked') || {}).value) || 'acrescentar'
+                });
                 nAtualizados++;
             }
         });
@@ -14037,7 +14181,9 @@ function atualizarIndicadorMemoria() {
                 if (chk && chk.checked) chaves.push(mu.key);
             });
             if (chaves.length === 0) { nIgnorados++; return; }
-            _aplicarCamposMod(item.simSite, item.modSim, chaves);
+            _aplicarCamposMod(item.simSite, item.modSim, chaves, {
+                extra: ((document.querySelector('input[data-import-extra-modo-mud="' + idx + '"]:checked') || {}).value) || 'acrescentar'
+            });
             nAtualizados++;
         });
 
@@ -14783,7 +14929,7 @@ function atualizarIndicadorMemoria() {
   window.__formDirty = { active:false, snapshot:null, simNome:'' };
 
   function snapshotSimForm(){
-    var ids = ['e-nome','e-status','e-crush','e-tracos','e-aspiracao','e-extra','e-oculto','e-p1','e-p2','e-spouse','e-rel','e-fase'];
+    var ids = ['e-nome','e-sobrenome','e-status','e-crush','e-tracos','e-aspiracao','e-extra','e-oculto','e-p1','e-p2','e-spouse','e-rel','e-fase'];
     var acc = {};
     ids.forEach(function(id){ var el=document.getElementById(id); if(el) acc[id] = el.value; });
     var tr = document.getElementById('e-traicao'); if(tr) acc.traicao = !!tr.checked;
