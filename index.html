@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-46- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-47- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -12463,6 +12463,86 @@ function atualizarIndicadorMemoria() {
         return [...new Set(lim)].join(', ');
     }
 
+    // ======================================================================
+    // #165 v54_47: TRAÇOS COMPARADOS POR CONJUNTO (a ordem não importa)
+    // ----------------------------------------------------------------------
+    // O mod exporta "tracos" como array, e a ordem muda entre exportações.
+    // Antes, o diff comparava a string "A, B, C" literalmente — bastava o
+    // jogo devolver "B, A, C" para o Sim aparecer como "atualizado" sem
+    // nenhuma mudança real. Agora comparamos conjuntos normalizados.
+    // ======================================================================
+
+    // Normaliza um traço para comparação: minúsculo, sem acento, sem espaços
+    // duplicados. Só para COMPARAR — a grafia exibida continua a original.
+    function _tracoChave(s) {
+        return String(s == null ? '' : s)
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    // Aceita array (mod) ou string separada por vírgula/quebra de linha/;/•
+    // (campo do site) e devolve a lista de traços já limpa e sem duplicatas,
+    // preservando a grafia original de cada item.
+    function _tracosLista(valor) {
+        let brutos = [];
+        if (Array.isArray(valor)) {
+            brutos = valor.map(x => (typeof x === 'string' ? x : (x && x.nome) || ''));
+        } else if (valor != null) {
+            brutos = String(valor).split(/[,;\n\r•]+/);
+        }
+        const vistos = new Set();
+        const out = [];
+        brutos.forEach(raw => {
+            const t = String(raw || '').trim();
+            if (!t) return;
+            if (/hash\s*:/i.test(t) || /tokens\s*\{/.test(t)) return; // lixo técnico
+            const k = _tracoChave(t);
+            if (!k || vistos.has(k)) return;
+            vistos.add(k);
+            out.push(t);
+        });
+        return out;
+    }
+
+    function _tracosSet(valor) {
+        return new Set(_tracosLista(valor).map(_tracoChave));
+    }
+
+    // Compara traços do site x traços do mod ignorando a ordem.
+    // Devolve { ganhos, perdidos, mantidos, mudou } com a grafia amigável.
+    function _diffTracos(valorSite, valorMod) {
+        const listaSite = _tracosLista(valorSite);
+        const listaMod  = _tracosLista(valorMod);
+        const setSite = new Set(listaSite.map(_tracoChave));
+        const setMod  = new Set(listaMod.map(_tracoChave));
+        const ganhos   = listaMod.filter(t => !setSite.has(_tracoChave(t)));
+        const perdidos = listaSite.filter(t => !setMod.has(_tracoChave(t)));
+        const mantidos = listaSite.filter(t => setMod.has(_tracoChave(t)));
+        return { ganhos, perdidos, mantidos, mudou: (ganhos.length > 0 || perdidos.length > 0) };
+    }
+
+    // Resultado final a gravar no Sim do site: mantém a ORDEM já cadastrada
+    // pelo usuário (e a grafia dele) para os traços que continuam, tira os que
+    // o jogo não traz mais e acrescenta os novos no fim.
+    function _mesclarTracos(valorSite, valorMod) {
+        const listaSite = _tracosLista(valorSite);
+        const listaMod  = _tracosLista(valorMod);
+        if (!listaSite.length) return listaMod.join(', ');
+        if (!listaMod.length) return listaSite.join(', ');
+        const setMod = new Set(listaMod.map(_tracoChave));
+        const setSite = new Set(listaSite.map(_tracoChave));
+        const mantidos = listaSite.filter(t => setMod.has(_tracoChave(t)));
+        const ganhos   = listaMod.filter(t => !setSite.has(_tracoChave(t)));
+        return [...mantidos, ...ganhos].join(', ');
+    }
+    try {
+        window._tracosSet = _tracosSet;
+        window._diffTracos = _diffTracos;
+        window._mesclarTracos = _mesclarTracos;
+    } catch(_) {}
+
     // Filtra "outras_informacoes" do mod, removendo ruído técnico e devolvendo
     // uma string amigável (uma característica por linha) para colar em "Notas Extras".
     function _outrasInfoLimpas(arr) {
@@ -12611,6 +12691,30 @@ function atualizarIndicadorMemoria() {
             .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
+    // #165: bloco visual de uma mudança de traços (ganhos / perdidos / mantidos).
+    function _htmlTracosMudanca(mu) {
+        const ganhos   = Array.isArray(mu.ganhos) ? mu.ganhos : [];
+        const perdidos = Array.isArray(mu.perdidos) ? mu.perdidos : [];
+        const mantidos = Array.isArray(mu.mantidos) ? mu.mantidos : [];
+        let out = '<div style="margin-top:3px; line-height:1.5;">';
+        if (ganhos.length) {
+            out += '<div style="color:#0a6b2a;"><strong>+ Ganhou:</strong> ' + _escapeHtml(ganhos.join(', ')) + '</div>';
+        }
+        if (perdidos.length) {
+            out += '<div style="color:#a03;"><strong>– Perdeu:</strong> ' + _escapeHtml(perdidos.join(', ')) + '</div>';
+        }
+        if (mantidos.length) {
+            const txt = mantidos.join(', ');
+            out += '<div style="color:#888; font-size:11px;">mantidos: '
+                 + _escapeHtml(txt.length > 120 ? txt.slice(0, 120) + '…' : txt) + '</div>';
+        }
+        if (!ganhos.length && !perdidos.length && !mantidos.length) {
+            out += '<span style="color:#070;">' + _escapeHtml(_norm(mu.novo) || '—') + '</span>';
+        }
+        out += '</div>';
+        return out;
+    }
+
     function _diffSim(simSite, simMod) {
         const mudancas = [];
         CAMPOS.forEach(c => {
@@ -12618,6 +12722,18 @@ function atualizarIndicadorMemoria() {
             const atual = simSite ? simSite[c.key] : undefined;
             const nn = _norm(novo);
             const na = _norm(atual);
+            // #165: Traços — comparação por CONJUNTO (a ordem do mod não importa).
+            if (c.tipo === 'tracos') {
+                if (nn === '') return;
+                const dt = _diffTracos(atual, novo);
+                if (!dt.mudou) return; // mesmos traços, só em outra ordem → nada a fazer
+                mudancas.push({
+                    key: c.key, label: c.label, tipo: c.tipo, atual, novo,
+                    ganhos: dt.ganhos, perdidos: dt.perdidos, mantidos: dt.mantidos,
+                    novoFinal: _mesclarTracos(atual, novo)
+                });
+                return;
+            }
             if (nn === '' || nn === na) return;
             // "Notas Extras": por padrão vira acréscimo (só o que é novo), mas o
             // usuário pode escolher "Substituir" na tela de revisão (Passo 2).
@@ -12896,10 +13012,14 @@ function atualizarIndicadorMemoria() {
                                 +   '<label style="cursor:pointer;"><input type="radio" name="extra-modo-vin-' + v.idx + '" data-import-extra-modo-vin="' + v.idx + '" value="substituir" style="vertical-align:middle;"> 🔁 Substituir tudo</label>'
                                 + '</div>'
                                 : '';
+                            // #165: Traços mostram ganhos/perdidos em vez de "antes ➜ depois".
+                            const corpo = (mu.tipo === 'tracos')
+                                ? '<strong>' + _escapeHtml(mu.label) + ':</strong>' + _htmlTracosMudanca(mu)
+                                : '<strong>' + _escapeHtml(mu.label) + ':</strong> ' + antesHtml + sep + depoisHtml + modoToggle;
                             subitens += ''
                                 + '<label style="display:flex; align-items:flex-start; gap:8px; padding:4px 0; font-size:12px; cursor:pointer;">'
                                 +   '<input type="checkbox" ' + chkAttr + ' data-import-vin="' + v.idx + ':' + mu.key + '" style="margin-top:2px;">'
-                                +   '<span style="flex:1;"><strong>' + _escapeHtml(mu.label) + ':</strong> ' + antesHtml + sep + depoisHtml + modoToggle + '</span>'
+                                +   '<span style="flex:1;">' + corpo + '</span>'
                                 + '</label>';
                         });
                     }
@@ -12947,10 +13067,14 @@ function atualizarIndicadorMemoria() {
                         +   '<label style="cursor:pointer;"><input type="radio" name="extra-modo-mud-' + idx + '" data-import-extra-modo-mud="' + idx + '" value="substituir" style="vertical-align:middle;"> 🔁 Substituir tudo</label>'
                         + '</div>'
                         : '';
+                    // #165: Traços mostram ganhos/perdidos em vez de "antes ➜ depois".
+                    const corpo = (mu.tipo === 'tracos')
+                        ? '<strong>' + _escapeHtml(mu.label) + ':</strong>' + _htmlTracosMudanca(mu)
+                        : '<strong>' + _escapeHtml(mu.label) + ':</strong> ' + antesHtml + sep + depoisHtml + modoToggle;
                     subitens += ''
                         + '<label style="display:flex; align-items:flex-start; gap:8px; padding:4px 0; font-size:12px; cursor:pointer;">'
                         +   '<input type="checkbox" ' + chkAttr + ' data-import-mud="' + idx + ':' + muIdx + '" style="margin-top:2px;">'
-                        +   '<span style="flex:1;"><strong>' + _escapeHtml(mu.label) + ':</strong> ' + antesHtml + sep + depoisHtml + modoToggle + '</span>'
+                        +   '<span style="flex:1;">' + corpo + '</span>'
                         + '</label>';
                 });
                 html += ''
@@ -14110,6 +14234,13 @@ function atualizarIndicadorMemoria() {
                 } else {
                     simSite[k] = atual + cabecalho + delta;
                 }
+                return;
+            }
+            // #165: Traços — preserva a ordem/grafia já cadastradas pelo usuário,
+            // remove só o que o jogo não traz mais e acrescenta os novos no fim.
+            if (c.tipo === 'tracos') {
+                const merge = _mesclarTracos(simSite[k], val);
+                if (merge) simSite[k] = merge;
                 return;
             }
             simSite[k] = val;
