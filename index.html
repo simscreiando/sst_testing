@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-48- SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-49 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -6329,6 +6329,12 @@ function salvarSim() {
                             data: new Date().toLocaleDateString('pt-BR')
                         });
                         ex.spouse = "";
+                        // #166: se o ex-cônjuge já faleceu, o status civil dele
+                        // passa a ser 'viuvo' — caso contrário, o ícone da árvore
+                        // continuaria mostrando-o como casado com o sim atual.
+                        if (ex.status === 'Ancestral (Morto)') {
+                            ex.relStatus = 'viuvo';
+                        }
                     }
                 }
 
@@ -14073,7 +14079,41 @@ function atualizarIndicadorMemoria() {
             return 'skip'; // conflito
         }
         if (rel.kind === 'casado' || rel.kind === 'namoro') {
-            if (sA.spouse || sB.spouse) return 'skip'; // conflito preservador
+            // #166: permitir recasamento após viuvez.
+            // Se um dos lados já tem cônjuge vivo diferente do novo parceiro,
+            // preserva o casamento ativo. Se o cônjuge atual está MORTO,
+            // dissolve o vínculo automaticamente (viuvez) e cria o novo.
+            const _isMorto = (x) => !!x && String(x.status || '').toLowerCase().includes('morto');
+            const _dataHoje = new Date().toLocaleDateString('pt-BR');
+
+            const _dissolverSePreciso = (self, novoParceiroId) => {
+                const spId = self.spouse ? String(self.spouse) : '';
+                if (!spId) return 'ok';
+                if (spId === String(novoParceiroId)) return 'ok'; // já é o mesmo par
+                const ex = (db.sims || []).find(x => String(x.id) === spId);
+                if (!ex) { self.spouse = ''; return 'ok'; } // ex sumiu — só limpa
+                if (!_isMorto(ex)) return 'blocked'; // cônjuge vivo → não sobrescreve
+                // Ex morto: registra viuvez no histórico de ambos e limpa vínculo
+                if (!Array.isArray(self.historico_relacionamentos)) self.historico_relacionamentos = [];
+                self.historico_relacionamentos.push({
+                    simId: String(ex.id), simNome: ex.nome || '',
+                    statusFinal: 'viuvo', data: _dataHoje
+                });
+                if (!Array.isArray(ex.historico_relacionamentos)) ex.historico_relacionamentos = [];
+                ex.historico_relacionamentos.push({
+                    simId: String(self.id), simNome: self.nome || '',
+                    statusFinal: 'viuvo', data: _dataHoje
+                });
+                ex.spouse = '';
+                ex.relStatus = 'viuvo';
+                self.spouse = '';
+                return 'ok';
+            };
+
+            const rA = _dissolverSePreciso(sA, sB.id);
+            const rB = _dissolverSePreciso(sB, sA.id);
+            if (rA === 'blocked' || rB === 'blocked') return 'skip';
+
             sA.spouse = String(sB.id);
             sB.spouse = String(sA.id);
             const st = rel.kind === 'casado' ? 'casado' : 'namorado';
