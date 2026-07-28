@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-50 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-48 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -6329,12 +6329,6 @@ function salvarSim() {
                             data: new Date().toLocaleDateString('pt-BR')
                         });
                         ex.spouse = "";
-                        // v54_50: se o ex-cônjuge já está morto, força relStatus='viuvo'
-                        // para o card refletir 🥀 e a lógica de viuvez ficar consistente
-                        // (a linha 🕊️ na árvore é derivada do histórico dos dois lados).
-                        if (ex.status === 'Ancestral (Morto)') {
-                            ex.relStatus = 'viuvo';
-                        }
                     }
                 }
 
@@ -7506,46 +7500,20 @@ let edgesArray = [];
                         let isSeparated = s.relStatus === 'separado';
                         let isWidowed = s.relStatus === 'viuvo';
 
-                        // v54_50: viuvez agora é desenhada a partir do histórico
-                        // (loop separado abaixo), para permitir manter a linha 🕊️
-                        // com o falecido mesmo após um recasamento.
-                        if (!isWidowed) {
-                            let estilo = EDGE_STYLES.casados;
-                            if (isSeparated) estilo = EDGE_STYLES.separados;
+                        let estilo = EDGE_STYLES.casados;
+                        if (isSeparated) estilo = EDGE_STYLES.separados;
+                        else if (isWidowed) estilo = EDGE_STYLES.viuvos;
 
-                            edgesArray.push({
-                                from: String(s.id),
-                                to: String(s.spouse),
-                                ...estilo,
-                                font: EDGE_FONT,
-                                smooth: { type: 'curvedCW', roundness: 0.55 }
-                            });
-                            addedSpouses.add(spKey1);
-                        }
+                        edgesArray.push({
+                            from: String(s.id),
+                            to: String(s.spouse),
+                            ...estilo,
+                            font: EDGE_FONT,
+                            smooth: { type: 'curvedCW', roundness: 0.55 }
+                        });
+                        addedSpouses.add(spKey1);
                     }
                 }
-            });
-
-            // v54_50: arestas de viuvez a partir do histórico_relacionamentos.
-            // Assim uma pessoa recasada mantém a linha 🕊️ com cada ex-cônjuge falecido.
-            baseSims.forEach(s => {
-                const hist = Array.isArray(s.historico_relacionamentos) ? s.historico_relacionamentos : [];
-                hist.forEach(h => {
-                    if (!h || h.statusFinal !== 'viuvo') return;
-                    const outroId = String(h.simId);
-                    if (!baseSims.some(b => String(b.id) === outroId)) return;
-                    const spKey1 = `${s.id}-${outroId}`;
-                    const spKey2 = `${outroId}-${s.id}`;
-                    if (addedSpouses.has(spKey1) || addedSpouses.has(spKey2)) return;
-                    edgesArray.push({
-                        from: String(s.id),
-                        to: outroId,
-                        ...EDGE_STYLES.viuvos,
-                        font: EDGE_FONT,
-                        smooth: { type: 'curvedCW', roundness: 0.55 }
-                    });
-                    addedSpouses.add(spKey1);
-                });
             });
 
             let addedSiblingEdges = new Set();
@@ -8251,11 +8219,7 @@ let edgesArray = [];
                                   : (byId[bId] && byId[bId].spouse === aId) ? byId[bId].relStatus : null;
                         if (rel === 'separado') { color = '#FF4D4D'; dashed = 1; emoji = '💔'; }
                         else if (rel === 'viuvo') { color = '#34495E'; dashed = 2; emoji = '🕊️'; }
-                        // v54_50: viuvez é desenhada pelo laço de histórico abaixo,
-                        // para preservar a linha 🕊️ mesmo após recasamento.
-                        if (rel !== 'viuvo') {
-                            elements.push({ data: { id: 'e_sp_' + u.key, source: aKey, target: bKey, kind: 'spouse', color, dashed, emoji } });
-                        }
+                        elements.push({ data: { id: 'e_sp_' + u.key, source: aKey, target: bKey, kind: 'spouse', color, dashed, emoji } });
                     }
                 }
                 // Parent → filho (com ou sem barra de irmandade)
@@ -8310,40 +8274,6 @@ let edgesArray = [];
                 }
             });
 
-
-            // v54_50: arestas 🕊️ de viuvez derivadas do histórico.
-            // Permite manter a linha com o falecido mesmo depois de um recasamento
-            // (o ponteiro spouse pode apontar para o novo par).
-            (function _widow_links(){
-                // mapeia cada simId -> uma chave de nó presente em simPos
-                const anyNodeKeyOf = {};
-                Object.keys(simPos).forEach(k => {
-                    // formatos possíveis: "<id>", "<id>@<uk>", "<id>#<uk>"
-                    const m = String(k).match(/^([^@#]+)/);
-                    if (m && !anyNodeKeyOf[m[1]]) anyNodeKeyOf[m[1]] = k;
-                });
-                const emitted = new Set();
-                Object.keys(byId).forEach(sid => {
-                    const s = byId[sid];
-                    const hist = Array.isArray(s.historico_relacionamentos) ? s.historico_relacionamentos : [];
-                    hist.forEach(h => {
-                        if (!h || h.statusFinal !== 'viuvo') return;
-                        const oId = String(h.simId);
-                        if (!byId[oId]) return;
-                        const [a, b] = [String(sid), oId].sort();
-                        const key = a + '|' + b;
-                        if (emitted.has(key)) return;
-                        const srcK = anyNodeKeyOf[a], tgtK = anyNodeKeyOf[b];
-                        if (!srcK || !tgtK) return;
-                        emitted.add(key);
-                        elements.push({ data: {
-                            id: 'e_widow_' + a + '_' + b,
-                            source: srcK, target: tgtK,
-                            kind: 'spouse', color: '#34495E', dashed: 2, emoji: '🕊️'
-                        }});
-                    });
-                });
-            })();
 
             // ── #111 EXTRA: irmãos declarados (sim.irmaos[]) ──
             //   Recupera o comportamento do v53: quando dois sims estão
@@ -14143,41 +14073,7 @@ function atualizarIndicadorMemoria() {
             return 'skip'; // conflito
         }
         if (rel.kind === 'casado' || rel.kind === 'namoro') {
-            // v54_50: recasamento após viuvez.
-            // Se um dos lados aponta para cônjuge MORTO, dissolve o vínculo:
-            //  - registra viuvez no histórico dos dois (se ainda não existir)
-            //  - limpa spouse e força relStatus='viuvo' no falecido
-            // Se apontar para cônjuge VIVO diferente do novo par -> skip (não sobrescreve).
-            // Se já apontar para o próprio novo par -> apenas normaliza relStatus.
-            const _isMortoLocal = (x) => x && x.status === 'Ancestral (Morto)';
-            const _dataHoje = new Date().toLocaleDateString('pt-BR');
-            const _empurraViuvez = (surv, dead) => {
-                if (!surv || !dead) return;
-                surv.historico_relacionamentos = Array.isArray(surv.historico_relacionamentos) ? surv.historico_relacionamentos : [];
-                dead.historico_relacionamentos = Array.isArray(dead.historico_relacionamentos) ? dead.historico_relacionamentos : [];
-                const jaSurv = surv.historico_relacionamentos.some(h => String(h.simId) === String(dead.id) && h.statusFinal === 'viuvo');
-                const jaDead = dead.historico_relacionamentos.some(h => String(h.simId) === String(surv.id) && h.statusFinal === 'viuvo');
-                if (!jaSurv) surv.historico_relacionamentos.push({ simId: String(dead.id), simNome: dead.nome, statusFinal: 'viuvo', data: _dataHoje });
-                if (!jaDead) dead.historico_relacionamentos.push({ simId: String(surv.id), simNome: surv.nome, statusFinal: 'viuvo', data: _dataHoje });
-            };
-            const _dissolverSePossivel = (lado) => {
-                if (!lado.spouse) return true;
-                if (String(lado.spouse) === String(sA.id) || String(lado.spouse) === String(sB.id)) {
-                    // ja aponta para o par do vinculo novo (ou para si mesmo em degenerado) — ok
-                    return true;
-                }
-                const ex = (db.sims || []).find(x => String(x.id) === String(lado.spouse));
-                if (_isMortoLocal(ex)) {
-                    _empurraViuvez(lado, ex);
-                    ex.spouse = "";
-                    ex.relStatus = 'viuvo';
-                    lado.spouse = "";
-                    return true;
-                }
-                return false; // conflito com cônjuge vivo -> não sobrescreve
-            };
-            if (!_dissolverSePossivel(sA)) return 'skip';
-            if (!_dissolverSePossivel(sB)) return 'skip';
+            if (sA.spouse || sB.spouse) return 'skip'; // conflito preservador
             sA.spouse = String(sB.id);
             sB.spouse = String(sA.id);
             const st = rel.kind === 'casado' ? 'casado' : 'namorado';
