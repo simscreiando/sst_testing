@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-48 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-49 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -2656,8 +2656,15 @@
                     <div id="painel-rel-passadas" style="margin-top:10px; display:none;">
                         <div id="lista-rel-passadas-edit" style="margin-bottom:10px; max-height:100px; overflow-y:auto;"></div>
                         <div style="background:#f9f9f9; padding:8px; border-radius:6px; border:1px solid #ddd;">
+                            <div style="margin-bottom:6px;">
+                                <label style="font-size:11px; color:#9B59B6; font-weight:bold;">🔗 Vincular a Sim cadastrado (opcional):</label>
+                                <input type="text" id="busca-e-rel-passada-sim" placeholder="🔍 Buscar Sim..." oninput="filtrarSelectSims('busca-e-rel-passada-sim','e-rel-passada-sim')" style="width:100%; margin-top:3px; font-size:11px; padding:6px 10px; border-radius:8px;">
+                                <select id="e-rel-passada-sim" style="width:100%; margin-top:3px; font-size:11px; padding:6px;" data-empty-label="Nenhum (usar nome livre)">
+                                    <option value="">— Nenhum (usar nome livre abaixo) —</option>
+                                </select>
+                            </div>
                             <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                                <input type="text" id="e-rel-passada-nome" placeholder="Nome do ex..." style="flex:2; min-width:110px; font-size:11px; padding:6px;">
+                                <input type="text" id="e-rel-passada-nome" placeholder="Ou digitar nome livre..." style="flex:2; min-width:110px; font-size:11px; padding:6px;">
                                 <select id="e-rel-passada-status" style="flex:1; min-width:100px; font-size:11px; padding:6px;">
                                     <option value="casado">💍 Casado(a)</option>
                                     <option value="namorado">💕 Namorado(a)</option>
@@ -4003,7 +4010,19 @@ function salvarTudo() {
             showToast("✅ Todos os dados foram apagados com sucesso!");
         }
 
+        function migrarRelacionamentosBug() {
+            // Corrige bases salvas com o bug antigo: Sim marcado como "casado" mas sem
+            // spouse. Rebaixa para "viuvo" (se falecido) ou "separado" (se vivo).
+            if (!db || !db.sims) return;
+            db.sims.forEach(sim => {
+                if (sim.relStatus === 'casado' && !sim.spouse) {
+                    sim.relStatus = (sim.status === 'Ancestral (Morto)') ? 'viuvo' : 'separado';
+                }
+            });
+        }
+
         function recarregarInterface() {
+            migrarRelacionamentosBug();
             document.getElementById('txt-laws').value = db.regras || "";
             renderDash(); renderLab(); renderTree(); renderMetas(); renderConfig(); renderGenList(); renderIaSimList(); renderLivroComFiltro(); if (typeof renderRegrasLista === 'function') renderRegrasLista();
             aplicarTreeBg();
@@ -5881,6 +5900,16 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
             renderRelPassadasEdit();
             
 	    const opt = '<option value="">Nenhum</option>' + db.sims.filter(x => String(x.id) !== String(currentSimId)).map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
+            // Popula também o select do histórico de relacionamentos
+            const optHist = document.getElementById('e-rel-passada-sim');
+            if (optHist) {
+                optHist.innerHTML = '<option value="">— Nenhum (usar nome livre abaixo) —</option>' + 
+                    db.sims.filter(x => String(x.id) !== String(currentSimId))
+                        .map(x => `<option value="${x.id}">${x.nome}</option>`).join('');
+                optHist.value = '';
+                const buscaHist = document.getElementById('busca-e-rel-passada-sim');
+                if (buscaHist) buscaHist.value = '';
+            }
             ['e-p1','e-p2','e-spouse'].forEach(id => {
                 const el = document.getElementById(id); 
                 if(el) { 
@@ -6309,26 +6338,52 @@ function salvarSim() {
                 let oldSim = oldSimAtual;
                 
                 // --- TRATAMENTO DO CÔNJUGE ANTERIOR ---
+                // Auto-move o cônjuge anterior para o Histórico de Relacionamentos
+                // (dos DOIS Sims) sempre que o spouse mudou (trocou OU foi esvaziado).
                 if(oldSim.spouse && String(oldSim.spouse) !== String(s.spouse)) {
                     let ex = db.sims.find(x => String(x.id) === String(oldSim.spouse));
                     let nomeEx = ex ? ex.nome : 'Sim removido';
+                    let hoje = new Date().toLocaleDateString('pt-BR');
 
-                    s.historico_relacionamentos.push({
-                        simId: String(oldSim.spouse),
-                        simNome: nomeEx,
-                        statusFinal: oldSim.relStatus,
-                        data: new Date().toLocaleDateString('pt-BR')
-                    });
+                    // Determina o statusFinal correto do casamento encerrado:
+                    // - ex falecido => "viuvo" (encerrou por morte)
+                    // - relStatus anterior era "separado" => mantém "separado"
+                    // - qualquer outro caso => "casado" (guarda memória do casamento)
+                    let statusFinal;
+                    if (ex && ex.status === 'Ancestral (Morto)') statusFinal = 'viuvo';
+                    else if (oldSim.relStatus === 'separado') statusFinal = 'separado';
+                    else statusFinal = 'casado';
+
+                    // Dedup: evita empurrar o mesmo par (simId+data) duas vezes
+                    let jaTem = s.historico_relacionamentos.some(h =>
+                        String(h.simId) === String(oldSim.spouse) && h.data === hoje);
+                    if (!jaTem) {
+                        s.historico_relacionamentos.push({
+                            simId: String(oldSim.spouse),
+                            simNome: nomeEx,
+                            statusFinal: statusFinal,
+                            data: hoje
+                        });
+                    }
 
                     if(ex) {
                         if (!ex.historico_relacionamentos) ex.historico_relacionamentos = [];
-                        ex.historico_relacionamentos.push({
-                            simId: String(oldSim.id),
-                            simNome: oldSim.nome,
-                            statusFinal: oldSim.relStatus,
-                            data: new Date().toLocaleDateString('pt-BR')
-                        });
+                        let jaTemEx = ex.historico_relacionamentos.some(h =>
+                            String(h.simId) === String(oldSim.id) && h.data === hoje);
+                        if (!jaTemEx) {
+                            ex.historico_relacionamentos.push({
+                                simId: String(oldSim.id),
+                                simNome: oldSim.nome,
+                                statusFinal: statusFinal,
+                                data: hoje
+                            });
+                        }
                         ex.spouse = "";
+                        // Corrige o relStatus do ex para refletir a nova realidade —
+                        // sem esse ajuste, o ex continuava marcado como "casado" sem cônjuge
+                        // (bug relatado: Otto ficando "casado" depois do 2º casamento da Mya).
+                        if (ex.status === 'Ancestral (Morto)') ex.relStatus = 'viuvo';
+                        else ex.relStatus = 'separado';
                     }
                 }
 
@@ -7454,7 +7509,8 @@ let edgesArray = [];
                 viuvos:     { color: { color: '#34495E' }, width: 3,   dashes: [2, 6],  arrows: { to: { enabled: false } }, label: '🕊️', smooth: { type: 'curvedCW', roundness: 0.55 } },
                 irmaosFull: { color: { color: '#FF8C00' }, width: 1.8, dashes: false,   arrows: { to: { enabled: false } }, chosen: false, smooth: { enabled: false } },
                 meioIrmao:  { color: { color: '#FF8C00' }, width: 1.5, dashes: [6, 4],  arrows: { to: { enabled: false } }, chosen: false, smooth: { enabled: false } },
-                npc:        { color: { color: '#aaaacc' }, width: 2,   dashes: [5, 5],  arrows: 'to' }
+                npc:        { color: { color: '#aaaacc' }, width: 2,   dashes: [5, 5],  arrows: 'to' },
+                exCasados:  { color: { color: '#9B7BB8' }, width: 2.5, dashes: [4, 6],  arrows: { to: { enabled: false } }, label: '💔', smooth: { type: 'curvedCW', roundness: 0.55 } }
             };
             const EDGE_FONT = { size: 14, strokeWidth: 0, color: '#555', background: 'rgba(255,255,255,0.7)' };
 
@@ -7514,6 +7570,37 @@ let edgesArray = [];
                         addedSpouses.add(spKey1);
                     }
                 }
+            });
+
+            // Arestas de EX-CASAMENTO (memória do vínculo) puxadas do histórico.
+            // Só desenha se o outro Sim existe na árvore, não há aresta de spouse ativa
+            // entre os dois, e a entrada tem simId (vinculada, não texto livre).
+            let addedExMarriages = new Set();
+            baseSims.forEach(s => {
+                if (!s.historico_relacionamentos || !s.historico_relacionamentos.length) return;
+                s.historico_relacionamentos.forEach(h => {
+                    if (!h.simId) return;
+                    // Só casamento/viuvez (não namoro/amante)
+                    if (h.statusFinal !== 'casado' && h.statusFinal !== 'viuvo' && h.statusFinal !== 'separado') return;
+                    if (!baseSims.some(b => String(b.id) === String(h.simId))) return;
+                    let a = String(s.id), b = String(h.simId);
+                    // já há spouse ativo entre os dois? pula.
+                    if (addedSpouses.has(`${a}-${b}`) || addedSpouses.has(`${b}-${a}`)) return;
+                    // dedup por par ordenado
+                    let pair = [a,b].sort().join('|');
+                    if (addedExMarriages.has(pair)) return;
+                    addedExMarriages.add(pair);
+                    let estiloEx = { ...EDGE_STYLES.exCasados };
+                    if (h.statusFinal === 'viuvo') estiloEx.label = '🕊️';
+                    else if (h.statusFinal === 'separado') estiloEx.label = '💔';
+                    else estiloEx.label = '💍̶';
+                    edgesArray.push({
+                        from: a, to: b,
+                        ...estiloEx,
+                        font: EDGE_FONT,
+                        smooth: { type: 'curvedCCW', roundness: 0.35 }
+                    });
+                });
             });
 
             let addedSiblingEdges = new Set();
@@ -8221,6 +8308,20 @@ let edgesArray = [];
                         else if (rel === 'viuvo') { color = '#34495E'; dashed = 2; emoji = '🕊️'; }
                         elements.push({ data: { id: 'e_sp_' + u.key, source: aKey, target: bKey, kind: 'spouse', color, dashed, emoji } });
                     }
+                    // Ex-casamento (histórico): desenha uma segunda aresta cinza tracejada
+                    // quando os dois Sims da unidade têm entrada de histórico vinculada mas
+                    // não são cônjuges ativos entre si.
+                    if (simPos[aKey] && simPos[bKey] && !aTemSpouseB && !bTemSpouseA) {
+                        const histA = (byId[aId] && byId[aId].historico_relacionamentos) || [];
+                        const histB = (byId[bId] && byId[bId].historico_relacionamentos) || [];
+                        const hA = histA.find(h => String(h.simId) === String(bId) && (h.statusFinal==='casado'||h.statusFinal==='viuvo'||h.statusFinal==='separado'));
+                        const hB = histB.find(h => String(h.simId) === String(aId) && (h.statusFinal==='casado'||h.statusFinal==='viuvo'||h.statusFinal==='separado'));
+                        if (hA || hB) {
+                            const st = (hA && hA.statusFinal) || (hB && hB.statusFinal) || 'casado';
+                            const emo = st === 'viuvo' ? '🕊️' : (st === 'separado' ? '💔' : '💍');
+                            elements.push({ data: { id: 'e_ex_' + u.key, source: aKey, target: bKey, kind: 'spouse', color: '#9B7BB8', dashed: 1, emoji: emo } });
+                        }
+                    }
                 }
                 // Parent → filho (com ou sem barra de irmandade)
                 const hasSibBar = !!sibBarPos[u.key];
@@ -8634,28 +8735,92 @@ let edgesArray = [];
                         : h.statusFinal === 'namorado' ? '💕 Namorou c/'
                         : h.statusFinal === 'amante' ? '🔥 Amante de'
                         : '💍 Casado(a) c/';
+                let vinc = '';
+                if (h.simId) {
+                    let existe = (typeof db !== 'undefined') && db.sims && db.sims.some(x => String(x.id) === String(h.simId));
+                    if (existe) vinc = ' <span style="background:#e9dbf5; color:#7a3ba0; font-size:10px; padding:1px 6px; border-radius:8px; margin-left:4px;">🔗 vinculado</span>';
+                }
                 return `<div style="display:flex; justify-content:space-between; align-items:center; background:white; padding:7px 10px; border-radius:8px; border:1px solid #e0d0f0; margin-bottom:5px; font-size:12px;">
-                    <span>${lbl} <strong>${h.simNome}</strong>${h.data ? ' <span style="color:#aaa;font-size:10px;">(${h.data})</span>' : ''}</span>
+                    <span>${lbl} <strong>${h.simNome}</strong>${vinc}${h.data ? ' <span style="color:#aaa;font-size:10px;">(${h.data})</span>' : ''}</span>
                     <button onclick="removeRelPassadaEdit(${i})" style="background:#fff0f0; border:1px solid #ff8888; border-radius:5px; color:#cc0000; cursor:pointer; padding:2px 8px; font-size:11px;">✕</button>
                 </div>`;
             }).join('');
         }
 
         function addRelPassadaEdit() {
-            let nome = document.getElementById('e-rel-passada-nome').value.trim();
+            let selEl = document.getElementById('e-rel-passada-sim');
+            let simIdSel = selEl ? selEl.value : '';
+            let nomeLivre = document.getElementById('e-rel-passada-nome').value.trim();
             let status = document.getElementById('e-rel-passada-status').value;
             let dataVal = document.getElementById('e-rel-passada-data').value;
-            if (!nome) return alert("Informe o nome do ex-cônjuge.");
+
+            let simId = '';
+            let nome = '';
+            if (simIdSel) {
+                let simVinc = db.sims.find(x => String(x.id) === String(simIdSel));
+                if (!simVinc) return alert("Sim vinculado não encontrado.");
+                simId = String(simIdSel);
+                nome = simVinc.nome;
+            } else if (nomeLivre) {
+                nome = nomeLivre;
+            } else {
+                return alert("Selecione um Sim cadastrado OU digite o nome do ex-cônjuge.");
+            }
+
             let dataFormatada = dataVal ? new Date(dataVal + 'T00:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
-            tempHistoricoRelacionamentos.push({ simId: '', simNome: nome, statusFinal: status, data: dataFormatada });
+
+            // Dedup local (tempHistoricoRelacionamentos)
+            let jaTem = simId && tempHistoricoRelacionamentos.some(h =>
+                String(h.simId) === String(simId) && h.data === dataFormatada);
+            if (!jaTem) {
+                tempHistoricoRelacionamentos.push({ simId: simId, simNome: nome, statusFinal: status, data: dataFormatada });
+            }
+
+            // Espelha no outro Sim quando vinculado — persiste imediatamente para que
+            // apareça no perfil dele mesmo antes do usuário salvar este perfil.
+            if (simId && currentSimId) {
+                let outro = db.sims.find(x => String(x.id) === String(simId));
+                if (outro) {
+                    if (!outro.historico_relacionamentos) outro.historico_relacionamentos = [];
+                    let jaTemOutro = outro.historico_relacionamentos.some(h =>
+                        String(h.simId) === String(currentSimId) && h.data === dataFormatada);
+                    if (!jaTemOutro) {
+                        let meuNome = document.getElementById('e-nome')?.value?.trim()
+                            || (db.sims.find(x => String(x.id) === String(currentSimId))?.nome) || '';
+                        outro.historico_relacionamentos.push({
+                            simId: String(currentSimId),
+                            simNome: meuNome,
+                            statusFinal: status,
+                            data: dataFormatada
+                        });
+                        if (typeof salvarTudo === 'function') salvarTudo();
+                    }
+                }
+            }
+
             document.getElementById('e-rel-passada-nome').value = '';
             document.getElementById('e-rel-passada-data').value = '';
+            if (selEl) selEl.value = '';
+            let buscaEl = document.getElementById('busca-e-rel-passada-sim');
+            if (buscaEl) buscaEl.value = '';
             renderRelPassadasEdit();
+            if (typeof renderTree === 'function') renderTree();
         }
 
         function removeRelPassadaEdit(idx) {
+            let h = tempHistoricoRelacionamentos[idx];
+            // Se estava vinculada, remove o espelho no outro Sim
+            if (h && h.simId && currentSimId) {
+                let outro = db.sims.find(x => String(x.id) === String(h.simId));
+                if (outro && outro.historico_relacionamentos) {
+                    outro.historico_relacionamentos = outro.historico_relacionamentos.filter(hh =>
+                        !(String(hh.simId) === String(currentSimId) && hh.data === h.data && hh.statusFinal === h.statusFinal));
+                    if (typeof salvarTudo === 'function') salvarTudo();
+                }
+            }
             tempHistoricoRelacionamentos.splice(idx, 1);
             renderRelPassadasEdit();
+            if (typeof renderTree === 'function') renderTree();
         }
 
 
