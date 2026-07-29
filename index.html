@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-49 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-50 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -4013,11 +4013,34 @@ function salvarTudo() {
         function migrarRelacionamentosBug() {
             // Corrige bases salvas com o bug antigo: Sim marcado como "casado" mas sem
             // spouse. Rebaixa para "viuvo" (se falecido) ou "separado" (se vivo).
+            // Também corrige importações antigas em que o falecido ficou como cônjuge
+            // principal e o casamento atual caiu apenas no histórico.
             if (!db || !db.sims) return;
             db.sims.forEach(sim => {
                 if (sim.relStatus === 'casado' && !sim.spouse) {
                     sim.relStatus = (sim.status === 'Ancestral (Morto)') ? 'viuvo' : 'separado';
                 }
+                if (!sim.spouse || !Array.isArray(sim.historico_relacionamentos)) return;
+                const spouseAtual = db.sims.find(x => String(x.id) === String(sim.spouse));
+                if (!spouseAtual || spouseAtual.status !== 'Ancestral (Morto)') return;
+                const histCasamentoAtual = sim.historico_relacionamentos.slice().reverse().find(h => {
+                    if (!h || !h.simId || h.statusFinal !== 'casado') return false;
+                    const cand = db.sims.find(x => String(x.id) === String(h.simId));
+                    return cand && cand.status !== 'Ancestral (Morto)';
+                });
+                if (!histCasamentoAtual) return;
+                const novoConj = db.sims.find(x => String(x.id) === String(histCasamentoAtual.simId));
+                if (!novoConj) return;
+                const hoje = histCasamentoAtual.data || new Date().toLocaleDateString('pt-BR');
+                if (typeof _registrarHistoricoRelVinculado === 'function') {
+                    _registrarHistoricoRelVinculado(sim, spouseAtual, 'viuvo', hoje);
+                }
+                spouseAtual.spouse = '';
+                spouseAtual.relStatus = 'viuvo';
+                sim.spouse = String(novoConj.id);
+                sim.relStatus = 'casado';
+                novoConj.spouse = String(sim.id);
+                novoConj.relStatus = 'casado';
             });
         }
 
@@ -6340,50 +6363,21 @@ function salvarSim() {
                 // --- TRATAMENTO DO CÔNJUGE ANTERIOR ---
                 // Auto-move o cônjuge anterior para o Histórico de Relacionamentos
                 // (dos DOIS Sims) sempre que o spouse mudou (trocou OU foi esvaziado).
-                if(oldSim.spouse && String(oldSim.spouse) !== String(s.spouse)) {
+                if(oldSim && oldSim.spouse && String(oldSim.spouse) !== String(s.spouse)) {
                     let ex = db.sims.find(x => String(x.id) === String(oldSim.spouse));
-                    let nomeEx = ex ? ex.nome : 'Sim removido';
                     let hoje = new Date().toLocaleDateString('pt-BR');
-
-                    // Determina o statusFinal correto do casamento encerrado:
-                    // - ex falecido => "viuvo" (encerrou por morte)
-                    // - relStatus anterior era "separado" => mantém "separado"
-                    // - qualquer outro caso => "casado" (guarda memória do casamento)
-                    let statusFinal;
-                    if (ex && ex.status === 'Ancestral (Morto)') statusFinal = 'viuvo';
-                    else if (oldSim.relStatus === 'separado') statusFinal = 'separado';
-                    else statusFinal = 'casado';
-
-                    // Dedup: evita empurrar o mesmo par (simId+data) duas vezes
-                    let jaTem = s.historico_relacionamentos.some(h =>
-                        String(h.simId) === String(oldSim.spouse) && h.data === hoje);
-                    if (!jaTem) {
+                    let statusFinal = _statusFinalHistoricoRel(oldSim, ex, oldSim.relStatus);
+                    if (ex) {
+                        _registrarHistoricoRelVinculado(s, ex, statusFinal, hoje);
+                        ex.spouse = "";
+                        ex.relStatus = (_isSimFalecidoRel(ex) || statusFinal === 'viuvo') ? 'viuvo' : 'separado';
+                    } else if (!_historicoRelJaExiste(s, oldSim.spouse, hoje)) {
                         s.historico_relacionamentos.push({
                             simId: String(oldSim.spouse),
-                            simNome: nomeEx,
+                            simNome: 'Sim removido',
                             statusFinal: statusFinal,
                             data: hoje
                         });
-                    }
-
-                    if(ex) {
-                        if (!ex.historico_relacionamentos) ex.historico_relacionamentos = [];
-                        let jaTemEx = ex.historico_relacionamentos.some(h =>
-                            String(h.simId) === String(oldSim.id) && h.data === hoje);
-                        if (!jaTemEx) {
-                            ex.historico_relacionamentos.push({
-                                simId: String(oldSim.id),
-                                simNome: oldSim.nome,
-                                statusFinal: statusFinal,
-                                data: hoje
-                            });
-                        }
-                        ex.spouse = "";
-                        // Corrige o relStatus do ex para refletir a nova realidade —
-                        // sem esse ajuste, o ex continuava marcado como "casado" sem cônjuge
-                        // (bug relatado: Otto ficando "casado" depois do 2º casamento da Mya).
-                        if (ex.status === 'Ancestral (Morto)') ex.relStatus = 'viuvo';
-                        else ex.relStatus = 'separado';
                     }
                 }
 
@@ -7892,8 +7886,36 @@ let edgesArray = [];
                 if (!units[k]) units[k] = { key: k, type: 'single', parents: [String(a)], children: [] };
                 return units[k];
             };
-            // cônjuges (mesmo sem filhos)
-            sims.forEach(s => { if (s.spouse && byId[String(s.spouse)]) getCouple(s.id, s.spouse); });
+            const isHistMarriageStatus = st => ['casado','viuvo','separado'].includes(String(st || '').toLowerCase());
+            const activeCouplePairs = new Set();
+            const historicalMarriagePairs = {};
+            const findHistMarriage = (a, b) => {
+                const simA = byId[String(a)], simB = byId[String(b)];
+                const histA = (simA && Array.isArray(simA.historico_relacionamentos)) ? simA.historico_relacionamentos : [];
+                const histB = (simB && Array.isArray(simB.historico_relacionamentos)) ? simB.historico_relacionamentos : [];
+                return histA.find(h => String(h.simId || '') === String(b) && isHistMarriageStatus(h.statusFinal))
+                    || histB.find(h => String(h.simId || '') === String(a) && isHistMarriageStatus(h.statusFinal))
+                    || null;
+            };
+            // cônjuges ativos (mesmo sem filhos)
+            sims.forEach(s => {
+                if (s.spouse && byId[String(s.spouse)]) {
+                    activeCouplePairs.add(coupleKey(s.id, s.spouse));
+                    getCouple(s.id, s.spouse);
+                }
+            });
+            // casamentos anteriores vinculados no histórico também viram unidade visual;
+            // sem isso, a linha tracejada some quando o falecido sai do campo principal.
+            sims.forEach(s => {
+                const hist = Array.isArray(s.historico_relacionamentos) ? s.historico_relacionamentos : [];
+                hist.forEach(h => {
+                    if (!h || !h.simId || !byId[String(h.simId)] || !isHistMarriageStatus(h.statusFinal)) return;
+                    const k = coupleKey(s.id, h.simId);
+                    if (activeCouplePairs.has(k) || historicalMarriagePairs[k]) return;
+                    historicalMarriagePairs[k] = h;
+                    getCouple(s.id, h.simId);
+                });
+            });
             // filhos -> unidade adequada
             sims.forEach(child => {
                 const p1 = child.p1 ? String(child.p1) : null;
@@ -13594,11 +13616,26 @@ function atualizarIndicadorMemoria() {
             return { estado:'conflito', a, b, motivo:'Filho(a) já tem p1 e p2 preenchidos com outros Sims.' };
         }
         if (rel.kind === 'casado') {
+            const histA = Array.isArray(sA.historico_relacionamentos) ? sA.historico_relacionamentos : [];
+            const histB = Array.isArray(sB.historico_relacionamentos) ? sB.historico_relacionamentos : [];
+            const jaNoHistorico = histA.some(h => String(h.simId || '') === b.localId && (h.statusFinal === 'casado' || h.statusFinal === 'viuvo' || h.statusFinal === 'separado'))
+                || histB.some(h => String(h.simId || '') === a.localId && (h.statusFinal === 'casado' || h.statusFinal === 'viuvo' || h.statusFinal === 'separado'));
             if (String(sA.spouse||'') === b.localId && String(sB.spouse||'') === a.localId
                 && String(sA.relStatus||'').toLowerCase() === 'casado') {
                 return { estado:'existe', a, b };
             }
+            if (jaNoHistorico) return { estado:'existe', a, b };
+            const aDead = (typeof _isSimFalecidoRel === 'function') ? _isSimFalecidoRel(sA) : false;
+            const bDead = (typeof _isSimFalecidoRel === 'function') ? _isSimFalecidoRel(sB) : false;
+            if (aDead || bDead) return { estado:'novo', a, b, historico:true };
+            const spouseA = sA.spouse ? (db.sims||[]).find(s => String(s.id) === String(sA.spouse)) : null;
+            const spouseB = sB.spouse ? (db.sims||[]).find(s => String(s.id) === String(sB.spouse)) : null;
+            const spouseAMorto = spouseA && (typeof _isSimFalecidoRel === 'function') && _isSimFalecidoRel(spouseA);
+            const spouseBMorto = spouseB && (typeof _isSimFalecidoRel === 'function') && _isSimFalecidoRel(spouseB);
             if (!sA.spouse && !sB.spouse) return { estado:'novo', a, b };
+            if (spouseAMorto || spouseBMorto || String(sA.relStatus||'').toLowerCase() === 'viuvo' || String(sB.relStatus||'').toLowerCase() === 'viuvo') {
+                return { estado:'novo', a, b, substituiViuvez:true };
+            }
             return { estado:'conflito', a, b, motivo:'Um dos Sims já tem cônjuge/parceiro cadastrado no site.' };
         }
         if (rel.kind === 'namoro') {
@@ -14238,10 +14275,34 @@ function atualizarIndicadorMemoria() {
             return 'skip'; // conflito
         }
         if (rel.kind === 'casado' || rel.kind === 'namoro') {
-            if (sA.spouse || sB.spouse) return 'skip'; // conflito preservador
+            const st = rel.kind === 'casado' ? 'casado' : 'namorado';
+            const hojeRel = new Date().toLocaleDateString('pt-BR');
+
+            if (String(sA.spouse || '') === String(sB.id) && String(sB.spouse || '') === String(sA.id)
+                    && String(sA.relStatus || '').toLowerCase() === st) {
+                return 'skip';
+            }
+
+            // Casamento com Sim falecido não ocupa o relacionamento principal: vira histórico
+            // vinculado nos dois perfis, mantendo a linha tracejada na árvore.
+            if (rel.kind === 'casado' && (_isSimFalecidoRel(sA) || _isSimFalecidoRel(sB))) {
+                _registrarHistoricoRelVinculado(sA, sB, 'viuvo', hojeRel);
+                if (String(sA.spouse || '') === String(sB.id)) sA.spouse = '';
+                if (String(sB.spouse || '') === String(sA.id)) sB.spouse = '';
+                if (!sA.spouse) sA.relStatus = 'viuvo';
+                if (!sB.spouse) sB.relStatus = 'viuvo';
+                return 'ok';
+            }
+
+            // Se um relacionamento antigo ainda estiver no campo principal, empurra para
+            // o histórico antes de gravar o vínculo atual vindo da importação.
+            if (sA.spouse && String(sA.spouse) !== String(sB.id)) _encerrarRelAtualParaHistorico(sA, sA.relStatus, hojeRel);
+            if (sB.spouse && String(sB.spouse) !== String(sA.id)) _encerrarRelAtualParaHistorico(sB, sB.relStatus, hojeRel);
+            if (sA.spouse && String(sA.spouse) !== String(sB.id)) return 'skip';
+            if (sB.spouse && String(sB.spouse) !== String(sA.id)) return 'skip';
+
             sA.spouse = String(sB.id);
             sB.spouse = String(sA.id);
-            const st = rel.kind === 'casado' ? 'casado' : 'namorado';
             sA.relStatus = st; sB.relStatus = st;
             // #138: a linha do Livro para casamento/namoro eh escrita apenas
             //        pelo Passo 4 (evento simetrico) — evita duplicidade.
