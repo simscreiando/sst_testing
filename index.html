@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-50 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-51 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -4364,6 +4364,25 @@ if (fase === 'recem_nascido') {
                 }
                 const passaTexto = !textoFiltroLower || _limparMarcadorSim(linha).toLowerCase().includes(textoFiltroLower);
                 if (passaTag && passaSim && passaTexto) { resultadoFiltrado.push({texto: linha, idx: originalIndex}); }
+            });
+
+            // v54.51: ordem cronológica inversa (mais novo primeiro)
+            const _parseDataLivro = (linha) => {
+                const t = (typeof _limparMarcadorSim === 'function') ? _limparMarcadorSim(linha) : linha;
+                const m = t.match(/^\[\s*(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+                if (!m) return null;
+                let ano = parseInt(m[3], 10);
+                if (ano < 100) ano += 2000;
+                const d = new Date(ano, parseInt(m[2],10) - 1, parseInt(m[1],10));
+                return isNaN(d.getTime()) ? null : d.getTime();
+            };
+            resultadoFiltrado.forEach(it => { it._ts = _parseDataLivro(it.texto); });
+            resultadoFiltrado.sort((a, b) => {
+                if (a._ts === null && b._ts === null) return b.idx - a.idx;
+                if (a._ts === null) return 1;
+                if (b._ts === null) return -1;
+                if (b._ts !== a._ts) return b._ts - a._ts;
+                return b.idx - a.idx;
             });
 
             if(resultadoFiltrado.length === 0) {
