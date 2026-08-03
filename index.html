@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-52 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-53 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -6402,6 +6402,53 @@ function salvarSim() {
         try { if (typeof showToast === 'function') showToast('❌ Erro ao salvar o perfil.'); } catch (_) {}
     }
 }
+
+// ===== Helpers de Histórico de Relacionamentos (correção v54.52) =====
+function _isSimFalecidoRel(sim) {
+    if (!sim) return false;
+    const st = String(sim.status || '').toLowerCase();
+    return st.includes('morto') || st.includes('ancestral') || st.includes('faleci');
+}
+
+function _statusFinalHistoricoRel(sim, ex, relStatusAnterior) {
+    if (_isSimFalecidoRel(ex) || _isSimFalecidoRel(sim)) return 'viuvo';
+    const anterior = String(relStatusAnterior || '').toLowerCase();
+    if (anterior === 'viuvo') return 'viuvo';
+    if (anterior.includes('divorc')) return 'divorciado';
+    return 'separado';
+}
+
+function _historicoRelJaExiste(sim, outroId, data) {
+    if (!sim) return false;
+    const lista = sim.historico_relacionamentos || [];
+    return lista.some(h => String(h.simId) === String(outroId) && String(h.data) === String(data));
+}
+
+function _registrarHistoricoRelVinculado(simA, simB, statusFinal, data) {
+    if (!simA || !simB) return;
+    const nomeCompleto = (s) => [s.nome, s.sobrenome].filter(Boolean).join(' ').trim() || 'Sim sem nome';
+
+    simA.historico_relacionamentos = simA.historico_relacionamentos || [];
+    if (!_historicoRelJaExiste(simA, simB.id, data)) {
+        simA.historico_relacionamentos.push({
+            simId: String(simB.id),
+            simNome: nomeCompleto(simB),
+            statusFinal: statusFinal,
+            data: data
+        });
+    }
+
+    simB.historico_relacionamentos = simB.historico_relacionamentos || [];
+    if (!_historicoRelJaExiste(simB, simA.id, data)) {
+        simB.historico_relacionamentos.push({
+            simId: String(simA.id),
+            simNome: nomeCompleto(simA),
+            statusFinal: statusFinal,
+            data: data
+        });
+    }
+}
+// ===== Fim dos helpers =====
 
 function _salvarSimInterno() {
             try { salvarImagemNaMemoriaDaFase(); } catch (e) { console.warn('[salvarSim] foto da fase não pôde ser lida', e); }
