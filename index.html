@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-53 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-54 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -13755,7 +13755,7 @@ function atualizarIndicadorMemoria() {
     function _classificarRel(rel, mapa) {
         const a = mapa[String(rel.sim_id_1)];
         const b = mapa[String(rel.sim_id_2)];
-        if (!a || !b) return { estado:'pendente', motivo:'Um dos Sims não foi importado ou vinculado no passo 1.' };
+        if (!a || !b) return { estado:'pendente', a:a||null, b:b||null, faltaA:!a, faltaB:!b, motivo:'Um dos Sims não foi importado ou vinculado no passo 1.' };
         // Aplicável — ver se já existe ou se conflita
         // "novo" localId=null: sempre "novo vínculo" (sem conflito, pois o Sim ainda não existe)
         if (a.status === 'novo' || b.status === 'novo') {
@@ -13763,7 +13763,7 @@ function atualizarIndicadorMemoria() {
         }
         const sA = (db.sims||[]).find(s => String(s.id) === a.localId);
         const sB = (db.sims||[]).find(s => String(s.id) === b.localId);
-        if (!sA || !sB) return { estado:'pendente', motivo:'Sim não encontrado no banco.' };
+        if (!sA || !sB) return { estado:'pendente', a, b, faltaA:!sA, faltaB:!sB, motivo:'Sim não encontrado no banco.' };
         if (rel.kind === 'parent') {
             // rel: sim_id_1 = pai/mãe, sim_id_2 = filho(a)
             const pais = [String(sB.p1||''), String(sB.p2||'')];
@@ -13830,7 +13830,7 @@ function atualizarIndicadorMemoria() {
     //  1) cls.a/b.nome (já resolvido via _mapaModParaSite — Sim ligado ou "novo")
     //  2) dadosMod.sims[].id === modId (Sim veio no import mas usuário optou por não trazer)
     //  3) "Sim desconhecido" — id não aparece no import
-    function _rotuloSimMod(modId, ladoCls) {
+    function _rotuloSimMod(modId, ladoCls, realce) {
         const idStr = String(modId == null ? '' : modId);
         const idCurto = idStr ? idStr.slice(0, 8) : '?';
         let nome = '';
@@ -13842,8 +13842,37 @@ function atualizarIndicadorMemoria() {
             if (m) nome = ((m.nome||'') + ' ' + (m.sobrenome||'')).trim();
         }
         if (!nome) nome = 'Sim desconhecido';
-        return '<strong>' + _escapeHtml(nome) + '</strong>'
-             + ' <span style="font-size:10px; color:#999; font-weight:500;">(mod:' + _escapeHtml(idCurto) + ')</span>';
+        const idHtml = ' <span style="font-size:10px; color:#999; font-weight:500;">(mod:' + _escapeHtml(idCurto) + ')</span>';
+        // #168: realce de contraste nas linhas PENDENTES
+        if (realce === 'ok') {
+            return '<span style="background:#d8f5d0; color:#1d4d1d; border:1px solid #7fb069; border-radius:8px;'
+                 + ' padding:1px 6px; font-weight:800;">' + _escapeHtml(nome)
+                 + ' <span style="font-size:9px; font-weight:800; letter-spacing:0.3px;">✓ NA ÁRVORE</span></span>'
+                 + idHtml;
+        }
+        if (realce === 'falta') {
+            return '<span style="background:#ffe1e1; color:#8a1b1b; border:1px dashed #c94b4b; border-radius:8px;'
+                 + ' padding:1px 6px; font-weight:800;">' + _escapeHtml(nome)
+                 + ' <span style="font-size:9px; font-weight:800; letter-spacing:0.3px;">FALTANDO</span></span>'
+                 + idHtml;
+        }
+        return '<strong>' + _escapeHtml(nome) + '</strong>' + idHtml;
+    }
+
+    // #168: mesmo nome, em texto puro (para mensagens de aviso)
+    function _nomeSimModTexto(modId, ladoCls) {
+        const idStr = String(modId == null ? '' : modId);
+        const idCurto = idStr ? idStr.slice(0, 8) : '?';
+        let nome = '';
+        if (ladoCls && ladoCls.nome) nome = String(ladoCls.nome).trim();
+        if (!nome) {
+            const st = window._importModState;
+            const arr = (st && st.dadosMod && st.dadosMod.sims) || [];
+            const m = arr.find(x => String(x && x.id) === idStr);
+            if (m) nome = ((m.nome||'') + ' ' + (m.sobrenome||'')).trim();
+        }
+        if (!nome) nome = 'Sim desconhecido';
+        return nome + ' (mod:' + idCurto + ')';
     }
 
 
@@ -13899,14 +13928,29 @@ function atualizarIndicadorMemoria() {
 
             const renderItem = (item) => {
                 const r = item.rel, cls = item.cls;
-                const rotA = _rotuloSimMod(r.sim_id_1, cls.a);
-                const rotB = _rotuloSimMod(r.sim_id_2, cls.b);
+                // #168: em linhas PENDENTES, destacar quem já está na árvore (verde)
+                //       e quem está faltando importar/vincular (vermelho).
+                const ehPendente = (cls.estado === 'pendente');
+                const realceA = ehPendente ? (cls.faltaA ? 'falta' : 'ok') : null;
+                const realceB = ehPendente ? (cls.faltaB ? 'falta' : 'ok') : null;
+                const rotA = _rotuloSimMod(r.sim_id_1, cls.a, realceA);
+                const rotB = _rotuloSimMod(r.sim_id_2, cls.b, realceB);
                 const seta = k === 'parent' ? ' → ' : ' × ';
                 const canApply = (cls.estado === 'novo');
                 const disabled = !canApply ? 'disabled' : '';
                 const checked = canApply ? 'checked' : '';
-                const motivo = cls.motivo
-                    ? ('<div style="font-size:10px; color:#a06400; margin-left:26px; padding-bottom:4px;">⚠ ' + _escapeHtml(cls.motivo) + '</div>')
+                let motivoTxt = cls.motivo || '';
+                if (ehPendente) {
+                    const faltantes = [];
+                    if (cls.faltaA) faltantes.push(_nomeSimModTexto(r.sim_id_1, cls.a));
+                    if (cls.faltaB) faltantes.push(_nomeSimModTexto(r.sim_id_2, cls.b));
+                    if (faltantes.length) {
+                        motivoTxt = 'Falta importar/vincular ' + faltantes.join(' e ')
+                                  + ' no Passo 1 para que este vínculo possa ser criado.';
+                    }
+                }
+                const motivo = motivoTxt
+                    ? ('<div style="font-size:10px; color:' + (ehPendente ? '#8a1b1b' : '#a06400') + '; font-weight:' + (ehPendente ? '700' : '400') + '; margin-left:26px; padding-bottom:4px;">⚠ ' + _escapeHtml(motivoTxt) + '</div>')
                     : '';
                 return ''
                     + '<div style="display:block;">'
