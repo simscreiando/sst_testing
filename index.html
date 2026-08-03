@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-51 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-54-52 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -3937,9 +3937,34 @@
 
 function salvarTudo() { 
             hasUnsavedChanges = true;
-            if (allowLocalSave) localStorage.setItem('ts4_companion_data', JSON.stringify(db)); 
-            atualizarIndicadorMemoria(); // <-- ADICIONE ESTA LINHA AQUI
+            // v54.52 #167: gravação à prova de "memória do navegador cheia".
+            // Antes, um QuotaExceededError aqui abortava salvarSim() no meio e o
+            // modal do perfil ficava parado sem aviso nenhum.
+            if (allowLocalSave) {
+                try {
+                    localStorage.setItem('ts4_companion_data', JSON.stringify(db));
+                } catch (err) {
+                    console.error('[salvarTudo] falha ao gravar no navegador:', err);
+                    const cheio = err && (err.name === 'QuotaExceededError'
+                        || err.code === 22 || err.code === 1014
+                        || /quota/i.test(String(err && err.message)));
+                    if (!window.__avisoQuotaMostrado) {
+                        window.__avisoQuotaMostrado = true;
+                        try {
+                            if (cheio) {
+                                alert('⚠️ A memória do navegador está cheia (muitas fotos salvas).\n\n'
+                                    + 'Seus dados continuam nesta sessão, mas NÃO estão sendo gravados no navegador.\n'
+                                    + 'Faça agora um backup em Configurações (.json ou .zip) para não perder nada.');
+                            } else if (typeof showToast === 'function') {
+                                showToast('⚠️ Não foi possível gravar no navegador. Faça um backup .json.');
+                            }
+                        } catch (_) {}
+                    }
+                }
+            }
+            try { atualizarIndicadorMemoria(); } catch (_) {}
         }
+
 
         function fazerBackup() { 
             const dl = document.createElement('a'); dl.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db))); dl.setAttribute("download", "legacy_companion_backup.json"); dl.click(); 
@@ -6031,13 +6056,29 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
                 </label>`;
             }).join('');
         }
+        // v54.52 #167: normalização de texto para busca (ignora acentos e maiúsculas)
+        function _normBuscaTexto(v) {
+            return String(v == null ? '' : v)
+                .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase().trim();
+        }
+        // Nome completo de um Sim (nome + sobrenome), tolerante a campos faltando
+        function _nomeCompletoSim(s) {
+            if (!s) return '';
+            const n = String(s.nome == null ? '' : s.nome).trim();
+            const sn = String(s.sobrenome == null ? '' : s.sobrenome).trim();
+            return (n + (sn ? ' ' + sn : '')).trim();
+        }
         // Filtra labels de checkbox dentro de um container conforme o usuário digita
         function filtrarSimsCheckbox(inputId, containerId) {
-            const termo = document.getElementById(inputId).value.toLowerCase().trim();
-            const labels = document.querySelectorAll('#' + containerId + ' label');
+            const inp = document.getElementById(inputId);
+            const cont = document.getElementById(containerId);
+            if (!inp || !cont) return;
+            const termo = _normBuscaTexto(inp.value);
+            const labels = cont.querySelectorAll('label');
             let visiveis = 0;
             labels.forEach(label => {
-                const nome = label.textContent.toLowerCase();
+                const nome = _normBuscaTexto(label.textContent);
                 const mostrar = !termo || nome.includes(termo);
                 label.style.display = mostrar ? '' : 'none';
                 if (mostrar) visiveis++;
@@ -6048,45 +6089,67 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
                 semResultado = document.createElement('span');
                 semResultado.id = containerId + '-sem-resultado';
                 semResultado.style.cssText = 'font-size:11px; color:#aaa; display:none;';
-                semResultado.textContent = 'Nenhum Sim encontrado para "' + termo + '".';
-                document.getElementById(containerId).appendChild(semResultado);
+                cont.appendChild(semResultado);
             }
-            semResultado.textContent = 'Nenhum Sim encontrado para "' + termo + '".';
+            semResultado.textContent = 'Nenhum Sim encontrado para "' + inp.value.trim() + '".';
             semResultado.style.display = (visiveis === 0 && labels.length > 0) ? 'block' : 'none';
         }
 
         // Filtra um <select> de Sims conforme o usuário digita
         // Se o select tiver _cachedOptions (set por selects com filtros especiais), usa o cache.
         // Caso contrário, reconstrói a partir de db.sims.
+        // v54.52 #167: busca por nome E sobrenome, sem acento, e nunca quebra
+        // quando um Sim importado está sem algum campo de nome.
         function filtrarSelectSims(inputId, selectId) {
             const input = document.getElementById(inputId);
             const sel = document.getElementById(selectId);
             if (!input || !sel) return;
-            const termo = input.value.toLowerCase().trim();
+            const termoBruto = String(input.value || '').trim();
+            const termo = _normBuscaTexto(termoBruto);
             const excluirId = sel.dataset.excluirId || null;
             const emptyLabel = sel.dataset.emptyLabel || 'Nenhum';
             const valorAtual = sel.value;
 
             let pool;
-            if (sel._cachedOptions) {
-                // Selects com regras próprias (ex: só Sims vivos) usam cache de {value, text}
-                pool = sel._cachedOptions.filter(op =>
-                    op.value === '' || !termo || op.text.toLowerCase().includes(termo)
-                );
-                sel.innerHTML = pool.map(op => `<option value="${op.value}">${op.text}</option>`).join('');
-            } else {
-                // Selects genéricos reconstroem de db.sims
-                const filtrados = (db.sims || []).filter(s => {
-                    if (excluirId && String(s.id) === excluirId) return false;
-                    if (termo && !s.nome.toLowerCase().includes(termo)) return false;
-                    return true;
-                });
-                sel.innerHTML = `<option value="">${emptyLabel}</option>` +
-                    filtrados.map(s => `<option value="${s.id}">${s.nome}</option>`).join('');
-                pool = filtrados;
+            try {
+                if (sel._cachedOptions) {
+                    // Selects com regras próprias (ex: só Sims vivos) usam cache de {value, text}
+                    pool = sel._cachedOptions.filter(op =>
+                        op.value === '' || !termo || _normBuscaTexto(op.text).includes(termo)
+                    );
+                    sel.innerHTML = pool.map(op => `<option value="${op.value}">${op.text}</option>`).join('');
+                } else {
+                    // Selects genéricos reconstroem de db.sims
+                    const filtrados = ((window.db && db.sims) || []).filter(s => {
+                        if (!s) return false;
+                        if (excluirId && String(s.id) === excluirId) return false;
+                        if (termo && !_normBuscaTexto(_nomeCompletoSim(s)).includes(termo)) return false;
+                        return true;
+                    });
+                    sel.innerHTML = `<option value="">${emptyLabel}</option>` +
+                        filtrados.map(s => `<option value="${s.id}">${_nomeCompletoSim(s) || '(sem nome)'}</option>`).join('');
+                    pool = filtrados;
+                }
+            } catch (err) {
+                console.error('[filtrarSelectSims] falha ao filtrar', selectId, err);
+                return;
             }
 
-            if (valorAtual) sel.value = valorAtual;
+            // Mantém o Sim já selecionado disponível, mesmo que a busca o exclua,
+            // para que salvar o perfil não perca o vínculo atual.
+            if (valorAtual) {
+                const existe = Array.from(sel.options).some(o => o.value === valorAtual);
+                if (!existe) {
+                    const sAtual = ((window.db && db.sims) || []).find(s => s && String(s.id) === String(valorAtual));
+                    if (sAtual) {
+                        const op = document.createElement('option');
+                        op.value = String(sAtual.id);
+                        op.textContent = (_nomeCompletoSim(sAtual) || '(sem nome)') + ' — selecionado';
+                        sel.appendChild(op);
+                    }
+                }
+                sel.value = valorAtual;
+            }
 
             // Feedback visual se nenhum resultado
             let aviso = document.getElementById(selectId + '-aviso-busca');
@@ -6099,9 +6162,10 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
             const semResultado = termo && (sel._cachedOptions
                 ? pool.filter(o => o.value !== '').length === 0
                 : pool.length === 0);
-            aviso.textContent = `Nenhum Sim encontrado para "${termo}".`;
+            aviso.textContent = `Nenhum Sim encontrado para "${termoBruto}".`;
             aviso.style.display = semResultado ? 'inline' : 'none';
         }
+
 
         function salvarImagemNaMemoriaDaFase() { let faseSel = document.getElementById('e-foto-fase-select').value; tempFotosFases[faseSel] = document.getElementById('e-img').value; popularSelectOrigemFoto(); }
         
@@ -6322,8 +6386,26 @@ ${restricaoIdade || 'Sem restrições especiais de conteúdo para esta fase.'}
             }
         }
 
+// v54.52 #167: salvarSim() agora é protegido. Qualquer falha interna (foto,
+// gravação no navegador, desenho da árvore) passa a mostrar um aviso claro em
+// vez de deixar o modal parado sem salvar nada.
 function salvarSim() {
-            salvarImagemNaMemoriaDaFase(); 
+    try {
+        return _salvarSimInterno();
+    } catch (err) {
+        console.error('[salvarSim] falha ao salvar o perfil:', err);
+        const msg = (err && err.message) ? err.message : String(err);
+        try {
+            alert('❌ Não foi possível salvar o perfil.\n\nDetalhe técnico: ' + msg
+                + '\n\nSe a mensagem falar em memória/armazenamento, faça um backup .json em Configurações.');
+        } catch (_) {}
+        try { if (typeof showToast === 'function') showToast('❌ Erro ao salvar o perfil.'); } catch (_) {}
+    }
+}
+
+function _salvarSimInterno() {
+            try { salvarImagemNaMemoriaDaFase(); } catch (e) { console.warn('[salvarSim] foto da fase não pôde ser lida', e); }
+
             let faseNova = document.getElementById('e-fase').value;
             let nomeSim = document.getElementById('e-nome').value;
             let statusVital = document.getElementById('e-status').value;
@@ -6529,7 +6611,15 @@ function salvarSim() {
                 }
             }
 
-            salvarTudo(); fecharModal(); renderTree(); renderGenList(); renderIaSimList(); showToast("Perfil salvo!");
+            // v54.52 #167: gravar primeiro, fechar o modal depois e só então
+            // redesenhar. Assim uma falha de desenho não impede o salvamento.
+            salvarTudo();
+            try { fecharModal(); } catch (e) { console.warn('[salvarSim] fecharModal falhou', e); }
+            try { renderTree(); } catch (e) { console.error('[salvarSim] renderTree falhou', e); }
+            try { renderGenList(); } catch (e) { console.error('[salvarSim] renderGenList falhou', e); }
+            try { renderIaSimList(); } catch (e) { console.error('[salvarSim] renderIaSimList falhou', e); }
+            showToast("Perfil salvo!");
+
         }
 
         function deletarSim() {
@@ -14663,9 +14753,13 @@ function atualizarIndicadorMemoria() {
                 });
                 if (chaves.length === 0) { nIgnorados++; return; }
                 const novo = _criarSimDoMod(item.modSim, chaves);
+                // v54.52 #167: guarda a "identidade do mod" no Sim novo. Sem isso os
+                // vínculos importados não encontravam o Sim recém-criado.
+                novo.simId = String(item.modSim.id);
                 db.sims = db.sims || [];
                 db.sims.push(novo);
                 novosLocais[String(item.modSim.id)] = String(novo.id);
+
                 nNovos++;
             } else {
                 const simSite = db.sims.find(s => String(s.id) === String(v.escolha));
@@ -14682,16 +14776,27 @@ function atualizarIndicadorMemoria() {
                     const anyVin = document.querySelector('[data-import-vin^="' + v.idx + ':"]');
                     if (!anyVin) {
                         simSite.simId = String(item.modSim.id);
+                        novosLocais[String(item.modSim.id)] = String(simSite.id);
                         nAtualizados++;
                     } else {
+                        // v54.52 #167: o usuário não trouxe campos, mas o vínculo de
+                        // identidade continua valendo para os relacionamentos.
+                        simSite.simId = String(item.modSim.id);
+                        novosLocais[String(item.modSim.id)] = String(simSite.id);
                         nIgnorados++;
                     }
                     return;
                 }
+
                 _aplicarCamposMod(simSite, item.modSim, chaves, {
                     extra: ((document.querySelector('input[data-import-extra-modo-vin="' + v.idx + '"]:checked') || {}).value) || 'acrescentar'
                 });
+                // v54.52 #167: vincular o Sim do site ao Sim do mod também aqui,
+                // senão os relacionamentos do mod não achavam este Sim depois.
+                simSite.simId = String(item.modSim.id);
+                novosLocais[String(item.modSim.id)] = String(simSite.id);
                 nAtualizados++;
+
             }
         });
 
@@ -14707,6 +14812,13 @@ function atualizarIndicadorMemoria() {
             _aplicarCamposMod(item.simSite, item.modSim, chaves, {
                 extra: ((document.querySelector('input[data-import-extra-modo-mud="' + idx + '"]:checked') || {}).value) || 'acrescentar'
             });
+            // v54.52 #167: reforça o vínculo de identidade mod → Sim do site.
+            try {
+                if (item.simSite && item.modSim) {
+                    item.simSite.simId = String(item.modSim.id);
+                    novosLocais[String(item.modSim.id)] = String(item.simSite.id);
+                }
+            } catch(_) {}
             nAtualizados++;
         });
 
@@ -14722,12 +14834,31 @@ function atualizarIndicadorMemoria() {
             // Sobrepõe com os locais recém-criados (garantia, caso simId não tenha sido gravado)
             Object.keys(novosLocais).forEach(k => { mapaFinal[k] = novosLocais[k]; });
 
+            // v54.52 #167: antes só entravam os vínculos com caixa marcada E habilitada.
+            // Vínculos entre dois Sims recém-criados apareciam como "pendentes"
+            // (caixa desabilitada), então a importação deixava os Sims soltos na
+            // árvore. Agora tudo que o usuário NÃO desmarcou de propósito é
+            // reavaliado com o mapa final, já que os Sims agora existem.
             const marcados = [];
+            const desmarcadosPeloUsuario = new Set();
             document.querySelectorAll('[data-import-rel]').forEach(chk => {
-                if (chk.checked && !chk.disabled) {
-                    marcados.push(parseInt(chk.getAttribute('data-import-rel'), 10));
-                }
+                const i = parseInt(chk.getAttribute('data-import-rel'), 10);
+                if (isNaN(i)) return;
+                if (chk.checked) marcados.push(i);
+                else if (!chk.disabled) desmarcadosPeloUsuario.add(i);
             });
+            // Inclui os vínculos que ficaram pendentes/travados na tela e que agora
+            // podem ser resolvidos (ambos os lados existem no site).
+            classif.forEach((item, i) => {
+                if (!item || !item.rel) return;
+                if (marcados.indexOf(i) >= 0 || desmarcadosPeloUsuario.has(i)) return;
+                const a = (item.cls && item.cls.a && item.cls.a.status === 'ligado')
+                    ? item.cls.a.localId : mapaFinal[String(item.rel.sim_id_1)];
+                const b = (item.cls && item.cls.b && item.cls.b.status === 'ligado')
+                    ? item.cls.b.localId : mapaFinal[String(item.rel.sim_id_2)];
+                if (a && b && String(a) !== String(b)) marcados.push(i);
+            });
+
             // Ordena: pais primeiro (para inferir irmãos depois), depois casados, depois namoros
             const ordem = { parent:0, casado:1, namoro:2, irmao:3, outro:9 };
             marcados.sort((a,b) => {
@@ -14738,9 +14869,15 @@ function atualizarIndicadorMemoria() {
             marcados.forEach(i => {
                 const item = classif[i];
                 if (!item) { nVinculosIgn++; return; }
-                const r = _aplicarUmRelacionamento(item.rel, item.cls, mapaFinal);
+                let r = 'skip';
+                try {
+                    r = _aplicarUmRelacionamento(item.rel, item.cls, mapaFinal);
+                } catch (e) {
+                    console.error('[import] falha ao aplicar vínculo', item, e);
+                }
                 if (r === 'ok') nVinculos++; else nVinculosIgn++;
             });
+
             try { _inferirIrmaosPorPais(); } catch(e){ console.warn('Falha ao inferir irmãos:', e); }
         }
 
