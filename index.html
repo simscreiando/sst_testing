@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="google-site-verification" content="1UmkozPO_JPIla7rZk81x7ciSfPWC2a03pXy8MA1X2g" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TESTE-54-54 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
+    <title>TESTE-FOTO-54-54 - SimStoria - Companion Narrativo em Implementação (Sims Edition)</title>
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -1749,7 +1749,7 @@
                 <div class="config-header" style="font-weight: bold; margin-top: 35px; border-bottom: 2px solid var(--ts4-border); padding-bottom: 5px;">🔄 BACKUP MANUAL & IMPORTAÇÃO</div>
                 <p style="font-size: 12px; color: var(--ts4-subtle-text);">Faça download do seu legado ou importe um arquivo — backup do site <em>ou</em> export do mod SimStoria. O tipo é detectado automaticamente.</p>
                 <div style="display:flex; flex-direction:column; gap:10px; margin-top: 15px;">
-                    <input type="file" id="import-file" style="display:none" onchange="importarArquivo(event)" accept=".json">
+                    <input type="file" id="import-file" style="display:none" onchange="importarArquivo(event)" accept=".json,.zip">
                     <div style="display:flex; gap:10px; flex-wrap:wrap;">
                         <button class="btn-main btn-sec" style="margin:0; flex:1" onclick="fazerBackup()">💾 Download Backup Atual (.json)</button>
                         <button class="btn-main btn-sec" style="margin:0; flex:1; border-color:var(--ts4-blue); color:var(--ts4-blue);" onclick="fazerBackupZip()">🗜️ Exportar Tudo (.zip)</button>
@@ -7135,54 +7135,148 @@ function adotarFilhoPerfil() {
             renderTree();
         }
 
+// Guarda as fotos vindas de um .zip exportado pelo mod (sim.simId -> dataURL),
+// até serem aplicadas aos Sims no momento em que o vínculo mod->site é criado.
+window._fotosImportModPendentes = window._fotosImportModPendentes || {};
+
 function importarArquivo(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (!file.name.toLowerCase().endsWith('.json')) {
-        alert("⚠️ Formato inválido! Por favor, selecione apenas arquivos com a extensão .json.");
+    const nomeMin = file.name.toLowerCase();
+
+    if (nomeMin.endsWith('.zip')) {
+        _importarZipMod(file, event);
+        return;
+    }
+
+    if (!nomeMin.endsWith('.json')) {
+        alert("⚠️ Formato inválido! Por favor, selecione um arquivo .json ou .zip.");
         event.target.value = "";
         return;
     }
 
     const reader = new FileReader();
     reader.onload = function(e) {
-        try {
-            const dados = JSON.parse(e.target.result);
-
-            // --- Detectar tipo do JSON ---
-            // Mod SimStoria: tem versao, saveId, e sims[].id começando com "sim_"
-            const ehMod = dados && dados.saveId && Array.isArray(dados.sims)
-                && dados.sims.length > 0
-                && typeof dados.sims[0].id === 'string'
-                && dados.sims[0].id.startsWith('sim_');
-
-            if (ehMod) {
-                // Abre pop-up de reconciliação; NÃO sobrescreve db diretamente
-                abrirModalImportMod(dados);
-                event.target.value = "";
-                return;
-            }
-
-            // Caso contrário: backup do próprio site — comportamento antigo
-            if (!dados.sims || !Array.isArray(dados.sims)) {
-                return alert("❌ Arquivo inválido: não parece um backup do Legacy Companion nem um export do mod SimStoria.");
-            }
-            dados.sims.forEach(s => {
-                if (!s.historico_relacionamentos) s.historico_relacionamentos = [];
-            });
-            db = dados; _syncDb();
-            salvarTudo();
-            renderTree();
-            renderGenList();
-            renderIaSimList();
-            showToast("✅ Backup importado com sucesso!");
-        } catch(err) {
-            alert("❌ Erro ao ler o arquivo: " + err.message);
-        }
+        _processarTextoImportado(e.target.result);
+        event.target.value = "";
     };
     reader.readAsText(file);
     event.target.value = "";
+}
+
+// Processa o texto de um JSON importado (usado tanto pelo import direto de
+// .json quanto pelo .json extraído de dentro de um .zip).
+function _processarTextoImportado(texto) {
+    try {
+        const dados = JSON.parse(texto);
+
+        // --- Detectar tipo do JSON ---
+        // Mod SimStoria: tem versao, saveId, e sims[].id começando com "sim_"
+        const ehMod = dados && dados.saveId && Array.isArray(dados.sims)
+            && dados.sims.length > 0
+            && typeof dados.sims[0].id === 'string'
+            && dados.sims[0].id.startsWith('sim_');
+
+        if (ehMod) {
+            // Abre pop-up de reconciliação; NÃO sobrescreve db diretamente
+            abrirModalImportMod(dados);
+            return;
+        }
+
+        // Caso contrário: backup do próprio site — comportamento antigo
+        if (!dados.sims || !Array.isArray(dados.sims)) {
+            return alert("❌ Arquivo inválido: não parece um backup do Legacy Companion nem um export do mod SimStoria.");
+        }
+        dados.sims.forEach(s => {
+            if (!s.historico_relacionamentos) s.historico_relacionamentos = [];
+        });
+        db = dados; _syncDb();
+        salvarTudo();
+        renderTree();
+        renderGenList();
+        renderIaSimList();
+        showToast("✅ Backup importado com sucesso!");
+    } catch(err) {
+        alert("❌ Erro ao ler o arquivo: " + err.message);
+    }
+}
+
+// Abre o .zip exportado pelo mod (Item: leitura de fotos dos Sims), separa o
+// .json principal das imagens em fotos/*.png, guarda as fotos em memória
+// (por simId do mod) para serem aplicadas quando os Sims forem vinculados,
+// e então segue o fluxo normal de import do JSON.
+async function _importarZipMod(file, event) {
+    if (typeof JSZip === 'undefined') {
+        alert("⚠️ Biblioteca ZIP não carregada. Tente novamente em alguns segundos.");
+        if (event) event.target.value = "";
+        return;
+    }
+    try {
+        showToast("📦 Lendo pacote .zip...");
+        const zip = await JSZip.loadAsync(file);
+
+        // 1) Localiza o JSON principal (o de eventos, se existir separado, é
+        //    ignorado aqui: os eventos já vêm embutidos no JSON principal).
+        let entradaJson = null;
+        zip.forEach((caminho, entrada) => {
+            if (entradaJson) return;
+            if (/\.json$/i.test(caminho) && !/eventos/i.test(caminho)) {
+                entradaJson = entrada;
+            }
+        });
+        if (!entradaJson) {
+            // fallback: qualquer .json dentro do pacote
+            zip.forEach((caminho, entrada) => { if (!entradaJson && /\.json$/i.test(caminho)) entradaJson = entrada; });
+        }
+        if (!entradaJson) {
+            alert("❌ O .zip não contém nenhum arquivo .json reconhecível.");
+            if (event) event.target.value = "";
+            return;
+        }
+
+        // 2) Coleta as fotos (fotos/sim_XXXXX.png) como dataURL em memória.
+        const entradasFoto = [];
+        zip.forEach((caminho, entrada) => {
+            if (/^fotos\/.*\.png$/i.test(caminho)) entradasFoto.push(entrada);
+        });
+
+        for (const entradaFoto of entradasFoto) {
+            const base64 = await entradaFoto.async('base64');
+            const nomeArquivo = entradaFoto.name.split('/').pop();
+            const simIdMod = nomeArquivo.replace(/\.png$/i, ''); // ex: "sim_123456789012345"
+            window._fotosImportModPendentes[simIdMod] = 'data:image/png;base64,' + base64;
+        }
+        if (entradasFoto.length > 0) {
+            showToast(`🖼️ ${entradasFoto.length} foto(s) encontrada(s) no pacote — serão vinculadas aos Sims durante a importação.`);
+        }
+
+        // 3) Segue o fluxo normal de import do JSON.
+        const texto = await entradaJson.async('string');
+        _processarTextoImportado(texto);
+    } catch (err) {
+        alert("❌ Erro ao ler o arquivo .zip: " + err.message);
+    } finally {
+        if (event) event.target.value = "";
+    }
+}
+
+// Aplica, se existir, a foto pendente (vinda de um .zip do mod) a um Sim recém
+// vinculado — sem sobrescrever uma foto que o usuário já tenha colocado
+// manualmente naquela fase. Chamar sempre logo após `simSite.simId = ...`.
+function _aplicarFotoImportadaPendente(simSite, modSim) {
+    if (!simSite || !modSim) return;
+    const dataUrl = window._fotosImportModPendentes && window._fotosImportModPendentes[String(modSim.id)];
+    if (!dataUrl) return;
+
+    let fase = (typeof _normalizarFase === 'function') ? _normalizarFase(modSim.estagio_vida || '') : '';
+    if (fase === 'recem-nascido') fase = 'recem_nascido'; // pequena inconsistência de slug pré-existente
+    if (!fase) fase = simSite.fase || 'jovem-adulto';
+
+    if (!simSite.img) simSite.img = {};
+    if (!simSite.img[fase]) {
+        simSite.img[fase] = dataUrl;
+    }
 }
 
         function calcularNiveisDeGeracao() {
@@ -14790,6 +14884,7 @@ function atualizarIndicadorMemoria() {
             simSite[k] = val;
         });
         simSite.simId = String(modSim.id);
+        _aplicarFotoImportadaPendente(simSite, modSim);
         if (Array.isArray(modSim.aspiracoes_concluidas) && modSim.aspiracoes_concluidas.length) {
             const atuais = Array.isArray(simSite.aspiracoesConcluidas) ? simSite.aspiracoesConcluidas : [];
             const merged = [...new Set([...atuais, ...modSim.aspiracoes_concluidas.filter(x => x && !/hash\s*:/i.test(String(x)))])];
@@ -14847,6 +14942,7 @@ function atualizarIndicadorMemoria() {
                 // v54.52 #167: guarda a "identidade do mod" no Sim novo. Sem isso os
                 // vínculos importados não encontravam o Sim recém-criado.
                 novo.simId = String(item.modSim.id);
+                _aplicarFotoImportadaPendente(novo, item.modSim);
                 db.sims = db.sims || [];
                 db.sims.push(novo);
                 novosLocais[String(item.modSim.id)] = String(novo.id);
@@ -14867,12 +14963,14 @@ function atualizarIndicadorMemoria() {
                     const anyVin = document.querySelector('[data-import-vin^="' + v.idx + ':"]');
                     if (!anyVin) {
                         simSite.simId = String(item.modSim.id);
+                        _aplicarFotoImportadaPendente(simSite, item.modSim);
                         novosLocais[String(item.modSim.id)] = String(simSite.id);
                         nAtualizados++;
                     } else {
                         // v54.52 #167: o usuário não trouxe campos, mas o vínculo de
                         // identidade continua valendo para os relacionamentos.
                         simSite.simId = String(item.modSim.id);
+                        _aplicarFotoImportadaPendente(simSite, item.modSim);
                         novosLocais[String(item.modSim.id)] = String(simSite.id);
                         nIgnorados++;
                     }
@@ -14885,6 +14983,7 @@ function atualizarIndicadorMemoria() {
                 // v54.52 #167: vincular o Sim do site ao Sim do mod também aqui,
                 // senão os relacionamentos do mod não achavam este Sim depois.
                 simSite.simId = String(item.modSim.id);
+                _aplicarFotoImportadaPendente(simSite, item.modSim);
                 novosLocais[String(item.modSim.id)] = String(simSite.id);
                 nAtualizados++;
 
@@ -14907,6 +15006,7 @@ function atualizarIndicadorMemoria() {
             try {
                 if (item.simSite && item.modSim) {
                     item.simSite.simId = String(item.modSim.id);
+                    _aplicarFotoImportadaPendente(item.simSite, item.modSim);
                     novosLocais[String(item.modSim.id)] = String(item.simSite.id);
                 }
             } catch(_) {}
@@ -15095,6 +15195,9 @@ function atualizarIndicadorMemoria() {
         try { renderGenList && renderGenList(); } catch(e){}
         try { renderIaSimList && renderIaSimList(); } catch(e){}
         try { renderLivroComFiltro && renderLivroComFiltro(); } catch(e){}
+
+        // Limpa as fotos pendentes deste import (evita vazar para a próxima importação)
+        window._fotosImportModPendentes = {};
 
         fecharModalImportMod();
         // #142: mostra o botão "Desfazer importação" com timer de 15s.
